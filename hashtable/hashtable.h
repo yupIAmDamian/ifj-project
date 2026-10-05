@@ -25,4 +25,4 @@ hashtable_t* ht_search(hashtable_t* hashtable, const char* key);
 hashtable_t* ht_delete(hashtable_t* hashtable, const char* key);
 hashtable_t* ht_insert(hashtable_t* hashtable, const char* key, const char* data);
 //frees all allocated hastable memory
-hashtable_t* ht_clear(hashtable_t* hashtable);
+void ht_clear(hashtable_t** hashtable);
