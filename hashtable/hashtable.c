@@ -1,15 +1,70 @@
 #include "stdio.h"
 #include "hashtable.h"
+#include "stdlib.h"
+#include "string.h"
 
-/*
-int hash_function(const char* key, int size);
-int probing(hashtable_t* hashtable, const char* key, int attempt);
+int hash_function(char* key, int size){
+    unsigned long hash = 0;
+    int key_length = strlen(key);
+    for(int i = 0; i < key_length; i++){
+        hash += (unsigned long)key[i];
+        hash = (hash * (unsigned long)key[i]) % size;
+    }
+    return (int)hash;
+}
+
+int probing(hashtable_t* hashtable, char* key, int attempt){
+    int index = hash_function(key, hashtable->size);
+    if(hashtable->items[index].state == EMPTY){
+        return index;
+    }
+    if(hashtable->items[index].state == OCCUPIED && strcmp(hashtable->items[index].key, key) == 0){
+        return index;
+    }
+    if(attempt < hashtable->size){
+        return probing(hashtable, key, attempt + 1);
+    }
+    return -1;
+}
+
+ht_item_t* ht_search(hashtable_t* hashtable, char* key){
+    //checknut ci toto je dobre. je to trosku sus
+    int index = probing(hashtable, key, 0);
+    if(index == -1){
+        return NULL;
+    }
+
+    return &hashtable->items[index];
+}
+
+ht_item_t* ht_insert(hashtable_t* hashtable, char* key, void* data){
+    //checknut ci toto je dobre. je to trosku sus
+    int index = probing(hashtable, key, 0);
+    if(index == -1){
+        return NULL;
+    }
+
+    hashtable->items[index].state = OCCUPIED;
+    hashtable->items[index].data = data;
+
+    hashtable->count++;
+    return &hashtable->items[index];
+}
 
 
-hashtable_t* ht_search(hashtable_t* hashtable, const char* key);
-hashtable_t* ht_delete(hashtable_t* hashtable, const char* key);
-hashtable_t* ht_insert(hashtable_t* hashtable, const char* key, const char* data);
-*/
+hashtable_t* ht_delete(hashtable_t* hashtable, char* key){
+    //checknut ci toto je dobre. je to trosku sus
+    int index = probing(hashtable, key, 0);
+    if(index == -1){
+        return NULL;
+    }
+
+    hashtable->items[index].state = DELETED;
+    hashtable->items[index].data = NULL;
+
+    hashtable->count--;
+    return hashtable;
+};
 
 //creates a new hashtable
 hashtable_t* ht_create(int size){
@@ -18,14 +73,15 @@ hashtable_t* ht_create(int size){
         return NULL;
     }
 
-    hashtable->items = calloc(sizeof(ht_item_t) * size);
+
+    hashtable->items = calloc(size, sizeof(ht_item_t) );
     if(hashtable->items == NULL){
         free(hashtable);
         return NULL;
     }
 
-    hashtable-> size = size;
-    hashtable-> count = 0;
+    hashtable->size = size;
+    hashtable->count = 0;
 
     return hashtable;
 }
