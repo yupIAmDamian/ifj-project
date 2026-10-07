@@ -27,3 +27,16 @@ void scope_pop(Symtable *st){
     if (st->top <0) return;
     st->scopes[st->top]=ht_clear(&(st->scopes[st->top]));
 }
+
+bool symtable_insert_var(Symtable *st, const char *name, DataType type, bool is_init) {
+    //need a func to check if variable is not redefined
+    if (st->top < 0) return false;
+    Symbol *sym = malloc(sizeof(Symbol));
+    sym->name = strdup(name);
+    sym->sym_type = SYMBOL_VAR;
+    sym->data_type = type;
+    sym->is_initialized = is_init;
+
+    ht_insert(st->scopes[st->top], name, (const char*) sym);
+    return true;
+}
