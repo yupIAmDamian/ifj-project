@@ -1,16 +1,15 @@
 #ifndef PARSER_H
 #define PARSER_H
 #include <stdbool.h>
-#include "scanner.h" // Definicia tokenu
+#include "scanner.h" 
 
-extern Token current_token; // Aktualny token
+extern Token current_token;
 
-// Hlavna funkcia analyzatora
-int parse(); // Spusti cely proces syntaktickej analyzy a vrati chybovy kod alebo 0 ak bude vsetko ficat
+int parse(); // return an error code or 0 if everithing runs smoothly
 
-// Funkcie pre neterminaly
-// 'true' ak sa podarilo uspesne aplikovat pravidlo alebo epsilon
-// 'false' ak narazi na syntakticku chybu
+// function for non-terminals
+// 'true' if rule or epsilon was succesfully applied
+// 'false' if it encounters a syntax error
 bool parse_program(); // <program> -> <prolog> <functions> EOF
 bool parse_prolog(); // <prolog> -> import ifj26 . * EOL
 bool parse_functions(); // <functions> -> <function> <functions> | epsilon

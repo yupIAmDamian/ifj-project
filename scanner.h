@@ -1,12 +1,12 @@
 #ifndef SCANNER_H
 #define SCANNER_H
 
-// Typy tokenov pre lexikalny analyzator a syntakticky analyzator
+// token types
 typedef enum {
-    TOKEN_EOF,           // Koniec suboru (EOF)
-    TOKEN_EOL,           // Koniec riadku (LF) - dolezite kvoli syntaxi s odsadenim
+    TOKEN_EOF,           // end of file (EOF)
+    TOKEN_EOL,           // end of line (LF)
     
-    // Klucove slova (zakladne zadanie)
+    // key words
     TOKEN_DEF,
     TOKEN_DO,
     TOKEN_ELSE,
@@ -18,21 +18,20 @@ typedef enum {
     TOKEN_VAR,
     TOKEN_WHILE,
     
-    // Datove typy
+    // data types
     TOKEN_TYPE_INT,
     TOKEN_TYPE_DOUBLE,
     TOKEN_TYPE_STRING,
     TOKEN_TYPE_UNIT,
-    // TOKEN_TYPE_BOOLEAN (ak budeme robit rozsirenie BOOLTHEN)
     
-    // Identifikatory a literaly
+    // identifiers and literals
     TOKEN_IDENTIFIER,
     TOKEN_INTEGER,
     TOKEN_DOUBLE,
     TOKEN_STRING,
-    TOKEN_UNIT,          // Literal ()
+    TOKEN_UNIT,          // literal ()
     
-    // Operatory a specialne znaky
+    // operators and special characters
     TOKEN_ASSIGN,        // =
     TOKEN_PLUS,          // +
     TOKEN_MINUS,         // -
@@ -48,30 +47,28 @@ typedef enum {
     TOKEN_RPAREN,        // )
     TOKEN_COLON,         // :
     TOKEN_COMMA,         // ,
-    TOKEN_DOT,           // . (pre rozsirenia)
-    TOKEN_AT,            // @ (pre anotaciu @main)
+    TOKEN_DOT,           // . 
+    TOKEN_AT,            // @ 
     
-    // Podpora pre odsadenie (indentation)
-    TOKEN_INDENT,        // Zvysenie urovne odsadenia
-    TOKEN_DEDENT,        // Znizenie urovne odsadenia
+    // support for indentation
+    TOKEN_INDENT,        // increase indentation level
+    TOKEN_DEDENT,        // decrease indentation level
     
-    // Pripadne chybovy token z lexera
+    // error token
     TOKEN_ERROR
 } TokenType;
 
-// Struktura pre Token
+// structure for a token
 typedef struct {
     TokenType type;
     union {
         int integer_value;
         double double_value;
         char *string_value;
-        // Mozeme dat dalsie atributy ak bude treba
     } attribute;
-    int line; // Riadok kde sa token nachadza (zide sa pri chybovych hlaseniach)
+    int line; // Line where the token is located (used for error messages)
 } Token;
 
-// (tato funkcia bude tvoja Dominik a mohla by napriklad brat ukazovatel na subor alebo buffer)
 Token get_next_token();
 
 #endif 
