@@ -33,7 +33,7 @@ typedef struct{
 } Symbol;
 
 typedef struct {
-    HT_Table *scopes[MAX_SCOPES]; 
+    hashtable_t *scopes[MAX_SCOPES]; 
     int top;                      
 } Symtable;
 
