@@ -21,15 +21,15 @@ typedef enum{
 typedef struct{
     char *name;
     DataType d_type;
-} Parameter;
+} Param;
 
 typedef struct{
     char *name;
-    SymbolType s_type;
-    DataType d_type;
+    SymbolType sym_type;
+    DataType data_type;
     bool is_initialized;
-    int params_amount;
-    Parameter *params;
+    int param_amount;
+    Param *params;
 } Symbol;
 
 typedef struct {

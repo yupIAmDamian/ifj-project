@@ -18,14 +18,15 @@ void symtable_dispose(Symtable *st){
 }
 
 void scope_push(Symtable *st){
-    if (st->top>=MAX_SCOPES) return;
+    if (st->top>=MAX_SCOPES-1) return;
     st->top++;
     st->scopes[st->top] =ht_create(100);
 }
 
 void scope_pop(Symtable *st){
     if (st->top <0) return;
-    st->scopes[st->top]=ht_clear(&(st->scopes[st->top]));
+    ht_clear(&(st->scopes[st->top]));
+    st->top--;
 }
 
 bool symtable_insert_var(Symtable *st, const char *name, DataType type, bool is_init) {
@@ -67,7 +68,7 @@ Symbol* symtable_search(Symtable *st, const char *name) {
     return NULL;
 }
 
-bool symtable_insert_func(Symtable *st, const char *name, DataType return_type, Param *params, int param_count) {
+bool symtable_insert_func(Symtable *st, const char *name, DataType return_type, Param *params, int param_amount) {
     if (st->top < 0 || !name) return false;
     
     ht_item_t *existing = ht_search(st->scopes[0], name);
@@ -82,19 +83,19 @@ bool symtable_insert_func(Symtable *st, const char *name, DataType return_type, 
     sym->sym_type = SYMBOL_FUNC;
     sym->data_type = return_type;
     sym->is_initialized = true;
-    sym->param_count = param_count;
+    sym->param_amount = param_amount;
     
-    if (param_count > 0 && params != NULL) {
-        sym->params = malloc(sizeof(Param) * param_count);
+    if (param_amount > 0 && params != NULL) {
+        sym->params = malloc(sizeof(Param) * param_amount);
         if (!sym->params) {
             free(sym->name);
             free(sym);
             return false;
         }
         
-        for (int i = 0; i < param_count; i++) {
+        for (int i = 0; i < param_amount; i++) {
             sym->params[i].name = strdup(params[i].name);
-            sym->params[i].type = params[i].type;
+            sym->params[i].d_type = params[i].d_type;
         }
     } else {
         sym->params = NULL;

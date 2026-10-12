@@ -18,7 +18,7 @@ hashtable_t* ht_create(int size){
         return NULL;
     }
 
-    hashtable->items = calloc(sizeof(ht_item_t) * size);
+    hashtable->items = calloc(size, sizeof(ht_item_t));
     if(hashtable->items == NULL){
         free(hashtable);
         return NULL;
