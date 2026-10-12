@@ -18,17 +18,17 @@ typedef enum{
     SYMBOL_FUNC
 } SymbolType;
 
-typedef struct{
+typedef struct Param{
     char *name;
     DataType d_type;
 } Param;
 
-typedef struct{
+typedef struct Symbol{
     char *name;
-    SymbolType sym_type;
-    DataType data_type;
+    SymbolType s_type;
+    DataType d_type;
     bool is_initialized;
-    int param_amount;
+    int params_amount;
     Param *params;
 } Symbol;
 
