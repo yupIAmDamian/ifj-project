@@ -18,7 +18,7 @@ void symtable_dispose(Symtable *st){
 }
 
 void scope_push(Symtable *st){
-    if (st->top>=MAX_SCOPES) return;
+    if (st->top>=MAX_SCOPES-1) return;
     st->top++;
     st->scopes[st->top] =ht_create(100);
 }
