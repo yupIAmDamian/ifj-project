@@ -33,7 +33,7 @@ hashtable_t* ht_create(int size){
 //frees all allocated hastable memory
 void ht_clear(hashtable_t** hashtable){
     if(hashtable == NULL || *hashtable == NULL){
-        return NULL;
+        return;
     }
 
     if((*hashtable)->items != NULL){
@@ -46,5 +46,4 @@ void ht_clear(hashtable_t** hashtable){
     free((*hashtable)->items);
     free(*hashtable);
     *hashtable = NULL;
-    return NULL;
 }
