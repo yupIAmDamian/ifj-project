@@ -25,7 +25,8 @@ void scope_push(Symtable *st){
 
 void scope_pop(Symtable *st){
     if (st->top <0) return;
-    st->scopes[st->top]=ht_clear(&(st->scopes[st->top]));
+    ht_clear(&(st->scopes[st->top]));
+    st->top--;
 }
 
 bool symtable_insert_var(Symtable *st, const char *name, DataType type, bool is_init) {
@@ -35,10 +36,10 @@ bool symtable_insert_var(Symtable *st, const char *name, DataType type, bool is_
     Symbol *sym = malloc(sizeof(Symbol));
     if (!sym) return false;
     sym->name = strdup(name);
-    sym->sym_type = SYMBOL_VAR;
-    sym->data_type = type;
+    sym->s_type = SYMBOL_VAR;
+    sym->d_type = type;
     sym->is_initialized = is_init;
-    sym->param_amount=0;
+    sym->params_amount=0;
     sym->params=NULL;
 
     ht_item_t *inserted_item = ht_insert(st->scopes[st->top], name, (const void*) sym);
@@ -79,10 +80,10 @@ bool symtable_insert_func(Symtable *st, const char *name, DataType return_type, 
 
     
     sym->name = strdup(name);
-    sym->sym_type = SYMBOL_FUNC;
-    sym->data_type = return_type;
+    sym->s_type = SYMBOL_FUNC;
+    sym->d_type = return_type;
     sym->is_initialized = true;
-    sym->param_count = param_count;
+    sym->params_amount = param_count;
     
     if (param_count > 0 && params != NULL) {
         sym->params = malloc(sizeof(Param) * param_count);
@@ -94,7 +95,7 @@ bool symtable_insert_func(Symtable *st, const char *name, DataType return_type, 
         
         for (int i = 0; i < param_count; i++) {
             sym->params[i].name = strdup(params[i].name);
-            sym->params[i].type = params[i].type;
+            sym->params[i].d_type = params[i].d_type;
         }
     } else {
         sym->params = NULL;
