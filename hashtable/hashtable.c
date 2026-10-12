@@ -3,7 +3,7 @@
 #include "stdlib.h"
 #include "string.h"
 
-int hash_function(char* key, int size){
+int hash_function(const char* key, int size){
     unsigned long hash = 0;
     int key_length = strlen(key);
     for(int i = 0; i < key_length; i++){
@@ -13,7 +13,7 @@ int hash_function(char* key, int size){
     return (int)hash;
 }
 
-int probing(hashtable_t* hashtable, char* key, int attempt){
+int probing(hashtable_t* hashtable, const char* key, int attempt){
     int index = hash_function(key, hashtable->size);
     if(hashtable->items[index].state == EMPTY){
         return index;
@@ -27,7 +27,7 @@ int probing(hashtable_t* hashtable, char* key, int attempt){
     return -1;
 }
 
-ht_item_t* ht_search(hashtable_t* hashtable, char* key){
+ht_item_t* ht_search(hashtable_t* hashtable, const char* key){
     //checknut ci toto je dobre. je to trosku sus
     int index = probing(hashtable, key, 0);
     if(index == -1){
@@ -37,7 +37,7 @@ ht_item_t* ht_search(hashtable_t* hashtable, char* key){
     return &hashtable->items[index];
 }
 
-ht_item_t* ht_insert(hashtable_t* hashtable, char* key, void* data){
+ht_item_t* ht_insert(hashtable_t* hashtable, const char* key, const void* data){
     //checknut ci toto je dobre. je to trosku sus
     int index = probing(hashtable, key, 0);
     if(index == -1){
@@ -52,7 +52,7 @@ ht_item_t* ht_insert(hashtable_t* hashtable, char* key, void* data){
 }
 
 
-hashtable_t* ht_delete(hashtable_t* hashtable, char* key){
+hashtable_t* ht_delete(hashtable_t* hashtable, const char* key){
     //checknut ci toto je dobre. je to trosku sus
     int index = probing(hashtable, key, 0);
     if(index == -1){
@@ -64,7 +64,7 @@ hashtable_t* ht_delete(hashtable_t* hashtable, char* key){
 
     hashtable->count--;
     return hashtable;
-};
+}
 
 //creates a new hashtable
 hashtable_t* ht_create(int size){
