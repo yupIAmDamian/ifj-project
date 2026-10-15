@@ -1,7 +1,8 @@
 #include <stdlib.h>
-#include <string.h>
 #include "symtable.h"
+#include "../helper_func.h"
 
+//TODO function for checking if name is assigned or no
 Symtable* symtable_init(void){
     Symtable *st = malloc(sizeof(Symtable));
     if (!st) return NULL;
@@ -29,24 +30,28 @@ void scope_pop(Symtable *st){
     st->top--;
 }
 
-bool symtable_insert_var(Symtable *st, const char *name, DataType type, bool is_init) {
+bool symtable_insert_var(Symtable *st, char *name, DataType type, bool is_init) {
     if (st->top < 0 || !name) return false;
     //need a func to check if variable is not redefined
 
     Symbol *sym = malloc(sizeof(Symbol));
     if (!sym) return false;
-    sym->name = strdup(name);
+    sym->name = str_duplicate(name);
+    if (!sym->name) {
+        free(sym);
+        return false;
+    }
     sym->s_type = SYMBOL_VAR;
     sym->d_type = type;
     sym->is_initialized = is_init;
     sym->params_amount=0;
     sym->params=NULL;
 
-    ht_item_t *inserted_item = ht_insert(st->scopes[st->top], name, (const void*) sym);
+    ht_item_t *inserted_item = ht_insert(st->scopes[st->top], name, (void*) sym);
     return (inserted_item != NULL);
 }
 
-Symbol* symtable_search_current_scope(Symtable *st, const char *name) {
+Symbol* symtable_search_current_scope(Symtable *st, char *name) {
     if (st->top < 0 || !name) return NULL;
     ht_item_t *item = ht_search(st->scopes[st->top], name);
     
@@ -57,7 +62,7 @@ Symbol* symtable_search_current_scope(Symtable *st, const char *name) {
     return NULL;
 }
 
-Symbol* symtable_search(Symtable *st, const char *name) {
+Symbol* symtable_search(Symtable *st, char *name) {
     if (!name) return NULL;
     for (int i = st->top; i >= 0; i--) {
         ht_item_t *item = ht_search(st->scopes[i], name);
@@ -68,7 +73,7 @@ Symbol* symtable_search(Symtable *st, const char *name) {
     return NULL;
 }
 
-bool symtable_insert_func(Symtable *st, const char *name, DataType return_type, Param *params, int param_count) {
+bool symtable_insert_func(Symtable *st, char *name, DataType return_type, Param *params, int param_count) {
     if (st->top < 0 || !name) return false;
     
     ht_item_t *existing = ht_search(st->scopes[0], name);
@@ -78,8 +83,11 @@ bool symtable_insert_func(Symtable *st, const char *name, DataType return_type, 
     Symbol *sym = malloc(sizeof(Symbol));
     if (!sym) return false;
 
-    
-    sym->name = strdup(name);
+    sym->name = str_duplicate(name);
+    if (!sym->name) {
+        free(sym);
+        return false;
+    }
     sym->s_type = SYMBOL_FUNC;
     sym->d_type = return_type;
     sym->is_initialized = true;
@@ -94,13 +102,17 @@ bool symtable_insert_func(Symtable *st, const char *name, DataType return_type, 
         }
         
         for (int i = 0; i < param_count; i++) {
-            sym->params[i].name = strdup(params[i].name);
+            sym->params[i].name = str_duplicate(params[i].name);
+            if (!sym->params[i].name) {
+                free(sym);
+                return false;
+            }
             sym->params[i].d_type = params[i].d_type;
         }
     } else {
         sym->params = NULL;
     }
     
-    ht_item_t *inserted_item = ht_insert(st->scopes[0], name, (const void*) sym);
+    ht_item_t *inserted_item = ht_insert(st->scopes[0], name, (void*) sym);
     return (inserted_item != NULL);
 }
