@@ -1,10 +1,13 @@
+#ifndef SYMTABLE_H
+#define SYMTABLE_H
+
 #include <stdbool.h>
 #include <stddef.h>
 #include "hashtable.h"
 
 #define MAX_SCOPES 100
 
-typedef enum{
+typedef enum {
     TYPE_UNKNOWN,
     TYPE_INT,
     TYPE_FLOAT,
@@ -13,17 +16,17 @@ typedef enum{
     TYPE_BOOL
 } DataType;
 
-typedef enum{
+typedef enum {
     SYMBOL_VAR,
     SYMBOL_FUNC
 } SymbolType;
 
-typedef struct Param{
+typedef struct Param {
     char *name;
     DataType d_type;
 } Param;
 
-typedef struct Symbol{
+typedef struct Symbol {
     char *name;
     SymbolType s_type;
     DataType d_type;
@@ -37,6 +40,8 @@ typedef struct {
     int top;                      
 } Symtable;
 
+Symbol* symbol_create(const char *name, SymbolType s_type, DataType d_type, bool is_init);
+void symbol_free(Symbol *sym);
 
 Symtable* symtable_init(void);
 void symtable_dispose(Symtable *st);
@@ -49,3 +54,5 @@ bool symtable_insert_func(Symtable *st, const char *name, DataType return_type, 
 
 Symbol* symtable_search(Symtable *st, const char *name);
 Symbol* symtable_search_current_scope(Symtable *st, const char *name);
+
+#endif
