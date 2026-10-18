@@ -49,10 +49,10 @@ void symtable_dispose(Symtable *st);
 void scope_push(Symtable *st);
 void scope_pop(Symtable *st);
 
-bool symtable_insert_var(Symtable *st, const char *name, DataType type, bool is_init);
-bool symtable_insert_func(Symtable *st, const char *name, DataType return_type, Param *params, int param_count);
+bool symtable_insert_var(Symtable *st, char *name, DataType type, bool is_init);
+bool symtable_insert_func(Symtable *st, char *name, DataType return_type, Param *params, int param_count);
 
-Symbol* symtable_search(Symtable *st, const char *name);
-Symbol* symtable_search_current_scope(Symtable *st, const char *name);
+Symbol* symtable_search(Symtable *st, char *name);
+Symbol* symtable_search_current_scope(Symtable *st, char *name);
 
 #endif

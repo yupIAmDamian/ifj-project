@@ -1,16 +1,10 @@
+#ifndef TESTS_H
+#define TESTS_H
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
 
-enum TestType {
-    TEST_TYPE_INT,
-    TEST_TYPE_FLOAT,
-    TEST_TYPE_STRING
-};
+int main();
 
-
-bool cmp_results(void *expected, void *actual, TestType type){};
-
-void loop_tests(){};
-
-int main(){};
+#endif
