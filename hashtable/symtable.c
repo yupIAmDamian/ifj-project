@@ -68,15 +68,13 @@ void scope_pop(Symtable *st) {
     if (st->top < 0) return;
 
     hashtable_t *table = st->scopes[st->top];
-    if (table != NULL) {
-        if (table->items != NULL) {
+    if (table != NULL && table->items != NULL) {
             for (int i = 0; i < table->size; i++) {
                 if (table->items[i].state == OCCUPIED && table->items[i].data != NULL) {
                     symbol_free((Symbol*) table->items[i].data);
                     table->items[i].data = NULL; //this fixes double free I guess
                 }
             }
-        }
         ht_clear(&(st->scopes[st->top]));
     }
     st->top--;
