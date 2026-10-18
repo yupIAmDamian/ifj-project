@@ -86,12 +86,6 @@ bool symtable_insert_var(Symtable *st, char *name, DataType type, bool is_init) 
 
     Symbol *sym = symbol_create(name, SYMBOL_VAR, type, is_init);
     if (!sym) return false;
-    sym->name = strdup(name);
-    sym->s_type = SYMBOL_VAR;
-    sym->d_type = type;
-    sym->is_initialized = is_init;
-    sym->params_amount=0;
-    sym->params=NULL;
 
     ht_item_t *inserted_item = ht_insert(st->scopes[st->top], name, (void*) sym);
     if (!inserted_item) {
