@@ -1,7 +1,7 @@
 #ifndef SEMANTIC_H
 #define SEMANTIC_H
 
-#include "ast.h" //this should be syntax tree from Miško, but i dont know where to get it
+#include "ast.h" //this should be syntax tree from Miško, but i dont know where to find it
 #include "symtable.h"
 
 //main and only function i believe
