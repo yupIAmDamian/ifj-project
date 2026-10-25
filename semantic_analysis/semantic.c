@@ -52,3 +52,48 @@ static void check_statement(ASTNode *node, Symtable *st) {
         check_statement(node->next, st);
     }
 }
+
+static DataType check_expression(ASTNode *node, Symtable *st) {
+    if (node == NULL) return TYPE_VOID;
+
+    switch (node->type) {
+        case NODE_INT_LITERAL:
+            node->inferred_type = TYPE_INT;
+            return TYPE_INT;
+
+        case NODE_STRING_LITERAL:
+            node->inferred_type = TYPE_STRING;
+            return TYPE_STRING;
+
+        case NODE_VAR: {
+            Symbol *sym = symtable_search(st, node->val.string_val);
+            if (sym == NULL) {
+                fprintf(stderr, "Semantic Error: Undefined variable '%s'\n", node->val.string_val);
+                exit(3);
+            }
+            node->inferred_type = sym->data_type;
+            return sym->data_type;
+        }
+
+        case NODE_ADD: {
+            DataType left_type = check_expression(node->left, st);
+            DataType right_type = check_expression(node->right, st);
+
+            if (left_type == TYPE_INT && right_type == TYPE_INT) {
+                node->inferred_type = TYPE_INT;
+                return TYPE_INT;
+            } 
+            else if (left_type == TYPE_STRING && right_type == TYPE_STRING) {
+                node->inferred_type = TYPE_STRING;
+                return TYPE_STRING;
+            } 
+            else {
+                fprintf(stderr, "Semantic Error: Type incompatibility in '+' operation\n");
+                exit(4);
+            }
+        }
+
+        default:
+            return TYPE_UNKNOWN;
+    }
+}
