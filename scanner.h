@@ -69,6 +69,24 @@ typedef struct {
     int line; // Line where the token is located (used for error messages)
 } Token;
 
+// States of the scanner FSM
+typedef enum {
+    STATE_INDENT_DEDENT,
+    STATE_START,
+    STATE_ID_OR_KEYWORD,
+    STATE_INTEGER,
+    STATE_DOUBLE,
+    STATE_STRING,
+    STATE_LESS_THAN,
+    STATE_GREATER_THAN,
+    STATE_EQUALS,
+    STATE_EXC_MARK,
+    STATE_SLASH,
+    STATE_COMMENT,
+} State;
+
 Token get_next_token();
+
+void scanner_init();
 
 #endif 
