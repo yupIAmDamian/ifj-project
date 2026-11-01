@@ -1,14 +1,19 @@
-#include "parser.h"
 #include <stdio.h>
+#include <string.h>
+#include "parser.h"
+#include "expression.h"
+#include "ast.h"
 
 Token current_token;
+ASTNode *global_ast_root = NULL;
 
 int parse() {
     current_token = get_next_token();
     if (current_token.type == TOKEN_ERROR) {
         return 1; // Lexical error
     }
-    if (parse_program() == false) {
+    global_ast_root = parse_program();
+    if (global_ast_root == NULL) {
         if (current_token.type == TOKEN_ERROR) {
             return 1; // Lexical error
         }
@@ -17,14 +22,18 @@ int parse() {
     return 0; // Successful parsing
 }
 
-bool parse_program() { 
-    if (parse_prolog() && parse_functions() && current_token.type == TOKEN_EOF) {
-        return true;
+ASTNode* parse_program() { 
+    if (!parse_prolog()) {
+        return NULL;
     }
-        else {
-            return false;
-        }
+
+    ASTNode *functions_node = parse_functions();
+    if (current_token.type == TOKEN_EOF) {
+        Token root_token = current_token;
+        return create_ast_node(AST_NODE_PROGRAM, functions_node, NULL, NULL, root_token);
     }
+    return NULL;
+}
 
 bool parse_prolog() {
     if (current_token.type == TOKEN_IMPORT) {
@@ -46,45 +55,59 @@ bool parse_prolog() {
     return false;
 }
 
-bool parse_functions() {
+ASTNode* parse_functions() {
+    ASTNode *first_function = NULL;
+    ASTNode *last_function = NULL;
     while (current_token.type == TOKEN_AT || current_token.type == TOKEN_DEF) {
-        if (parse_function() == false) {
-            return false;
+
+        ASTNode *function_node = parse_function();
+        if (function_node == NULL) {
+            return NULL;
+        }
+        if (first_function == NULL) {
+            first_function = function_node;
+            last_function = function_node;
+        } else {
+            last_function->next = function_node;
+            last_function = function_node;
         }
     }
-    return true;
+    return first_function;
 }
 
-bool parse_function() {
+ASTNode* parse_function() {
     if (parse_main_annotation() == false) {
-        return false;    
+        return NULL;    
     }
     if (current_token.type == TOKEN_DEF) {
         current_token = get_next_token();
         if (current_token.type == TOKEN_IDENTIFIER) {
+            Token function_token = current_token;
             current_token = get_next_token();
             if (current_token.type == TOKEN_LPAREN) {
                 current_token = get_next_token();
                 if (parse_params_opt() == false) {
-                    return false;
+                    return NULL;
                 }
                 if (current_token.type == TOKEN_RPAREN) {
                     current_token = get_next_token();
                     if (parse_return_type_opt() == false) {
-                        return false;
+                        return NULL;
                     } 
                     if (current_token.type == TOKEN_ASSIGN) {
                         current_token = get_next_token();
-                        if (parse_function_body() == false) {
-                            return false;
+
+                        ASTNode *function_body_node = parse_function_body();
+                        if (function_body_node == NULL) {
+                            return NULL;
                         }
-                        return true;
+                        return create_ast_node(AST_NODE_FUNCTION, function_body_node, NULL, NULL, function_token);
                     }
                 }
             }
         }
     }
-    return false;
+    return NULL;
 }
 
 bool parse_main_annotation() {
@@ -156,60 +179,81 @@ bool parse_type() {
     return false;
 }
 
-bool parse_function_body() {
+ASTNode* parse_function_body() {
     if (current_token.type == TOKEN_EOL) {
         current_token = get_next_token();
         if (current_token.type == TOKEN_INDENT) {
             current_token = get_next_token();
-            if (parse_statements() == false) {
-                return false;
+
+            ASTNode *statements_node = parse_statements();
+            if (statements_node == NULL) {
+                return NULL;
             }
             if (current_token.type == TOKEN_DEDENT) {
                 current_token = get_next_token();
-                return true;
+                return statements_node;
             }
         }
-        return false;
+        return NULL;
     }
     else {
-        if (parse_statement() == false) {
-        return false;
+        ASTNode *stmt_node = parse_statement();
+        if (stmt_node == NULL) {
+        return NULL;
         }
         if (current_token.type == TOKEN_EOL) {
             current_token = get_next_token();
-            return true;
+            return stmt_node;
         }
-        return false;
+        return NULL;
     }
 }
 
-bool parse_statements() {
+ASTNode* parse_statements() {
+    ASTNode *first_statement_node = NULL;
+    ASTNode *last_statement_node = NULL;
+
     while (current_token.type != TOKEN_DEDENT && current_token.type != TOKEN_EOF) {
-        if (parse_statement() == false) {
-            return false;
+        ASTNode *stmt_node = parse_statement();
+        if (stmt_node == NULL) {
+            return NULL;
+        }
+        if (first_statement_node == NULL) {
+            first_statement_node = stmt_node;
+            last_statement_node = stmt_node;
+        } else {
+            last_statement_node->next = stmt_node;
+            last_statement_node = stmt_node;
+
+            while (last_statement_node->next != NULL) {
+                last_statement_node = last_statement_node->next;
+            }
         }
         if (current_token.type == TOKEN_EOL) {
             current_token = get_next_token();
         }
         else {
-            return false;
+            return NULL;
         }
     }
-    return true;
+    return first_statement_node;
 }
 
-bool parse_statement() {
+ASTNode* parse_statement() {
     if (current_token.type == TOKEN_RETURN) {
+        Token return_token = current_token;
         current_token = get_next_token();
-        if (parse_expr_or_call_opt() == false) {
-            return false;
-        }
-        return true;
+
+        ASTNode *expr_node = parse_expr_or_call_opt();
+        return create_ast_node(AST_NODE_RETURN, expr_node, NULL, NULL, return_token);
     }
     else if (current_token.type == TOKEN_WHILE) {
+        Token while_token = current_token;
         current_token = get_next_token();
-        if (parse_expression() == false) {
-            return false;
+
+        ASTNode *cond_node = parse_expression();
+        if (cond_node == NULL) {
+            return NULL;
         }
         if (current_token.type == TOKEN_DO) {
             current_token = get_next_token();
@@ -217,22 +261,27 @@ bool parse_statement() {
                 current_token = get_next_token();
                 if (current_token.type == TOKEN_INDENT) {
                     current_token = get_next_token();
-                    if (parse_statements() == false) {
-                        return false;
+
+                    ASTNode *body_node = parse_statements();
+                    if (body_node == NULL) {
+                        return NULL;
                     }
                     if (current_token.type == TOKEN_DEDENT) {
                         current_token = get_next_token();
-                        return true;
+                        return create_ast_node(AST_NODE_WHILE, cond_node, body_node, NULL, while_token);
                     }
                 }
             }
         }
-        return false;
+        return NULL;
     }
     else if (current_token.type == TOKEN_IF) {
+        Token if_token = current_token;
         current_token = get_next_token();
-        if (parse_expression() == false) {
-            return false;
+
+        ASTNode *cond_node = parse_expression();
+        if (cond_node == NULL) {
+            return NULL;
         }
         if (current_token.type == TOKEN_THEN) {
             current_token = get_next_token();
@@ -240,8 +289,10 @@ bool parse_statement() {
                 current_token = get_next_token();
                 if (current_token.type == TOKEN_INDENT) {
                     current_token = get_next_token();
-                    if (parse_statements() == false) {
-                        return false;
+
+                    ASTNode *then_node = parse_statements();
+                    if (then_node == NULL) {
+                        return NULL;
                     }
                     if (current_token.type == TOKEN_DEDENT) {
                         current_token = get_next_token();
@@ -251,12 +302,14 @@ bool parse_statement() {
                                 current_token = get_next_token();
                                 if (current_token.type == TOKEN_INDENT) {
                                     current_token = get_next_token();
-                                    if (parse_statements() == false) {
-                                        return false;
+
+                                    ASTNode *else_node = parse_statements();
+                                    if (else_node == NULL) {
+                                        return NULL;
                                     }
                                     if (current_token.type == TOKEN_DEDENT) {
                                         current_token = get_next_token();
-                                        return true;
+                                        return create_ast_node(AST_NODE_IF, cond_node, then_node, else_node, if_token);
                                     }
                                 }
                             }
@@ -265,31 +318,31 @@ bool parse_statement() {
                 }
             }
         }
-        return false;
+        return NULL;
     }
     else if (current_token.type == TOKEN_VAL || current_token.type == TOKEN_VAR) {
         current_token = get_next_token();
         if (current_token.type == TOKEN_IDENTIFIER) {
+            Token id_token = current_token;
             current_token = get_next_token();
             if (parse_type_opt() == false) {
-                return false;
+                return NULL;
             }
             if (current_token.type == TOKEN_ASSIGN) {
                 current_token = get_next_token();
-                if (parse_expr_or_call() == false) {
-                    return false;
+
+                ASTNode *expr_node = parse_expr_or_call();
+                if (expr_node == NULL) {
+                    return NULL;
                 }
-                return true;
+                return create_ast_node(AST_NODE_VAR_DECL, NULL, expr_node, NULL, id_token);
             }
-            return false;
+            return NULL;
         }
-        return false;
+        return NULL;
     }
     else {
-        if (parse_expr_or_call() == false) {
-            return false;
-        }
-        return true;
+        return parse_expr_or_call();
     }
 }
 
@@ -304,13 +357,13 @@ bool parse_type_opt() {
     return true;
 }
 
-bool parse_expr_or_call() {
+ASTNode* parse_expr_or_call() {
     return parse_expression();
 }
 
-bool parse_expr_or_call_opt() {
+ASTNode* parse_expr_or_call_opt() {
     if (current_token.type == TOKEN_EOL || current_token.type == TOKEN_DEDENT || current_token.type == TOKEN_EOF) {
-        return true;
+        return NULL;
     }
     return parse_expr_or_call();
 }

@@ -1,8 +1,8 @@
 #ifndef EXPRESSION_H
 #define EXPRESSION_H
-
 #include <stdbool.h>
 #include "scanner.h"
+#include "ast.h"
 
 typedef enum {
     PREC_MUL_DIV, // *, /
@@ -31,7 +31,7 @@ typedef struct {
     StackItemType type;
     PrecTableIndex prec_index;
     Token token; 
-    void *ast_node;
+    ASTNode *ast_node;
     StackItem *next;
 } StackItem;
 
