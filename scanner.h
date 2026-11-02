@@ -66,10 +66,10 @@ typedef struct {
         double double_value;
         char *string_value;
     } attribute;
-    int line; // Line where the token is located (used for error messages)
+    int line; // line where the token is located (used for error messages)
 } Token;
 
-// States of the scanner FSM
+// states of the scanner FSM
 typedef enum {
     STATE_INDENT_DEDENT,
     STATE_START,
@@ -88,5 +88,12 @@ typedef enum {
 Token get_next_token();
 
 void scanner_init();
+
+// structure for dynamic string buffer
+typedef struct {
+    char *str;
+    int length;
+    int capacity;
+} StringKeywordID;
 
 #endif 
