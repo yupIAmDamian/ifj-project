@@ -3,7 +3,7 @@
 #include "semantic.h"
 
 static void check_statement(ASTNode *node, Symtable *st);
-//static DataType check_expression(ASTNode *node, Symtable *st)TODO
+static DataType check_expression(ASTNode *node, Symtable *st)TODO
 
 bool check_semantics(ASTNode *root, Symtable *st) {
     if (root == NULL) return true;
@@ -44,6 +44,63 @@ static void check_statement(ASTNode *node, Symtable *st) {
                 scope_push(st);
                 check_statement(node->extra, st);
                 scope_pop(st);
+            }
+            break;
+        }
+
+        case NODE_ASSIGN: {
+            Symbol *sym = symtable_search(st, node->left->val.string_val);
+            if (sym == NULL) {
+                fprintf(stderr, "Semantic Error: Assignment to undefined variable '%s'\n", node->left->val.string_val);
+                exit(3);
+            }
+
+            DataType expr_type = check_expression(node->right, st);
+            if (sym->data_type != expr_type) {
+                if (sym->data_type == TYPE_FLOAT && expr_type == TYPE_INT) {
+                    ASTNode *conv = malloc(sizeof(ASTNode));
+                    conv->type = NODE_INT2FLOAT;
+                    conv->left = node->right;
+                    conv->inferred_type = TYPE_FLOAT;
+                    node->right = conv;
+                } else {
+                    fprintf(stderr, "Semantic Error: Type mismatch in assignment to '%s'\n", sym->name);
+                    exit(4);
+                }
+            }
+            break;
+        }
+
+        case NODE_WHILE: {
+            DataType cond_type = check_expression(node->left, st);
+            if (cond_type != TYPE_BOOL) {
+                fprintf(stderr, "Semantic Error: Condition in 'while' must be Boolean\n");
+                exit(4); //type fault
+            }
+
+            scope_push(st);
+            check_statement(node->right, st);
+            scope_pop(st);
+            break;
+        }
+
+        case NODE_RETURN: {
+            DataType return_type = TYPE_VOID;
+            if (node->left != NULL) {
+                return_type = check_expression(node->left, st);
+            }
+
+            if (current_func_ret_type != return_type) {
+                if (current_func_ret_type == TYPE_FLOAT && return_type == TYPE_INT) {
+                    ASTNode *conv = malloc(sizeof(ASTNode));
+                    conv->type = NODE_INT2FLOAT;
+                    conv->left = node->left;
+                    conv->inferred_type = TYPE_FLOAT;
+                    node->left = conv;
+                } else {
+                    fprintf(stderr, "Semantic Error: Return type mismatch\n");
+                    exit(4); // type incompatibility
+                }
             }
             break;
         }
