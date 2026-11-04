@@ -66,6 +66,21 @@ void buffer_free(StringKeywordID *buffer) {
     }
 }
 
+// helper function for checking buffer initialization errors
+Token error_buffer_init() {
+    Token token;
+    token.type = TOKEN_ERROR;
+    return token;
+}
+
+// helper function for checking errors when adding a character to the buffer
+Token error_buffer_add_char(StringKeywordID *buffer) {
+    buffer_free(buffer);
+    Token token;
+    token.type = TOKEN_ERROR;
+    return token;
+}
+
 // function to get the next token from the input
 Token get_next_token()
 {
@@ -84,7 +99,7 @@ Token get_next_token()
     }
 
     int space_count = 0;
-    StringKeywordID buffer; // buffer for storing keywords, IDs, strings, ...
+    StringKeywordID buffer; // buffer for storing keywords, IDs, strings, digits, ...
     buffer.str = NULL;
 
     while(1) {
@@ -162,6 +177,14 @@ Token get_next_token()
                     }
                     state = STATE_ID_OR_KEYWORD;
                     break;
+                } else if (isdigit(character)) { // numbers
+                    if (!buffer_init(&buffer)) {
+                        token.type = TOKEN_ERROR;
+                        return token;
+                    }
+                    buffer_add_char(&buffer, character);
+                    state = STATE_INTEGER;
+                    break;
                 } else if (character == '"') {
                     state = STATE_STRING;
                 } else if (character == '+') {
@@ -196,8 +219,7 @@ Token get_next_token()
                     token.type = TOKEN_COMMA;
                     return token;
                 } else if (character == '.') {
-                    token.type = TOKEN_DOT;
-                    return token;
+                    state = STATE_DOT;
                 } else if (character == '@') {
                     token.type = TOKEN_AT;
                     return token;
@@ -211,9 +233,7 @@ Token get_next_token()
                 if (isalnum(character) || character == '_')
                 {
                     if (!buffer_add_char(&buffer, character)) {
-                        buffer_free(&buffer);
-                        token.type = TOKEN_ERROR;
-                        return token;
+                        return error_buffer_add_char(&buffer);
                     }
                 } else {
                     ungetc(character, stdin); // returns the character back into stdin
@@ -268,11 +288,154 @@ Token get_next_token()
                 }
             
             case STATE_INTEGER:
-                continue;
-            
-            case STATE_DOUBLE:
-                continue;
-            
+                if (isdigit(character)) {
+                    if(!buffer_add_char(&buffer, character)) {
+                        return error_buffer_add_char(&buffer);
+                    }
+                } else if (character == '_') { // underscores in int/double are ignored
+                    break;
+                } else if (character == '.') {
+                    if (!buffer_add_char(&buffer, character)) {
+                        return error_buffer_add_char(&buffer);
+                    }
+                    state = STATE_DOUBLE_DOT;
+                } else if (character == 'e' || character == 'E') {
+                    if (!buffer_add_char(&buffer, character)) {
+                        return error_buffer_add_char(&buffer);
+                    }
+                    state = STATE_DOUBLE_EXP;
+                } else if (character == 'd' || character == 'D') {
+                    state = STATE_DOUBLE_SUFFIX;
+                } else if (isalpha(character)) { // no other alphabetical characters are valid here
+                    buffer_free(&buffer);
+                    token.type = TOKEN_ERROR;
+                    return token;
+                } else {
+                    ungetc(character, stdin);
+                    token.type = TOKEN_INTEGER;
+                    // conversion of the string in buffer to an int value
+                    token.attribute.integer_value =(int)strtol(buffer.str, NULL, 10);
+                    buffer_free(&buffer);
+                    return token;
+                }
+                break;
+
+            case STATE_DOT: // differentiates between a regular dot and a double starting with a dot
+                if (isdigit(character)) {
+                    if (!buffer_init(&buffer)) {
+                        return error_buffer_init();
+                    }
+                    if (!buffer_add_char(&buffer, '.') || !buffer_add_char(&buffer, character)) {
+                        error_buffer_add_char(&buffer);
+                    }
+                    state = STATE_DOUBLE_FRACTION;
+                    break;
+                } else {
+                    ungetc(character, stdin);
+                    token.type = TOKEN_DOT;
+                    return token;
+                }
+
+            case STATE_DOUBLE_DOT:
+                if (isdigit(character)) { // dot must be followed by a digit
+                    if (!buffer_add_char(&buffer, character)) {
+                        return error_buffer_add_char(&buffer);
+                    }
+                    state = STATE_DOUBLE_FRACTION;
+                    break;
+                } else {
+                    buffer_free(&buffer);
+                    token.type = TOKEN_ERROR; 
+                    return token;
+                }
+
+            case STATE_DOUBLE_FRACTION:
+                if (isdigit(character)) {
+                    if (!buffer_add_char(&buffer, character)) {
+                        return error_buffer_add_char(&buffer);
+                    }
+                } else if (character == '_') { // underscores in int/double are ignored
+                    break;
+                } else if (character == 'e' || character == 'E') {
+                    if (!buffer_add_char(&buffer, character)) {
+                        return error_buffer_add_char(&buffer);
+                    }
+                    state = STATE_DOUBLE_EXP;
+                } else if (character == 'd' || character == 'D') {
+                    state = STATE_DOUBLE_SUFFIX;
+                } else if (isalpha(character)) { // no other alphabetical characters are valid here
+                    buffer_free(&buffer);
+                    token.type = TOKEN_ERROR;
+                    return token;
+                } else {
+                    ungetc(character, stdin);
+                    token.type = TOKEN_DOUBLE;
+                    token.attribute.double_value = strtod(buffer.str, NULL);
+                    buffer_free(&buffer);
+                    return token;
+                }
+                break;
+
+            case STATE_DOUBLE_EXP: // at least one digit must follow the e/E character
+                if (character == '+' || character == '-') {
+                    if (!buffer_add_char(&buffer, character)) {
+                        return error_buffer_add_char(&buffer);
+                    }
+                    state = STATE_DOUBLE_EXP_SIGN;
+                } else if (isdigit(character)) {
+                    if (!buffer_add_char(&buffer, character)) {
+                        return error_buffer_add_char(&buffer);
+                    }
+                    state = STATE_DOUBLE_EXP_DIGITS;
+                } else {
+                    buffer_free(&buffer);
+                    token.type = TOKEN_ERROR;
+                    return token;
+                }
+                break;
+
+            case STATE_DOUBLE_EXP_SIGN: // at least one digit must follow the +/- sign in the exponent
+                if (isdigit(character)) {
+                    if (!buffer_add_char(&buffer, character)) {
+                        return error_buffer_add_char(&buffer);
+                    }
+                    state = STATE_DOUBLE_EXP_DIGITS;
+                    break;
+                } else {
+                    buffer_free(&buffer);
+                    token.type = TOKEN_ERROR;
+                    return token;
+                }
+
+            case STATE_DOUBLE_EXP_DIGITS:
+                if (isdigit(character)) {
+                    if (!buffer_add_char(&buffer, character)) {
+                        return error_buffer_add_char(&buffer);
+                    }
+                } else if (character == '_') {
+                    break;
+                } else if (character == 'd' || character == 'D') {
+                    state = STATE_DOUBLE_SUFFIX;
+                } else if (isalpha(character)) { // no other suffixes supported
+                    buffer_free(&buffer);
+                    token.type = TOKEN_ERROR;
+                    return token;
+                } else {
+                    ungetc(character, stdin);
+                    token.type = TOKEN_DOUBLE;
+                    token.attribute.double_value = strtod(buffer.str, NULL);
+                    buffer_free(&buffer);
+                    return token;
+                }
+                break;
+
+            case STATE_DOUBLE_SUFFIX:
+                ungetc(character, stdin);
+                token.type = TOKEN_DOUBLE;
+                token.attribute.double_value = strtod(buffer.str, NULL);
+                buffer_free(&buffer);
+                return token;
+
             case STATE_STRING:
                 continue;
             
@@ -280,7 +443,7 @@ Token get_next_token()
                 if (character == '=') {
                     token.type = TOKEN_LESS_EQ;
                 } else {
-                    ungetc(character, stdin); // returns the character back into stdin
+                    ungetc(character, stdin);
                     token.type = TOKEN_LESS;
                 }
                 return token;
@@ -289,7 +452,7 @@ Token get_next_token()
                 if (character == '=') {
                     token.type = TOKEN_GREATER_EQ;
                 } else {
-                    ungetc(character, stdin); // returns the character back into stdin
+                    ungetc(character, stdin);
                     token.type = TOKEN_GREATER;
                 }
                 return token;
@@ -298,7 +461,7 @@ Token get_next_token()
                 if (character == '=') {
                     token.type = TOKEN_EQ;
                 } else {
-                    ungetc(character, stdin); // returns the character back into stdin
+                    ungetc(character, stdin);
                     token.type = TOKEN_ASSIGN;
                 }
                 return token;
@@ -307,7 +470,7 @@ Token get_next_token()
                 if (character == '=') {
                     token.type = TOKEN_NOT_EQ;
                 } else {
-                    ungetc(character, stdin); // returns the character back into stdin
+                    ungetc(character, stdin);
                     token.type = TOKEN_ERROR;
                     return token;
                 }
@@ -317,7 +480,7 @@ Token get_next_token()
                 if (character == '/') {
                     state = STATE_COMMENT;
                 } else {
-                    ungetc(character, stdin); // returns the character back into stdin
+                    ungetc(character, stdin);
                     token.type = TOKEN_DIV;
                     return token;
                 }
@@ -329,7 +492,7 @@ Token get_next_token()
                     state = STATE_INDENT_DEDENT;
                     break;
                 } else {
-                    ungetc(character, stdin); // returns the character back into stdin
+                    ungetc(character, stdin);
                     state = STATE_START;
                     break;
                 }
