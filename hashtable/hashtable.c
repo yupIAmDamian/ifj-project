@@ -3,6 +3,7 @@
 #include "stdlib.h"
 #include "../helper_func.h"
 
+//TODO: apply DRY principle 
 
 int hash_function(char* key, int size){
     unsigned long hash = 0;
@@ -29,7 +30,7 @@ int probing(hashtable_t* hashtable, char* key, int attempt){
 }
 
 ht_item_t* ht_search(hashtable_t* hashtable, char* key){
-    //checknut ci toto je dobre. je to trosku sus
+    //check this is good. its a bit sus
     int index = probing(hashtable, key, 0);
     if(index == -1){
         return NULL;
