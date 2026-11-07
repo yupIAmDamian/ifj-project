@@ -164,8 +164,9 @@ Token get_next_token()
                     current_line++;
                     line_start = true;
                     return token;
-                } else if (isspace(character)) continue; // skip empty space
-                else if (isalpha(character) || character == '_') { // IDs / data types / keywords (can't begin with a number)
+                } else if (isspace(character)) { // skip empty space
+                    break;
+                } else if (isalpha(character) || character == '_') { // IDs / data types / keywords (can't begin with a number)
                     if (!buffer_init(&buffer)) { // buffer needs to be initialized
                         token.type = TOKEN_ERROR;
                         return token;
@@ -286,7 +287,7 @@ Token get_next_token()
                     }
                     return token;
                 }
-            
+
             case STATE_INTEGER:
                 if (isdigit(character)) {
                     if(!buffer_add_char(&buffer, character)) {
@@ -329,12 +330,12 @@ Token get_next_token()
                         error_buffer_add_char(&buffer);
                     }
                     state = STATE_DOUBLE_FRACTION;
-                    break;
                 } else {
                     ungetc(character, stdin);
                     token.type = TOKEN_DOT;
                     return token;
                 }
+                break;
 
             case STATE_DOUBLE_DOT:
                 if (isdigit(character)) { // dot must be followed by a digit
@@ -342,12 +343,12 @@ Token get_next_token()
                         return error_buffer_add_char(&buffer);
                     }
                     state = STATE_DOUBLE_FRACTION;
-                    break;
                 } else {
                     buffer_free(&buffer);
                     token.type = TOKEN_ERROR; 
                     return token;
                 }
+                break;
 
             case STATE_DOUBLE_FRACTION:
                 if (isdigit(character)) {
@@ -400,12 +401,12 @@ Token get_next_token()
                         return error_buffer_add_char(&buffer);
                     }
                     state = STATE_DOUBLE_EXP_DIGITS;
-                    break;
                 } else {
                     buffer_free(&buffer);
                     token.type = TOKEN_ERROR;
                     return token;
                 }
+                break;
 
             case STATE_DOUBLE_EXP_DIGITS:
                 if (isdigit(character)) {
@@ -436,9 +437,119 @@ Token get_next_token()
                 buffer_free(&buffer);
                 return token;
 
-            case STATE_STRING:
-                continue;
-            
+            case STATE_STRING: // one quot. mark detected
+                if (!buffer_init(&buffer)) {
+                    return error_buffer_init();
+                }
+                if (character == '"') {
+                    state = STATE_STRING_QUOTE2;
+                } else {
+                    ungetc(character, stdin);
+                    state = STATE_STRING_SINGLE;
+                }
+                break;
+
+            case STATE_STRING_QUOTE2: // two quot. marks detected
+                if (character == '"') { // 3 quot. marks, its a multiline string
+                    state = STATE_STRING_MULTI;
+                } else { // empty singleline string
+                    ungetc(character, stdin);
+                    token.type = TOKEN_STRING;
+                    token.attribute.string_value = buffer.str;
+                    return token;
+                }
+                break;
+
+            case STATE_STRING_SINGLE: // the string ends when another quot. mark is detected
+                if (character == '"') {
+                    token.type = TOKEN_STRING;
+                    token.attribute.string_value = buffer.str;
+                    return token;
+                } else if (character == '\\') { // escape sequence
+                    state = STATE_STRING_SINGLE_ESCAPE;
+                } else if (character == '\n' || character == EOF){ // string doesnt have the ending quot. mark
+                    buffer_free(&buffer);
+                    token.type = TOKEN_ERROR;
+                    return token;
+                } else {
+                    if (!buffer_add_char(&buffer, character)) {
+                        return error_buffer_add_char(&buffer);
+                    }
+                }
+                break;
+
+            case STATE_STRING_SINGLE_ESCAPE:
+                if (character == '\\') {
+                    if (!buffer_add_char(&buffer, '\\')) {
+                        return error_buffer_add_char(&buffer);
+                    }
+                } else if (character == '"') {
+                    if (!buffer_add_char(&buffer, '"')) {
+                        return error_buffer_add_char(&buffer);
+                    }
+                } else if (character == 'n') {
+                    if (!buffer_add_char(&buffer, '\n')) {
+                        return error_buffer_add_char(&buffer);
+                    }
+                } else if (character == 'r') {
+                    if (!buffer_add_char(&buffer, '\r')) {
+                        return error_buffer_add_char(&buffer);
+                    }
+                } else if (character == 't') {
+                    if (!buffer_add_char(&buffer, '\t')) {
+                        return error_buffer_add_char(&buffer);
+                    }
+                } else { // no other escape sequences are valid
+                    buffer_free(&buffer);
+                    token.type = TOKEN_ERROR;
+                    return token;
+                }
+                state = STATE_STRING_SINGLE;
+                break;
+
+            case STATE_STRING_MULTI:
+                if (character == '"') {
+                    state = STATE_STRING_MULTI_END1;
+                } else if (character == EOF) { // string doesnt have the ending quot. marks
+                    buffer_free(&buffer);
+                    token.type = TOKEN_ERROR;
+                    return token;
+                } else {
+                    if (character == '\n') {
+                        current_line++; 
+                    }
+                    if (!buffer_add_char(&buffer, character)) {
+                        return error_buffer_add_char(&buffer);
+                    }
+                }
+                break;
+
+            case STATE_STRING_MULTI_END1:
+                if (character == '"') {
+                    state = STATE_STRING_MULTI_END2;
+                } else { // adds quot. mark to buffer and goes back to the main multiline string state
+                    if (!buffer_add_char(&buffer, '"')) {
+                        return error_buffer_add_char(&buffer);
+                    }
+                    ungetc(character, stdin);
+                    state = STATE_STRING_MULTI;
+                }
+                break;
+
+            case STATE_STRING_MULTI_END2:
+                if (character == '"') {
+                    token.type = TOKEN_STRING;
+                    token.attribute.string_value = buffer.str;
+                    return token;
+                } else { // adds 2 quot. marks to buffer and goes back to the main multiline string state
+                    if (!buffer_add_char(&buffer, '"') || !buffer_add_char(&buffer, '"')) {
+                        return error_buffer_add_char(&buffer);
+                    }
+                    ungetc(character, stdin);
+                    state = STATE_STRING_MULTI;
+                }
+                break;
+
             case STATE_LESS_THAN: // differentiates between '<' and '<='
                 if (character == '=') {
                     token.type = TOKEN_LESS_EQ;
