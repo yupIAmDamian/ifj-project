@@ -95,7 +95,10 @@ typedef enum {
     STATE_EQUALS,
     STATE_EXC_MARK,
     STATE_SLASH,
-    STATE_COMMENT,
+    STATE_COMMENT_SINGLE,
+    STATE_COMMENT_BLOCK,
+    STATE_COMMENT_BLOCK_END,
+    STATE_COMMENT_BLOCK_NESTED,
 } State;
 
 Token get_next_token();

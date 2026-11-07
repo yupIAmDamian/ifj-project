@@ -101,6 +101,7 @@ Token get_next_token()
     int space_count = 0;
     StringKeywordID buffer; // buffer for storing keywords, IDs, strings, digits, ...
     buffer.str = NULL;
+    int comment_nested_count = 0; // counter for nested block comments
 
     while(1) {
         int character = getchar();
@@ -587,26 +588,76 @@ Token get_next_token()
                 }
                 return token;
 
-            case STATE_SLASH: // differentiates between '/' and '//'
-                if (character == '/') {
-                    state = STATE_COMMENT;
+            case STATE_SLASH: // differentiates between the div operator, singleline and block comment
+                if (character == '/') { // singleline
+                    state = STATE_COMMENT_SINGLE;
+                } else if (character == '*') { // block
+                    comment_nested_count = 1;
+                    state = STATE_COMMENT_BLOCK;
                 } else {
                     ungetc(character, stdin);
                     token.type = TOKEN_DIV;
                     return token;
                 }
+                break;
             
-            case STATE_COMMENT: // throws away all comments
-                if (character != '\n') {
-                    continue;
-                } else if (character == EOF) {
-                    state = STATE_INDENT_DEDENT;
-                    break;
-                } else {
+            case STATE_COMMENT_SINGLE: // handles singleline comments
+                if (character == '\n' || character == EOF) {
                     ungetc(character, stdin);
                     state = STATE_START;
-                    break;
                 }
+                break;
+
+            case STATE_COMMENT_BLOCK: // handles block comments
+                if (character == '*') {
+                    state = STATE_COMMENT_BLOCK_END;
+                } else if (character == '/') { // slash, possibly a nested block comment
+                    state = STATE_COMMENT_BLOCK_NESTED;
+                } else if (character == '\n') {
+                    current_line++;
+                } else if (character == EOF) { // block comment isnt closed with "*/"
+                    token.type = TOKEN_ERROR; 
+                    return token;
+                }
+                break;
+
+            case STATE_COMMENT_BLOCK_NESTED:
+                if (character == '*') { // beginning of new nested block comment 
+                    comment_nested_count++;
+                    state = STATE_COMMENT_BLOCK;
+                } else if (character == '/') {
+                    break;
+                } else if (character == '\n') {
+                    current_line++;
+                    state = STATE_COMMENT_BLOCK;
+                } else if (character == EOF) { // block comment isnt closed with "*/"
+                    token.type = TOKEN_ERROR;
+                    return token;
+                } else {
+                    state = STATE_COMMENT_BLOCK;
+                }
+                break;
+
+            case STATE_COMMENT_BLOCK_END:
+                if (character == '/') {
+                    comment_nested_count--;
+                    if (comment_nested_count == 0) { // block comment processing is finished
+                        state = STATE_START;
+                    } else {
+                        state = STATE_COMMENT_BLOCK;
+                    }
+                } else if (character == '*') {
+                    break;
+                } else if (character == '\n') {
+                    current_line++;
+                    state = STATE_COMMENT_BLOCK;
+                } else if (character == EOF) { // block comment isnt closed with "*/"
+                    token.type = TOKEN_ERROR;
+                    return token;
+                } else {
+                    state = STATE_COMMENT_BLOCK;
+                }
+                break;
 
         }
     
