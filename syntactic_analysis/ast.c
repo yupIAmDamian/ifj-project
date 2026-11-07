@@ -1,3 +1,6 @@
+// Compiler of IFJ26 imperative language
+// Author: Michal Kopček (xkopcem00)
+
 #include <stdlib.h>
 #include "ast.h"
 

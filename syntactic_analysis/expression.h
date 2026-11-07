@@ -16,7 +16,7 @@ typedef enum {
 
 typedef enum {
     P_S, // shift  '<'
-    P_R, // return '>'
+    P_R, // reduce '>'
     P_E, // equal  '='
     P_N, // none   ' ' (error)
 } PrecRelation;
@@ -32,7 +32,7 @@ typedef struct {
     PrecTableIndex prec_index;
     Token token; 
     ASTNode *ast_node;
-    StackItem *next;
+    struct StackItem *next;
 } StackItem;
 
 typedef struct {
@@ -40,12 +40,12 @@ typedef struct {
 } PrecStack;
 
 void expr_stack_init(PrecStack *stack);
-bool expr_stack_push(PrecStack *stack, StackItemType type, PrecTableIndex index, Token token);
+bool expr_stack_push(PrecStack *stack, StackItemType type, PrecTableIndex index, Token token, ASTNode *ast_node);
 bool expr_stack_insert_mark(PrecStack *stack);
 void expr_stack_pop(PrecStack *stack);
 StackItem *expr_stack_top_terminal(PrecStack *stack);
 void expr_stack_free(PrecStack *stack);
 
-bool parse_expression();
+ASTNode* parse_expression();
 
 #endif

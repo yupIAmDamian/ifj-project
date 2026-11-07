@@ -13,6 +13,7 @@ typedef enum {
     AST_NODE_SUB,           // -
     AST_NODE_MUL,           // *
     AST_NODE_DIV,           // /
+    AST_NODE_EXPR,          // expression node
 } ASTNodeType;
 
 typedef struct ASTNode {
