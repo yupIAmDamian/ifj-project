@@ -104,6 +104,41 @@ static void check_statement(ASTNode *node, Symtable *st) {
             }
             break;
         }
+
+        case NODE_CALL: {
+            check_expression(node, st);
+            break;
+        }
+
+        case NODE_FUNC_DECL: {
+            bool success = symtable_insert_func(st, node->val.string_val, node->inferred_type, node->params, node->param_count);
+            if (!success) {
+                fprintf(stderr, "Semantic Error: Redefinition of function '%s'\n", node->val.string_val);
+                exit(3); // fault 3 redefine
+            }
+
+            DataType prev_ret_type = current_func_ret_type;
+            current_func_ret_type = node->inferred_type;
+
+            scope_push(st);
+            for (int i = 0; i < node->param_count; i++) {
+                symtable_insert_var(st, node->params[i].name, node->params[i].type, true);
+            }
+
+            check_statement(node->right, st);
+            scope_pop(st);
+            current_func_ret_type = prev_ret_type;
+            break;
+        }
+        case NODE_BLOCK: {
+            scope_push(st);
+            check_statement(node->left, st);
+            scope_pop(st);
+            break;
+        }
+
+        default:
+            break;
     }
     if (node->next != NULL) {
         check_statement(node->next, st);
