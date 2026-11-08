@@ -288,6 +288,7 @@ Token get_next_token()
                     }
                     return token;
                 }
+                break;
 
             case STATE_INTEGER:
                 if (isdigit(character)) {
