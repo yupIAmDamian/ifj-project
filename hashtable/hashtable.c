@@ -1,7 +1,9 @@
 #include "stdio.h"
 #include "hashtable.h"
 #include "stdlib.h"
-#include "string.h"
+#include "../helper_func.h"
+
+//TODO: apply DRY principle 
 
 int hash_function(char* key, int size){
     unsigned long hash = 0;
@@ -28,7 +30,7 @@ int probing(hashtable_t* hashtable, char* key, int attempt){
 }
 
 ht_item_t* ht_search(hashtable_t* hashtable, char* key){
-    //checknut ci toto je dobre. je to trosku sus
+    //check this is good. its a bit sus
     int index = probing(hashtable, key, 0);
     if(index == -1){
         return NULL;
@@ -46,6 +48,7 @@ ht_item_t* ht_insert(hashtable_t* hashtable, char* key, void* data){
 
     hashtable->items[index].state = OCCUPIED;
     hashtable->items[index].data = data;
+    hashtable->items[index].key = str_duplicate(key);
 
     hashtable->count++;
     return &hashtable->items[index];
@@ -64,7 +67,7 @@ hashtable_t* ht_delete(hashtable_t* hashtable, char* key){
 
     hashtable->count--;
     return hashtable;
-};
+}
 
 //creates a new hashtable
 hashtable_t* ht_create(int size){
@@ -73,8 +76,7 @@ hashtable_t* ht_create(int size){
         return NULL;
     }
 
-
-    hashtable->items = calloc(size, sizeof(ht_item_t) );
+    hashtable->items = calloc(size, sizeof(ht_item_t));
     if(hashtable->items == NULL){
         free(hashtable);
         return NULL;
@@ -89,7 +91,7 @@ hashtable_t* ht_create(int size){
 //frees all allocated hastable memory
 void ht_clear(hashtable_t** hashtable){
     if(hashtable == NULL || *hashtable == NULL){
-        return NULL;
+        return;
     }
 
     if((*hashtable)->items != NULL){
@@ -102,5 +104,4 @@ void ht_clear(hashtable_t** hashtable){
     free((*hashtable)->items);
     free(*hashtable);
     *hashtable = NULL;
-    return NULL;
 }

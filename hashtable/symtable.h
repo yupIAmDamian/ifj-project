@@ -1,10 +1,13 @@
+#ifndef SYMTABLE_H
+#define SYMTABLE_H
+
 #include <stdbool.h>
 #include <stddef.h>
 #include "hashtable.h"
 
 #define MAX_SCOPES 100
 
-typedef enum{
+typedef enum {
     TYPE_UNKNOWN,
     TYPE_INT,
     TYPE_FLOAT,
@@ -13,23 +16,23 @@ typedef enum{
     TYPE_BOOL
 } DataType;
 
-typedef enum{
+typedef enum {
     SYMBOL_VAR,
     SYMBOL_FUNC
 } SymbolType;
 
-typedef struct{
+typedef struct Param {
     char *name;
     DataType d_type;
-} Parameter;
+} Param;
 
-typedef struct{
+typedef struct Symbol {
     char *name;
     SymbolType s_type;
     DataType d_type;
     bool is_initialized;
     int params_amount;
-    Parameter *params;
+    Param *params;
 } Symbol;
 
 typedef struct {
@@ -37,6 +40,8 @@ typedef struct {
     int top;                      
 } Symtable;
 
+Symbol* symbol_create(const char *name, SymbolType s_type, DataType d_type, bool is_init);
+void symbol_free(Symbol *sym);
 
 Symtable* symtable_init(void);
 void symtable_dispose(Symtable *st);
@@ -44,8 +49,10 @@ void symtable_dispose(Symtable *st);
 void scope_push(Symtable *st);
 void scope_pop(Symtable *st);
 
-bool symtable_insert_var(Symtable *st, const char *name, DataType type, bool is_init);
-bool symtable_insert_func(Symtable *st, const char *name, DataType return_type, Param *params, int param_count);
+bool symtable_insert_var(Symtable *st, char *name, DataType type, bool is_init);
+bool symtable_insert_func(Symtable *st, char *name, DataType return_type, Param *params, int param_count);
 
-Symbol* symtable_search(Symtable *st, const char *name);
-Symbol* symtable_search_current_scope(Symtable *st, const char *name);
+Symbol* symtable_search(Symtable *st, char *name);
+Symbol* symtable_search_current_scope(Symtable *st, char *name);
+
+#endif
