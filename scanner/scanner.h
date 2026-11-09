@@ -1,5 +1,10 @@
+// Compiler of IFJ26 imperative language
+// Authors: Dominik Madaj (xmadajd00), Michal Kopček (xkopcem00)
+
 #ifndef SCANNER_H
 #define SCANNER_H
+
+#include <stdbool.h>
 
 // token types
 typedef enum {
@@ -75,7 +80,6 @@ typedef enum {
     STATE_START,
     STATE_ID_OR_KEYWORD,
     STATE_INTEGER,
-    STATE_DOUBLE,
     STATE_DOUBLE_DOT,
     STATE_DOUBLE_FRACTION,
     STATE_DOUBLE_EXP,
@@ -111,5 +115,12 @@ typedef struct {
     int length;
     int capacity;
 } StringKeywordID;
+
+// buffer functions
+bool buffer_init(StringKeywordID *buffer);
+bool buffer_add_char(StringKeywordID *buffer, char character);
+void buffer_free(StringKeywordID *buffer);
+Token error_buffer_init();
+Token error_buffer_add_char(StringKeywordID *buffer);
 
 #endif 
