@@ -14,14 +14,19 @@ typedef enum {
     AST_NODE_MUL,           // *
     AST_NODE_DIV,           // /
     AST_NODE_EXPR,          // expression node
+    AST_NODE_PARAM,         // function parameter
+    AST_NODE_VAR,           // variable node
+    AST_NODE_TERM,          // term node (identifier, integer, double, string)
+    AST_NODE_ASSIGN,        // assignment node
+    AST_NODE_CALL,          // function call node
 } ASTNodeType;
 
 typedef struct ASTNode {
     ASTNodeType type;
-    struct ASTNode *left;  // left child
-    struct ASTNode *right; // right child
-    struct ASTNode *extra; // extra child for statements like if and while
-    struct ASTNode *next;  // next node in the list
+    struct ASTNode *left;
+    struct ASTNode *right;
+    struct ASTNode *extra;
+    struct ASTNode *next;
     Token val;
 } ASTNode;
 

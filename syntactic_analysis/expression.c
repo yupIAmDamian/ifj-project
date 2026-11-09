@@ -130,7 +130,7 @@ ASTNode* parse_expression() {
         if (relation == P_S) {
             expr_stack_insert_mark(&stack);
             expr_stack_push(&stack, SYM_TERMINAL, input_idx, current_token, NULL);
-            current_token = get_next_token();
+            current_token = get_token_buffered();
             if (current_token.type == TOKEN_ERROR) {
                 expr_stack_free(&stack);
                 return NULL; // lexical error
@@ -179,7 +179,7 @@ ASTNode* parse_expression() {
 
         else if (relation == P_E) {
             expr_stack_push(&stack, SYM_TERMINAL, input_idx, current_token, NULL);
-            current_token = get_next_token();
+            current_token = get_token_buffered();
             if (current_token.type == TOKEN_ERROR) {
                 expr_stack_free(&stack);
                 return NULL; // lexical error
