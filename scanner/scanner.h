@@ -1,5 +1,10 @@
+// Compiler of IFJ26 imperative language
+// Authors: Dominik Madaj (xmadajd00), Michal Kopček (xkopcem00)
+
 #ifndef SCANNER_H
 #define SCANNER_H
+
+#include <stdbool.h>
 
 // token types
 typedef enum {
@@ -66,27 +71,56 @@ typedef struct {
         double double_value;
         char *string_value;
     } attribute;
-    int line; // Line where the token is located (used for error messages)
+    int line; // line where the token is located (used for error messages)
 } Token;
 
-// States of the scanner FSM
+// states of the scanner FSM
 typedef enum {
     STATE_INDENT_DEDENT,
     STATE_START,
     STATE_ID_OR_KEYWORD,
     STATE_INTEGER,
-    STATE_DOUBLE,
+    STATE_DOUBLE_DOT,
+    STATE_DOUBLE_FRACTION,
+    STATE_DOUBLE_EXP,
+    STATE_DOUBLE_EXP_SIGN,
+    STATE_DOUBLE_EXP_DIGITS,
+    STATE_DOUBLE_SUFFIX,
+    STATE_DOT,
     STATE_STRING,
+    STATE_STRING_QUOTE2,
+    STATE_STRING_SINGLE,
+    STATE_STRING_SINGLE_ESCAPE,
+    STATE_STRING_MULTI,
+    STATE_STRING_MULTI_END1,
+    STATE_STRING_MULTI_END2,
     STATE_LESS_THAN,
     STATE_GREATER_THAN,
     STATE_EQUALS,
     STATE_EXC_MARK,
     STATE_SLASH,
-    STATE_COMMENT,
+    STATE_COMMENT_SINGLE,
+    STATE_COMMENT_BLOCK,
+    STATE_COMMENT_BLOCK_END,
+    STATE_COMMENT_BLOCK_NESTED,
 } State;
 
 Token get_next_token();
 
 void scanner_init();
+
+// structure for dynamic string buffer
+typedef struct {
+    char *str;
+    int length;
+    int capacity;
+} StringKeywordID;
+
+// buffer functions
+bool buffer_init(StringKeywordID *buffer);
+bool buffer_add_char(StringKeywordID *buffer, char character);
+void buffer_free(StringKeywordID *buffer);
+Token error_buffer_init();
+Token error_buffer_add_char(StringKeywordID *buffer);
 
 #endif 
