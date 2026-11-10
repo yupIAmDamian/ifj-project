@@ -28,6 +28,7 @@ typedef struct ASTNode {
     struct ASTNode *extra;
     struct ASTNode *next;
     Token val;
+    bool is_main;
 } ASTNode;
 
 ASTNode *create_ast_node(ASTNodeType type,ASTNode *left, ASTNode *right, ASTNode *extra, Token val);

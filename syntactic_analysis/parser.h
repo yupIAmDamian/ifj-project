@@ -17,7 +17,7 @@ ASTNode* parse_program();
 bool parse_prolog(); 
 ASTNode* parse_functions(); 
 ASTNode* parse_function(); 
-bool parse_main_annotation(); 
+bool parse_main_annotation(bool *is_main); 
 ASTNode* parse_params_opt(); 
 ASTNode* parse_param(); 
 bool parse_return_type_opt(); 

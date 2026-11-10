@@ -99,7 +99,8 @@ ASTNode* parse_functions() {
 }
 
 ASTNode* parse_function() {
-    if (!parse_main_annotation()) return NULL;
+    bool is_main = false;
+    if (!parse_main_annotation(&is_main)) return NULL;
     if (!match(TOKEN_DEF)) return NULL;
     
     if (current_token.type != TOKEN_IDENTIFIER) return NULL;
@@ -114,14 +115,22 @@ ASTNode* parse_function() {
     
     ASTNode *function_body_node = parse_function_body();
     if (function_body_node == NULL) return NULL;
+
+    ASTNode *func_node = create_ast_node(AST_NODE_FUNCTION, params_node, function_body_node, NULL, function_token);
+    if (func_node != NULL) {
+        func_node->is_main = is_main;
+    }
     
-    return create_ast_node(AST_NODE_FUNCTION, params_node, function_body_node, NULL, function_token);
+    return func_node;
 }
 
-bool parse_main_annotation() {
+bool parse_main_annotation(bool *is_main) {
+    *is_main = false;
     if (match(TOKEN_AT)) {
         if (current_token.type != TOKEN_IDENTIFIER) return false;
         if (strcmp(current_token.attribute.string_value, "main") != 0) return false;
+
+        *is_main = true;
         current_token = get_token_buffered(); 
     }
     return true;
