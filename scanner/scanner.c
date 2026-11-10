@@ -81,8 +81,10 @@ Token error_buffer_add_char(StringKeywordID *buffer) {
     return token;
 }
 
+int paren_count = 0; // counter of left parentheses (EOL tokens arent returned inside parentheses)
+
 // function to get the next token from the input
-Token get_next_token()
+Token get_next_token_fsm()
 {
     Token token;
     token.line = current_line;    
@@ -161,9 +163,16 @@ Token get_next_token()
                     state = STATE_INDENT_DEDENT; // to return possible pending dedents
                     break;
                 } else if (character == '\n') { // end of line
-                    token.type = TOKEN_EOL;
                     current_line++;
-                    line_start = true;
+                    if (paren_count > 0) { // EOL isnt returned inside parentheses
+                        break;
+                    } else {
+                        token.type = TOKEN_EOL;
+                        line_start = true;
+                        return token;
+                    }
+                } else if (character == ';') {
+                    token.type = TOKEN_EOL; // semicolon means end of logical line
                     return token;
                 } else if (isspace(character)) { // skip empty space
                     break;
@@ -209,9 +218,13 @@ Token get_next_token()
                 } else if (character == '!') {
                     state = STATE_EXC_MARK;
                 } else if (character == '(') {
+                    paren_count++;
                     token.type = TOKEN_LPAREN;
                     return token;
                 } else if (character == ')') {
+                    if (paren_count > 0) {
+                        paren_count--;
+                    }
                     token.type = TOKEN_RPAREN;
                     return token;
                 } else if (character == ':') {
@@ -664,4 +677,18 @@ Token get_next_token()
     
     }
 
+}
+
+// calls the fsm function to get a token, filters it 
+Token get_next_token() {
+    static TokenType last_token = TOKEN_EOL; 
+    Token t;
+    while(1) {
+        t = get_next_token_fsm();
+        if (t.type == TOKEN_EOL && last_token == TOKEN_EOL) { //more than 1 EOL token in succession wont be returned
+            continue;
+        }
+        last_token = t.type;
+        return t;
+    }
 }
