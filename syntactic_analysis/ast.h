@@ -27,6 +27,7 @@ typedef struct ASTNode {
     struct ASTNode *right;
     struct ASTNode *extra;
     struct ASTNode *next;
+    struct ASTNode *prev;
     Token val;
     bool is_main;
 } ASTNode;
