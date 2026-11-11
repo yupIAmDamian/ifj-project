@@ -1,16 +1,16 @@
-// Compiler of ifj 2026 iperative language
+// Compiler of IFJ 2026 imperative language
 // Author: Daniel Jurkovič (xjurkod00)
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include "semantic.h"
 // #include "error.h" dominiks error handling
 
 static DataType current_func_ret_type = TYPE_VOID;
 
-// functions for retype
-// conversion node allocation (Int -> Float)
+// Conversion node allocation (Int -> Float)
 static ASTNode* wrap_int2float(ASTNode *expr) {
     if (expr == NULL) return NULL;
 
@@ -29,7 +29,7 @@ static ASTNode* wrap_int2float(ASTNode *expr) {
     return conv;
 }
 
-// func check if retyping is needed and if so calls func to do it
+// Checks if retyping is needed (Int -> Float) for assignments, returns, and arguments
 static bool convert_if_needed(ASTNode **expr_ptr, DataType actual_type, DataType target_type) {
     if (actual_type == target_type) {
         return true;
@@ -41,19 +41,114 @@ static bool convert_if_needed(ASTNode **expr_ptr, DataType actual_type, DataType
     return false;
 }
 
+// Helper for binary operations: if one operand is Int and the other is Float, promote Int to Float
+static void promote_binary_operands_if_needed(ASTNode *node, DataType *left_type, DataType *right_type) {
+    if (*left_type == TYPE_INT && *right_type == TYPE_FLOAT) {
+        node->left = wrap_int2float(node->left);
+        *left_type = TYPE_FLOAT;
+    } else if (*left_type == TYPE_FLOAT && *right_type == TYPE_INT) {
+        node->right = wrap_int2float(node->right);
+        *right_type = TYPE_FLOAT;
+    }
+}
 
-// MAIN SEMANTIC CONTROL
+// Replaces a node's variable identifier with its unique mangled name
+static void apply_mangled_name(ASTNode *node, Symbol *sym) {
+    if (node != NULL && sym != NULL && sym->mangled_name != NULL) {
+        if (node->val.string_val != NULL) {
+            free(node->val.string_val);
+        }
+        node->val.string_val = strdup(sym->mangled_name);
+    }
+}
+
 static void check_statement(ASTNode *node, Symtable *st);
 static DataType check_expression(ASTNode *node, Symtable *st);
 
-// initiates the recursive check on the root of the AST.
+// Initiates the recursive check on the root of the AST.
 bool check_semantics(ASTNode *root, Symtable *st) {
     if (root == NULL) return true;
     check_statement(root, st);
     return true;
 }
 
-//recursively checks statement nodes and manages scope stack operations
+// Evaluates arithmetic operations (+, -, *, /)
+static DataType check_arithmetic(ASTNode *node, Symtable *st) {
+    DataType left_type = check_expression(node->left, st);
+    DataType right_type = check_expression(node->right, st);
+
+    // string concatenation only valid for '+'
+    if (node->type == NODE_ADD && left_type == TYPE_STRING && right_type == TYPE_STRING) {
+        node->inferred_type = TYPE_STRING;
+        return TYPE_STRING;
+    }
+
+    promote_binary_operands_if_needed(node, &left_type, &right_type);
+
+    if (left_type == TYPE_INT && right_type == TYPE_INT) {
+        node->inferred_type = TYPE_INT;
+        return TYPE_INT;
+    }
+    if (left_type == TYPE_FLOAT && right_type == TYPE_FLOAT) {
+        node->inferred_type = TYPE_FLOAT;
+        return TYPE_FLOAT;
+    }
+
+    dominik_error(4, "Incompatible types in arithmetic operation");
+    return TYPE_UNKNOWN;
+}
+
+// Evaluates comparison operations
+static DataType check_comparison(ASTNode *node, Symtable *st) {
+    DataType left_type = check_expression(node->left, st);
+    DataType right_type = check_expression(node->right, st);
+
+    promote_binary_operands_if_needed(node, &left_type, &right_type);
+
+    if (left_type == right_type && left_type != TYPE_VOID && left_type != TYPE_UNKNOWN) {
+        node->inferred_type = TYPE_BOOL;
+        return TYPE_BOOL;
+    }
+
+    dominik_error(4, "Cannot compare incompatible types");
+    return TYPE_UNKNOWN;
+}
+
+// Evaluates function call expressions
+static DataType check_func_call(ASTNode *node, Symtable *st) {
+    Symbol *func_sym = symtable_search(st, node->val.string_val);
+    if (func_sym == NULL || func_sym->sym_type != SYMBOL_FUNC) {
+        dominik_error(3, "Undefined function");
+    }
+
+    int arg_count = 0;
+    ASTNode *arg_node = node->right;
+
+    while (arg_node != NULL) {
+        if (arg_count >= func_sym->param_count) {
+            dominik_error(5, "Too many arguments for function");
+        }
+
+        DataType arg_type = check_expression(arg_node, st);
+        DataType param_type = func_sym->params[arg_count].type;
+
+        if (!convert_if_needed(&arg_node, arg_type, param_type)) {
+            dominik_error(4, "Parameter type mismatch");
+        }
+
+        arg_count++;
+        arg_node = arg_node->next;
+    }
+
+    if (arg_count < func_sym->param_count) {
+        dominik_error(5, "Too few arguments for function");
+    }
+
+    node->inferred_type = func_sym->data_type;
+    return func_sym->data_type;
+}
+
+// Recursively checks statement nodes and manages scope stack operations
 static void check_statement(ASTNode *node, Symtable *st) {
     if (node == NULL) return;
 
@@ -66,6 +161,9 @@ static void check_statement(ASTNode *node, Symtable *st) {
                 dominik_error(3, "Redefinition of variable");
             }
 
+            Symbol *sym = symtable_search_current_scope(st, node->val.string_val);
+            apply_mangled_name(node, sym);
+
             if (!convert_if_needed(&node->right, expr_type, node->inferred_type)) {
                 dominik_error(4, "Cannot assign incompatible type to variable");
             }
@@ -77,6 +175,7 @@ static void check_statement(ASTNode *node, Symtable *st) {
             if (sym == NULL) {
                 dominik_error(3, "Assignment to undefined variable");
             }
+            apply_mangled_name(node->left, sym);
 
             DataType expr_type = check_expression(node->right, st);
             if (!convert_if_needed(&node->right, expr_type, sym->data_type)) {
@@ -169,7 +268,7 @@ static void check_statement(ASTNode *node, Symtable *st) {
     }
 }
 
-// evaluates expression nodes bottom-up, validates operand compatibility, checks function calls, and returns the inferred DataType
+// Evaluates expression nodes bottom-up, validates operand compatibility, checks function calls, and returns the inferred DataType
 static DataType check_expression(ASTNode *node, Symtable *st) {
     if (node == NULL) return TYPE_VOID;
 
@@ -195,6 +294,7 @@ static DataType check_expression(ASTNode *node, Symtable *st) {
             if (sym == NULL) {
                 dominik_error(3, "Undefined variable");
             }
+            apply_mangled_name(node, sym);
             node->inferred_type = sym->data_type;
             return sym->data_type;
         }
@@ -202,57 +302,16 @@ static DataType check_expression(ASTNode *node, Symtable *st) {
         case NODE_ADD:
         case NODE_SUB:
         case NODE_MUL:
-        case NODE_DIV: {
-            DataType left_type = check_expression(node->left, st);
-            DataType right_type = check_expression(node->right, st);
-
-            if (left_type == TYPE_INT && right_type == TYPE_INT) {
-                node->inferred_type = TYPE_INT;
-                return TYPE_INT;
-            } 
-            if (left_type == TYPE_FLOAT && right_type == TYPE_FLOAT) {
-                node->inferred_type = TYPE_FLOAT;
-                return TYPE_FLOAT;
-            } 
-            if (convert_if_needed(&node->left, left_type, TYPE_FLOAT) && 
-                convert_if_needed(&node->right, right_type, TYPE_FLOAT)) {
-                node->inferred_type = TYPE_FLOAT;
-                return TYPE_FLOAT;
-            }
-            if (node->type == NODE_ADD && left_type == TYPE_STRING && right_type == TYPE_STRING) {
-                node->inferred_type = TYPE_STRING;
-                return TYPE_STRING;
-            }
-
-            dominik_error(4, "Incompatible types in arithmetic operation");
-            break;
-        }
+        case NODE_DIV:
+            return check_arithmetic(node, st);
 
         case NODE_EQ:
         case NODE_NEQ:
         case NODE_LT:
         case NODE_GT:
         case NODE_LEQ:
-        case NODE_GEQ: {
-            DataType left_type = check_expression(node->left, st);
-            DataType right_type = check_expression(node->right, st);
-
-            if (left_type == TYPE_INT && right_type == TYPE_FLOAT) {
-                convert_if_needed(&node->left, left_type, TYPE_FLOAT);
-                left_type = TYPE_FLOAT;
-            } else if (left_type == TYPE_FLOAT && right_type == TYPE_INT) {
-                convert_if_needed(&node->right, right_type, TYPE_FLOAT);
-                right_type = TYPE_FLOAT;
-            }
-
-            if (left_type == right_type && left_type != TYPE_VOID && left_type != TYPE_UNKNOWN) {
-                node->inferred_type = TYPE_BOOL;
-                return TYPE_BOOL;
-            }
-
-            dominik_error(4, "Cannot compare incompatible types");
-            break;
-        }
+        case NODE_GEQ:
+            return check_comparison(node, st);
 
         case NODE_AND:
         case NODE_OR: {
@@ -277,38 +336,8 @@ static DataType check_expression(ASTNode *node, Symtable *st) {
             break;
         }
 
-        case NODE_CALL: {
-            Symbol *func_sym = symtable_search(st, node->val.string_val);
-            if (func_sym == NULL || func_sym->sym_type != SYMBOL_FUNC) {
-                dominik_error(3, "Undefined function");
-            }
-
-            int arg_count = 0;
-            ASTNode *arg_node = node->right;
-
-            while (arg_node != NULL) {
-                if (arg_count >= func_sym->param_count) {
-                    dominik_error(5, "Too many arguments for function");
-                }
-
-                DataType arg_type = check_expression(arg_node, st);
-                DataType param_type = func_sym->params[arg_count].type;
-
-                if (!convert_if_needed(&arg_node, arg_type, param_type)) {
-                    dominik_error(4, "Parameter type mismatch");
-                }
-
-                arg_count++;
-                arg_node = arg_node->next;
-            }
-
-            if (arg_count < func_sym->param_count) {
-                dominik_error(5, "Too few arguments for function");
-            }
-
-            node->inferred_type = func_sym->data_type;
-            return func_sym->data_type;
-        }
+        case NODE_CALL:
+            return check_func_call(node, st);
 
         default:
             return TYPE_UNKNOWN;

@@ -45,6 +45,7 @@ Symtable* symtable_init(void) {
     Symtable *st = malloc(sizeof(Symtable));
     if (!st) return NULL;
     st->top = -1;
+    st->block_counter=0;
     scope_push(st);
     return st;
 }
@@ -60,6 +61,7 @@ void symtable_dispose(Symtable *st) {
 void scope_push(Symtable *st) {
     if (st->top >= MAX_SCOPES - 1) return;
     st->top++;
+    st->block_counter++;
     st->scopes[st->top] = ht_create(100);
 }
 
@@ -84,14 +86,29 @@ void scope_pop(Symtable *st) {
 bool symtable_insert_var(Symtable *st, char *name, DataType type, bool is_init) {
     if (st->top < 0 || !name) return false;
 
+    if (symtable_search_current_scope(st, name) != NULL) {
+        return false;
+    }
+
     Symbol *sym = symbol_create(name, SYMBOL_VAR, type, is_init);
     if (!sym) return false;
 
+    char mangled_buf[256];
+    if (st->top == 0) {
+        snprintf(mangled_buf, sizeof(mangled_buf), "GF@%s", name);
+    } 
+    else {
+        snprintf(mangled_buf, sizeof(mangled_buf), "LF@%s$%d", name, st->block_counter);
+    }
+
+    sym->mangled_name = strdup(mangled_buf);
     ht_item_t *inserted_item = ht_insert(st->scopes[st->top], name, (void*) sym);
     if (!inserted_item) {
+        if (sym->mangled_name) free(sym->mangled_name);
         symbol_free(sym);
         return false;
     }
+
     return true;
 }
 
