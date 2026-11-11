@@ -1,0 +1,77 @@
+.IFJcode26
+
+# Tento program odpovida kodu v 'factorial.scala'.
+# Vas prekladac samozrejme muze vytvorit uplne jiny vystupni kod.
+
+JUMP main
+
+LABEL factorial_iterative
+CREATEFRAME
+PUSHFRAME
+DEFVAR LF@n
+DEFVAR LF@result
+DEFVAR LF@i
+DEFVAR LF@check
+POPS LF@n
+MOVE LF@result int@1
+MOVE LF@i int@2
+LABEL iterative_loop
+GT LF@check LF@i LF@n
+JUMPIFEQ iterative_done LF@check bool@true
+MUL LF@result LF@result LF@i
+ADD LF@i LF@i int@1
+JUMP iterative_loop
+LABEL iterative_done
+PUSHS LF@result
+POPFRAME
+RETURN
+
+LABEL factorial_recursive
+CREATEFRAME
+PUSHFRAME
+DEFVAR LF@n
+DEFVAR LF@previous
+DEFVAR LF@smaller
+DEFVAR LF@result
+DEFVAR LF@check
+POPS LF@n
+GT LF@check LF@n int@1
+JUMPIFEQ recursive_step LF@check bool@true
+PUSHS int@1
+POPFRAME
+RETURN
+LABEL recursive_step
+SUB LF@previous LF@n int@1
+PUSHS LF@previous
+CALL factorial_recursive
+POPS LF@smaller
+MUL LF@result LF@n LF@smaller
+PUSHS LF@result
+POPFRAME
+RETURN
+
+LABEL main
+DEFVAR GF@n
+DEFVAR GF@iterative
+DEFVAR GF@recursive
+DEFVAR GF@check
+READ GF@n int
+LT GF@check GF@n int@0
+JUMPIFEQ invalid GF@check bool@true
+GT GF@check GF@n int@12
+JUMPIFEQ invalid GF@check bool@true
+PUSHS GF@n
+CALL factorial_iterative
+POPS GF@iterative
+PUSHS GF@n
+CALL factorial_recursive
+POPS GF@recursive
+WRITE string@iterative:\032
+WRITE GF@iterative
+WRITE string@\010recursive:\032
+WRITE GF@recursive
+WRITE string@\010
+EXIT int@0
+LABEL invalid
+WRITE string@Use\032an\032integer\032from\0320\032to\03212.\010
+EXIT int@0
