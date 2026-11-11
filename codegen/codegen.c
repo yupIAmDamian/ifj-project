@@ -1,6 +1,10 @@
 #include "codegen.h"
 
 char* current_func_name = NULL;
+static int label_counter = 0;
+//GloBal TODO
+//add space after every instruction
+//add newlines where needed
 
 void gen_code(ASTNode *root){
     while(root != NULL){
@@ -19,6 +23,8 @@ void gen_node(ASTNode *node){
             char *fun_name_token = string_from_token(node->left);
             current_func_name = string_from_token(fun_name_token);
             gen_fun_def_start();
+            gen_fun_def_args(node->extra);
+            gen_fun_def_vars(node->right);
             break;
         case AST_NODE_IF:
             gen_if(node);
@@ -26,11 +32,12 @@ void gen_node(ASTNode *node){
         case AST_NODE_WHILE:
             gen_while(node);
             break;
-        case AST_NODE_CALL: // there is no AST_NODE_CALL in the enum, but it will be added 
+        case AST_NODE_CALL:
             gen_fun_call(node, "resultvar");
             break;
         case AST_NODE_VAR_DECL:
-            gen_var(node);
+            //TODO fix this when the variable declaration will be added to the AST
+            gen_var("LF", string_from_token(node->left), 0);
             break;
         case AST_NODE_RETURN:
             gen_return();
@@ -57,28 +64,44 @@ void gen_fun_def_start(){
     gen_pushframe();
 }
 
-void gen_fun_def_args(ASTNode *node, char *function_name ){
+void gen_fun_def_args(ASTNode *node){
     while(node != NULL){
         char *param_name = string_from_token(node);
-        gen_params_declaration("LF",  function_name, param_name);
-
+        gen_params_declaration("LF",  current_func_name, param_name);
         node = node->next;
     }
 }
 
-void gen_fun_def_vars(ASTNode *node, int *var_counter, char *function_name){
-    /*
-    TODO: go through the AST and find all variable declarations and generate code for them
-    */
-   while(node != NULL){
-        //it needs to check also inside the function body for variable declarations, so it needs to go through the AST recursively
-        
-        node = node->next;
+//TODO why is this needed?
+/**
+ * Recursively generates variable declarations for a function at the start of function.
+ * @param node The current AST node.
+ * @param var_counter A pointer to the variable counter.
+ */
+void gen_fun_def_vars_recursive(ASTNode *node, int *var_counter){
+    if (node == NULL) {
+        return;
     }
+
+    if (node->type == AST_NODE_VAR_DECL) {
+        gen_defvar();
+        gen_var("LF", string_from_token(node->left), *var_counter);
+        gen_new_line();
+        (*var_counter)++;
+    }
+
+    gen_fun_def_vars_recursive(node->left, var_counter);
+    gen_fun_def_vars_recursive(node->right, var_counter);
+    gen_fun_def_vars_recursive(node->extra, var_counter);
+    gen_fun_def_vars_recursive(node->next, var_counter);
 }
 
-//TODO: pass function name to the body - if its neccessary
-void gen_fun_def_body(ASTNode *node, char *function_name){
+void gen_fun_def_vars(ASTNode *node){
+    int var_counter = 0;
+    gen_fun_def_vars_recursive(node, &var_counter);
+}
+
+void gen_fun_def_body(ASTNode *node){
     gen_code(node);
 }
 
@@ -106,13 +129,14 @@ void gen_fun_call(ASTNode *node, char *result_var){
 
     while(arg_node != NULL){
         Token token = get_token_from_node(arg_node);
-        //there could be either 
         //TODO check if logic is correct
+        //TODO- this type of code repeats itself in many places, maybe we can create a function for it
         if(token.type == TOKEN_IDENTIFIER){
             gen_pushs(string_from_token(arg_node));
         } else {
             gen_pushs_data_types(&token);
         }
+        gen_new_line();
 
         if(arg_node->prev != NULL) {
             arg_node = arg_node->prev;//prev will be added to the ASTNode struct
@@ -139,18 +163,15 @@ void gen_if(ASTNode *node){
     ASTNode *else_body = node->extra;
 
     //create labels according to name mengling
-    char *else_label = create_label(1, "if", "else");
-    char *end_label = create_label(1, "if", "end");
+    int label_number = label_counter++;
+    char *else_label = create_label(label_number, "if", "else");
+    char *end_label = create_label(label_number, "if", "end");
 
 
     decide_condition(condition_node);
 
-    //do i need to push the result of the condition onto the stack? i think yes, because i will need to check it with jumpifeqs
-    pushs("LF@cond");
-
-
-    //TODO: check this if the logic is correct, i will push every variable onto the stack and then on top there will be the result of the condition
-    gen_jumpifneqs(else_label);
+    gen_pushs("bool@false");
+    gen_jumpifeqs(else_label);
 
     gen_code(then_body);
 
@@ -221,17 +242,19 @@ void decide_condition(ASTNode *condition_node){
 
 //While statement
 void gen_while(ASTNode *node){
+
     ASTNode *condition_node = node->left; 
     ASTNode *body_node = node->right; 
 
-    char *start_label = create_label(1, "while", "start");
-    char *end_label = create_label(1, "while", "end");
+    int label_number = label_counter++;
+    char *start_label = create_label(label_number, "while", "start");
+    char *end_label = create_label(label_number, "while", "end");
 
     gen_label(start_label);
     decide_condition(condition_node);
 
-    //TODO to every ifneq or sume we need to pass to stack false or true so we can compare those results
-    gen_jumpifneqs(end_label); // if could be jumpifegs if we pass false
+    gen_pushs("bool@false");
+    gen_jumpifeqs(end_label);
 
     gen_code(body_node);
     gen_jump(start_label);

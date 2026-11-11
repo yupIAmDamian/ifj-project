@@ -23,11 +23,11 @@ Function definition
 */
 void gen_fun_def_start();
 
-void gen_fun_def_args(ASTNode *root, char *function_name);
+void gen_fun_def_args(ASTNode *root);
 
-void gen_fun_def_vars(ASTNode *root, int *var_counter, char *function_name);
+void gen_fun_def_vars(ASTNode *root);
 
-void gen_fun_def_body(ASTNode *root, char *function_name);
+void gen_fun_def_body(ASTNode *root);
 
 void gen_fun_def_end();
 
