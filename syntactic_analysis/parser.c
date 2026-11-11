@@ -92,6 +92,7 @@ ASTNode* parse_functions() {
             last_function = function_node;
         } else {
             last_function->next = function_node;
+            function_node->prev = last_function;
             last_function = function_node;
         }
     }
@@ -154,6 +155,7 @@ ASTNode* parse_params_opt() {
             return NULL; // syntax error
         }
         last_param->next = next_param;
+        next_param->prev = last_param;
         last_param = next_param;
     }
     return first_param;
@@ -218,6 +220,7 @@ ASTNode* parse_statements() {
             last_statement_node = stmt_node;
         } else {
             last_statement_node->next = stmt_node;
+            stmt_node->prev = last_statement_node;
             last_statement_node = stmt_node;
 
             while (last_statement_node->next != NULL) {
@@ -370,6 +373,7 @@ ASTNode* parse_args_opt() {
         if (next_arg == NULL) return NULL;
         
         last_arg->next = next_arg;
+        next_arg->prev = last_arg;
         last_arg = next_arg;
     }
     return first_arg;
