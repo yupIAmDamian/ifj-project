@@ -1,31 +1,86 @@
+// Compiler of ifj 2026 iperative language
+// Author: Daniel Jurkovič (xjurkod00)
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "semantic.h"
+// #include "error.h" dominiks error handling
 
+static DataType current_func_ret_type = TYPE_VOID;
+
+// functions for retype
+// conversion node allocation (Int -> Float)
+static ASTNode* wrap_int2float(ASTNode *expr) {
+    if (expr == NULL) return NULL;
+
+    ASTNode *conv = malloc(sizeof(ASTNode));
+    if (conv == NULL) {
+        dominik_error(99, "Internal Error: Memory allocation failed");
+    }
+
+    conv->type = NODE_INT2FLOAT;
+    conv->inferred_type = TYPE_FLOAT;
+    conv->left = expr;
+    conv->right = NULL;
+    conv->extra = NULL;
+    conv->next = NULL;
+
+    return conv;
+}
+
+// func check if retyping is needed and if so calls func to do it
+static bool convert_if_needed(ASTNode **expr_ptr, DataType actual_type, DataType target_type) {
+    if (actual_type == target_type) {
+        return true;
+    }
+    if (target_type == TYPE_FLOAT && actual_type == TYPE_INT) {
+        *expr_ptr = wrap_int2float(*expr_ptr);
+        return true;
+    }
+    return false;
+}
+
+
+// MAIN SEMANTIC CONTROL
 static void check_statement(ASTNode *node, Symtable *st);
-static DataType check_expression(ASTNode *node, Symtable *st)TODO
+static DataType check_expression(ASTNode *node, Symtable *st);
 
+// initiates the recursive check on the root of the AST.
 bool check_semantics(ASTNode *root, Symtable *st) {
     if (root == NULL) return true;
     check_statement(root, st);
-    
     return true;
 }
 
+//recursively checks statement nodes and manages scope stack operations
 static void check_statement(ASTNode *node, Symtable *st) {
     if (node == NULL) return;
+
     switch (node->type) {
         case NODE_VAR_DECL: {
             DataType expr_type = check_expression(node->right, st);
             
             bool success = symtable_insert_var(st, node->val.string_val, node->inferred_type, true);
             if (!success) {
-                fprintf(stderr, "Semantic Error: Redefinition of variable '%s'\n", node->val.string_val);
-                exit(3);
+                dominik_error(3, "Redefinition of variable");
             }
-            if (node->inferred_type != expr_type) {
-                fprintf(stderr, "Semantic Error: Cannot assign %d to variable of type %d\n", expr_type, node->inferred_type);
-                exit(4);
+
+            if (!convert_if_needed(&node->right, expr_type, node->inferred_type)) {
+                dominik_error(4, "Cannot assign incompatible type to variable");
+            }
+            break;
+        }
+
+        case NODE_ASSIGN: {
+            Symbol *sym = symtable_search(st, node->left->val.string_val);
+            if (sym == NULL) {
+                dominik_error(3, "Assignment to undefined variable");
+            }
+
+            DataType expr_type = check_expression(node->right, st);
+            if (!convert_if_needed(&node->right, expr_type, sym->data_type)) {
+                dominik_error(4, "Type mismatch in assignment");
             }
             break;
         }
@@ -33,13 +88,13 @@ static void check_statement(ASTNode *node, Symtable *st) {
         case NODE_IF: {
             DataType cond_type = check_expression(node->left, st);
             if (cond_type != TYPE_BOOL) {
-                fprintf(stderr, "Semantic Error: Condition in 'if' must be Boolean\n");
-                exit(4);
+                dominik_error(4, "Condition in 'if' must be Boolean");
             }
 
             scope_push(st);
             check_statement(node->right, st);
             scope_pop(st);
+
             if (node->extra != NULL) {
                 scope_push(st);
                 check_statement(node->extra, st);
@@ -48,34 +103,10 @@ static void check_statement(ASTNode *node, Symtable *st) {
             break;
         }
 
-        case NODE_ASSIGN: {
-            Symbol *sym = symtable_search(st, node->left->val.string_val);
-            if (sym == NULL) {
-                fprintf(stderr, "Semantic Error: Assignment to undefined variable '%s'\n", node->left->val.string_val);
-                exit(3);
-            }
-
-            DataType expr_type = check_expression(node->right, st);
-            if (sym->data_type != expr_type) {
-                if (sym->data_type == TYPE_FLOAT && expr_type == TYPE_INT) {
-                    ASTNode *conv = malloc(sizeof(ASTNode));
-                    conv->type = NODE_INT2FLOAT;
-                    conv->left = node->right;
-                    conv->inferred_type = TYPE_FLOAT;
-                    node->right = conv;
-                } else {
-                    fprintf(stderr, "Semantic Error: Type mismatch in assignment to '%s'\n", sym->name);
-                    exit(4);
-                }
-            }
-            break;
-        }
-
         case NODE_WHILE: {
             DataType cond_type = check_expression(node->left, st);
             if (cond_type != TYPE_BOOL) {
-                fprintf(stderr, "Semantic Error: Condition in 'while' must be Boolean\n");
-                exit(4); //type fault
+                dominik_error(4, "Condition in 'while' must be Boolean");
             }
 
             scope_push(st);
@@ -90,17 +121,8 @@ static void check_statement(ASTNode *node, Symtable *st) {
                 return_type = check_expression(node->left, st);
             }
 
-            if (current_func_ret_type != return_type) {
-                if (current_func_ret_type == TYPE_FLOAT && return_type == TYPE_INT) {
-                    ASTNode *conv = malloc(sizeof(ASTNode));
-                    conv->type = NODE_INT2FLOAT;
-                    conv->left = node->left;
-                    conv->inferred_type = TYPE_FLOAT;
-                    node->left = conv;
-                } else {
-                    fprintf(stderr, "Semantic Error: Return type mismatch\n");
-                    exit(4); // type incompatibility
-                }
+            if (!convert_if_needed(&node->left, return_type, current_func_ret_type)) {
+                dominik_error(4, "Return type mismatch");
             }
             break;
         }
@@ -113,8 +135,7 @@ static void check_statement(ASTNode *node, Symtable *st) {
         case NODE_FUNC_DECL: {
             bool success = symtable_insert_func(st, node->val.string_val, node->inferred_type, node->params, node->param_count);
             if (!success) {
-                fprintf(stderr, "Semantic Error: Redefinition of function '%s'\n", node->val.string_val);
-                exit(3); // fault 3 redefine
+                dominik_error(3, "Redefinition of function");
             }
 
             DataType prev_ret_type = current_func_ret_type;
@@ -127,9 +148,11 @@ static void check_statement(ASTNode *node, Symtable *st) {
 
             check_statement(node->right, st);
             scope_pop(st);
+
             current_func_ret_type = prev_ret_type;
             break;
         }
+
         case NODE_BLOCK: {
             scope_push(st);
             check_statement(node->left, st);
@@ -140,11 +163,13 @@ static void check_statement(ASTNode *node, Symtable *st) {
         default:
             break;
     }
+
     if (node->next != NULL) {
         check_statement(node->next, st);
     }
 }
 
+// evaluates expression nodes bottom-up, validates operand compatibility, checks function calls, and returns the inferred DataType
 static DataType check_expression(ASTNode *node, Symtable *st) {
     if (node == NULL) return TYPE_VOID;
 
@@ -168,8 +193,7 @@ static DataType check_expression(ASTNode *node, Symtable *st) {
         case NODE_VAR: {
             Symbol *sym = symtable_search(st, node->val.string_val);
             if (sym == NULL) {
-                fprintf(stderr, "Semantic Error: Undefined variable '%s'\n", node->val.string_val);
-                exit(3);
+                dominik_error(3, "Undefined variable");
             }
             node->inferred_type = sym->data_type;
             return sym->data_type;
@@ -186,38 +210,22 @@ static DataType check_expression(ASTNode *node, Symtable *st) {
                 node->inferred_type = TYPE_INT;
                 return TYPE_INT;
             } 
-            else if (left_type == TYPE_FLOAT && right_type == TYPE_FLOAT) {
+            if (left_type == TYPE_FLOAT && right_type == TYPE_FLOAT) {
                 node->inferred_type = TYPE_FLOAT;
                 return TYPE_FLOAT;
             } 
-            else if (left_type == TYPE_INT && right_type == TYPE_FLOAT) {
-                ASTNode *conv = malloc(sizeof(ASTNode));
-                conv->type = NODE_INT2FLOAT;
-                conv->left = node->left;
-                conv->inferred_type = TYPE_FLOAT;
-                
-                node->left = conv;
+            if (convert_if_needed(&node->left, left_type, TYPE_FLOAT) && 
+                convert_if_needed(&node->right, right_type, TYPE_FLOAT)) {
                 node->inferred_type = TYPE_FLOAT;
                 return TYPE_FLOAT;
             }
-            else if (left_type == TYPE_FLOAT && right_type == TYPE_INT) {
-                ASTNode *conv = malloc(sizeof(ASTNode));
-                conv->type = NODE_INT2FLOAT;
-                conv->left = node->right;
-                conv->inferred_type = TYPE_FLOAT;
-                
-                node->right = conv;
-                node->inferred_type = TYPE_FLOAT;
-                return TYPE_FLOAT;
-            }
-            else if (node->type == NODE_ADD && left_type == TYPE_STRING && right_type == TYPE_STRING) {
+            if (node->type == NODE_ADD && left_type == TYPE_STRING && right_type == TYPE_STRING) {
                 node->inferred_type = TYPE_STRING;
                 return TYPE_STRING;
-            } 
-            else {
-                fprintf(stderr, "Semantic Error: Incompatible types in arithmetic operation\n");
-                exit(4);
             }
+
+            dominik_error(4, "Incompatible types in arithmetic operation");
+            break;
         }
 
         case NODE_EQ:
@@ -230,28 +238,20 @@ static DataType check_expression(ASTNode *node, Symtable *st) {
             DataType right_type = check_expression(node->right, st);
 
             if (left_type == TYPE_INT && right_type == TYPE_FLOAT) {
-                ASTNode *conv = malloc(sizeof(ASTNode));
-                conv->type = NODE_INT2FLOAT;
-                conv->left = node->left;
-                conv->inferred_type = TYPE_FLOAT;
-                node->left = conv;
+                convert_if_needed(&node->left, left_type, TYPE_FLOAT);
                 left_type = TYPE_FLOAT;
             } else if (left_type == TYPE_FLOAT && right_type == TYPE_INT) {
-                ASTNode *conv = malloc(sizeof(ASTNode));
-                conv->type = NODE_INT2FLOAT;
-                conv->left = node->right;
-                conv->inferred_type = TYPE_FLOAT;
-                node->right = conv;
+                convert_if_needed(&node->right, right_type, TYPE_FLOAT);
                 right_type = TYPE_FLOAT;
             }
 
             if (left_type == right_type && left_type != TYPE_VOID && left_type != TYPE_UNKNOWN) {
                 node->inferred_type = TYPE_BOOL;
                 return TYPE_BOOL;
-            } else {
-                fprintf(stderr, "Semantic Error: Cannot compare incompatible types\n");
-                exit(4);
             }
+
+            dominik_error(4, "Cannot compare incompatible types");
+            break;
         }
 
         case NODE_AND:
@@ -262,10 +262,9 @@ static DataType check_expression(ASTNode *node, Symtable *st) {
             if (left_type == TYPE_BOOL && right_type == TYPE_BOOL) {
                 node->inferred_type = TYPE_BOOL;
                 return TYPE_BOOL;
-            } else {
-                fprintf(stderr, "Semantic Error: Logical operators require Boolean operands\n");
-                exit(4);
             }
+            dominik_error(4, "Logical operators require Boolean operands");
+            break;
         }
 
         case NODE_NOT: {
@@ -273,39 +272,30 @@ static DataType check_expression(ASTNode *node, Symtable *st) {
             if (operand_type == TYPE_BOOL) {
                 node->inferred_type = TYPE_BOOL;
                 return TYPE_BOOL;
-            } else {
-                fprintf(stderr, "Semantic Error: Operator '!' requires Boolean operand\n");
-                exit(4);
             }
+            dominik_error(4, "Operator '!' requires Boolean operand");
+            break;
         }
 
         case NODE_CALL: {
             Symbol *func_sym = symtable_search(st, node->val.string_val);
             if (func_sym == NULL || func_sym->sym_type != SYMBOL_FUNC) {
-                fprintf(stderr, "Semantic Error: Undefined function '%s'\n", node->val.string_val);
-                exit(3); // Undeclared function
+                dominik_error(3, "Undefined function");
             }
 
             int arg_count = 0;
-            ASTNode *arg_node = node->right; // !i assume that, this will be saved in right subtree!, bud this depends on miškos implementation
+            ASTNode *arg_node = node->right;
 
             while (arg_node != NULL) {
                 if (arg_count >= func_sym->param_count) {
-                    fprintf(stderr, "Semantic Error: Too many arguments for function '%s'\n", func_sym->name);
-                    exit(5); // not the right amounts of arguments
+                    dominik_error(5, "Too many arguments for function");
                 }
 
                 DataType arg_type = check_expression(arg_node, st);
                 DataType param_type = func_sym->params[arg_count].type;
 
-                if (arg_type != param_type) {
-                    // Implicit conversion
-                    if (param_type == TYPE_FLOAT && arg_type == TYPE_INT) {
-                        // !depends on the exact structure of your argument concatenation!
-                    } else {
-                        fprintf(stderr, "Semantic Error: Parameter %d type mismatch in '%s'\n", arg_count + 1, func_sym->name);
-                        exit(4); // type incompatibility
-                    }
+                if (!convert_if_needed(&arg_node, arg_type, param_type)) {
+                    dominik_error(4, "Parameter type mismatch");
                 }
 
                 arg_count++;
@@ -313,15 +303,15 @@ static DataType check_expression(ASTNode *node, Symtable *st) {
             }
 
             if (arg_count < func_sym->param_count) {
-                fprintf(stderr, "Semantic Error: Too few arguments for function '%s'\n", func_sym->name);
-                exit(5); // not the right amounts of arguments
+                dominik_error(5, "Too few arguments for function");
             }
 
             node->inferred_type = func_sym->data_type;
-            return func_sym->data_type; // expression takes on the return type of the function
+            return func_sym->data_type;
         }
 
         default:
             return TYPE_UNKNOWN;
     }
+    return TYPE_UNKNOWN;
 }
