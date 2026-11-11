@@ -12,6 +12,8 @@
 #include "gen_func.h"
 #include "codegen_helper.h"
 
+char* current_func_name;
+
 void gen_code(ASTNode *root);
 void gen_node(ASTNode *node);
 
@@ -19,7 +21,7 @@ void gen_node(ASTNode *node);
 /*
 Function definition
 */
-void gen_fun_def_start(char *function_name);
+void gen_fun_def_start();
 
 void gen_fun_def_args(ASTNode *root, char *function_name);
 

@@ -1,5 +1,7 @@
 #include "codegen.h"
 
+char* current_func_name = NULL;
+
 void gen_code(ASTNode *root){
     while(root != NULL){
         gen_node(root);
@@ -14,8 +16,9 @@ void gen_node(ASTNode *node){
             create_head();
             break;
         case AST_NODE_FUNCTION:
-            char *fun_name = string_from_token(node->left);
-            gen_fun_def_start(string_from_token(fun_name));
+            char *fun_name_token = string_from_token(node->left);
+            current_func_name = string_from_token(fun_name_token);
+            gen_fun_def_start();
             break;
         case AST_NODE_IF:
             gen_if(node);
@@ -33,16 +36,10 @@ void gen_node(ASTNode *node){
             gen_return();
             break;
         case AST_NODE_ADD:
-            gen_adds();
-            break;
         case AST_NODE_SUB:
-            gen_subs();
-            break;
         case AST_NODE_MUL:
-            gen_muls();
-            break;
         case AST_NODE_DIV:
-            gen_divs();
+            equation_traversal(node);
             break;
         default:
             break;
@@ -54,8 +51,8 @@ void gen_node(ASTNode *node){
 /*
 function declaration
 */
-void gen_fun_def_start(char *function_name){
-    gen_label(function_name);
+void gen_fun_def_start(){
+    gen_label(current_func_name);
     gen_createframe();
     gen_pushframe();
 }
@@ -142,8 +139,8 @@ void gen_if(ASTNode *node){
     ASTNode *else_body = node->extra;
 
     //create labels according to name mengling
-    char *else_label = "$else_1";
-    char *end_label = "$end_if_1"; 
+    char *else_label = create_label(1, "if", "else");
+    char *end_label = create_label(1, "if", "end");
 
 
     decide_condition(condition_node);
@@ -164,6 +161,10 @@ void gen_if(ASTNode *node){
     }
 
     gen_label(end_label);
+
+
+    free(else_label);
+    free(end_label);
 }
 
 
@@ -223,8 +224,8 @@ void gen_while(ASTNode *node){
     ASTNode *condition_node = node->left; 
     ASTNode *body_node = node->right; 
 
-    char *start_label = "$while_start_1";
-    char *end_label = "$while_end_1";
+    char *start_label = create_label(1, "while", "start");
+    char *end_label = create_label(1, "while", "end");
 
     gen_label(start_label);
     decide_condition(condition_node);
@@ -236,6 +237,9 @@ void gen_while(ASTNode *node){
     gen_jump(start_label);
 
     gen_label(end_label);
+
+    free(start_label);
+    free(end_label);
 }
 
 //generation of constants
@@ -276,18 +280,40 @@ void gen_pushs_data_types(Token *symb){
 //arithmetic operations
 //for every arithmetic operation we will have to push the operands onto the stack and then perform the operation
 //after that will pop the result from the stack and store it in a variable
-void gen_adds(){
-    gen_adds();
+//TODO: check if the logic is correct
+void equation_traversal(ASTNode *node){
+    if(node == NULL) return;
+
+    equation_traversal(node->left);
+    equation_traversal(node->right);
+
+    if(node->type == AST_NODE_ADD || node->type == AST_NODE_SUB || node->type == AST_NODE_MUL || node->type == AST_NODE_DIV){
+        arithmetic_operation(node);
+    } else {
+        //TODO push only one thing
+        if(node->val.type == TOKEN_IDENTIFIER){
+            gen_pushs(string_from_token(node));
+        } else {
+            gen_pushs_data_types(&node->val);
+        }
+    }
 }
 
-void gen_subs(){
-    gen_subs();
-}
-
-void gen_muls(){
-    gen_muls();
-}
-
-void gen_divs(){
-    gen_divs();
+void arithmetic_operation(ASTNode *node){
+    switch(node->type){
+        case AST_NODE_ADD:
+            gen_adds();
+            break;
+        case AST_NODE_SUB:
+            gen_subs();
+            break;
+        case AST_NODE_MUL:
+            gen_muls();
+            break;
+        case AST_NODE_DIV:
+            gen_divs();
+            break;
+        default:
+            break;
+    }
 }
