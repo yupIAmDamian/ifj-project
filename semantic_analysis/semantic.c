@@ -62,6 +62,20 @@ static void apply_mangled_name(ASTNode *node, Symbol *sym) {
     }
 }
 
+// Validates presence and correct signature of the mandatory 'main' function
+static void check_main_function(Symtable *st) {
+    Symbol *main_sym = symtable_search(st, "main");
+    if (main_sym == NULL || main_sym->sym_type != SYMBOL_FUNC) {
+        dominik_error(3, "Missing mandatory 'main' function");
+    }
+    if (main_sym->param_count != 0) {
+        dominik_error(4, "'main' function must not take any parameters");
+    }
+    if (main_sym->data_type != TYPE_VOID) {
+        dominik_error(4, "'main' function return type must be void");
+    }
+}
+
 static void check_statement(ASTNode *node, Symtable *st);
 static DataType check_expression(ASTNode *node, Symtable *st);
 
@@ -69,6 +83,7 @@ static DataType check_expression(ASTNode *node, Symtable *st);
 bool check_semantics(ASTNode *root, Symtable *st) {
     if (root == NULL) return true;
     check_statement(root, st);
+    check_main_function(st);
     return true;
 }
 
