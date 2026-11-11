@@ -1,6 +1,7 @@
 #ifndef AST_H
 #define AST_H
 #include "scanner.h"
+#include "symtable.h"
 
 typedef enum {
     AST_NODE_PROGRAM,       // root node for the program
@@ -19,10 +20,12 @@ typedef enum {
     AST_NODE_TERM,          // term node (identifier, integer, double, string)
     AST_NODE_ASSIGN,        // assignment node
     AST_NODE_CALL,          // function call node
+    AST_NODE_INT2FLOAT      // integer to float conversion node
 } ASTNodeType;
 
 typedef struct ASTNode {
     ASTNodeType type;
+    DataType inferred_type;
     struct ASTNode *left;
     struct ASTNode *right;
     struct ASTNode *extra;
