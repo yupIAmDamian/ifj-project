@@ -96,7 +96,7 @@ Token get_next_token_fsm()
         return token;
     }
 
-    if (line_start) { // state for counting the indentation level
+    if (line_start) { // indentation needs to be counted
         state = STATE_INDENT_DEDENT;
     }
 
@@ -104,20 +104,29 @@ Token get_next_token_fsm()
     StringKeywordID buffer; // buffer for storing keywords, IDs, strings, digits, ...
     buffer.str = NULL;
     int comment_nested_count = 0; // counter for nested block comments
+    static bool pending_slash = false; // flag for putting a slash in the input without using another "ungetc"
+    bool found_tab = false; // flag for returning an error if TAB is at the start of a non-empty line
 
     while(1) {
-        int character = getchar();
+        int character;
+        if (pending_slash) {
+            character = '/';
+            pending_slash = false;
+        } else {
+            character = getchar();
+        }
+        bool process_indent_dedent = false; // flag for starting indent and dedent processing
 
         switch (state) {
             case STATE_INDENT_DEDENT:
                 if (character == ' ') {
                     space_count++;
-                } else if (character == '\t') { // TAB can't be at the start of a non-empty line
-                    token.type = TOKEN_ERROR;
-                    return token;
+                } else if (character == '\t') {
+                    found_tab = true; // if the line isnt empty, TAB will result in error
                 } else if (character == '\n') { // line is empty, reset the space counter
                     current_line++;
                     space_count = 0;
+                    found_tab = false;
                 } else if (character == EOF) { // end of file, dedents must be returned
                     if (indent_top > 0) {
                         pending_dedents = indent_top;
@@ -129,32 +138,28 @@ Token get_next_token_fsm()
                         token.type = TOKEN_EOF;
                         return token;
                     }
-                } else { // first non-white character in line found
-                    line_start = false;
-                    ungetc(character, stdin);  // returns the character back into stdin
-                    int current_indent = indent_stack[indent_top];
-                    if (space_count > current_indent) { // higher indentation level in current line
-                        indent_top++;
-                        indent_stack[indent_top] = space_count;
-                        token.type = TOKEN_INDENT;
-                        return token;
-                    } else if (space_count < current_indent) { // lower indentation level in current line
-                        while (indent_top > 0 && indent_stack[indent_top] > space_count) {
-                            indent_top--;
-                            pending_dedents++;
-                        }
-                        // space count needs to match a previous indentation level, otherwise error
-                        if (indent_stack[indent_top] != space_count) {
-                             token.type = TOKEN_ERROR;
-                             return token;
-                        }
+                } else if (character == '/') {
+                    state = STATE_INDENT_DEDENT_SLASH;
+                } else { // first non-whitespace character in line found
+                    ungetc(character, stdin);
+                    process_indent_dedent = true; // indent/dedent token will be returned
+                }
+                break;
 
-                        pending_dedents--;
-                        token.type = TOKEN_DEDENT;
-                        return token;
-                    } else { // same indentation level in current line
-                        state = STATE_START;
-                    }
+            case STATE_INDENT_DEDENT_SLASH:
+                if (character == '/') {
+                    line_start = false;
+                    state = STATE_COMMENT_SINGLE;
+                    found_tab = false;
+                } else if (character == '*') {
+                    line_start = false;
+                    comment_nested_count = 1;
+                    state = STATE_COMMENT_BLOCK;
+                    found_tab = false;
+                } else { // the slash wasnt the beginning of a comment, indents/dedents need to be returned
+                    ungetc(character, stdin);
+                    process_indent_dedent = true;
+                    pending_slash = true; // the slash will be processed in the following token
                 }
                 break;
 
@@ -673,6 +678,37 @@ Token get_next_token_fsm()
                 }
                 break;
 
+        }
+
+        // indent/dedent processing
+        if (process_indent_dedent) {
+            if (found_tab) {
+                token.type = TOKEN_ERROR;
+                return token;
+            }
+            line_start = false;
+            int current_indent = indent_stack[indent_top];
+            if (space_count > current_indent) { // current line has a higher indentation level
+                indent_top++;
+                indent_stack[indent_top] = space_count;
+                token.type = TOKEN_INDENT;
+                return token;
+            } else if (space_count < current_indent) { // current line has a lower indentation level
+                while (indent_top > 0 && indent_stack[indent_top] > space_count) {
+                    indent_top--;
+                    pending_dedents++;
+                }
+                // space count needs to match a previous indentation level, otherwise error
+                if (indent_stack[indent_top] != space_count) {
+                        token.type = TOKEN_ERROR;
+                        return token;
+                }
+                pending_dedents--;
+                token.type = TOKEN_DEDENT;
+                return token;
+            } else { // current line has the same indentation level
+                state = STATE_START;
+            }
         }
     
     }
