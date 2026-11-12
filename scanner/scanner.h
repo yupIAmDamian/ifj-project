@@ -4,7 +4,11 @@
 #ifndef SCANNER_H
 #define SCANNER_H
 
+#include <stdio.h>
+#include <ctype.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
 // token types
 typedef enum {

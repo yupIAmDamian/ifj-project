@@ -27,5 +27,9 @@ if abcd(5) == 25 then
 val 88
    """inde
 nt"""
-     //more indent
+          //ignored indent
+       // ingored indenfgofdhkdjfn
+      /* dlfjh /*
+      kfbh 
+      */ *****/
    "indent should be the same"
