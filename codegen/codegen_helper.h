@@ -1,6 +1,6 @@
 #ifndef CODEGEN_HELPER_H
 #define CODEGEN_HELPER_H
-#include "ast.h"
+#include "../syntactic_analysis/ast.h"
 #include <stdio.h>
 #include <stdlib.h>
 

@@ -40,7 +40,6 @@ ht_item_t* ht_search(hashtable_t* hashtable, char* key){
 }
 
 ht_item_t* ht_insert(hashtable_t* hashtable, char* key, void* data){
-    //checknut ci toto je dobre. je to trosku sus
     int index = probing(hashtable, key, 0);
     if(index == -1){
         return NULL;

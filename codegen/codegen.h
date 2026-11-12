@@ -4,10 +4,11 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include "ast.h"
-#include "scanner.h"
+#include "../syntactic_analysis/ast.h"
+#include "../scanner/scanner.h"
+#include "../syntactic_analysis/parser.h"
+
 #include <string.h>
-#include "parser.h"
 
 #include "gen_func.h"
 #include "codegen_helper.h"
