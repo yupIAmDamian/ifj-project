@@ -2,7 +2,7 @@
 
 char* current_func_name = NULL;
 static int label_counter = 0;
-//GloBal TODO
+//Global TODO
 //add space after every instruction
 //add newlines where needed
 
