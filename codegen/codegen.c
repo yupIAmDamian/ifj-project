@@ -19,13 +19,13 @@ void gen_node(ASTNode *node){
         case AST_NODE_PROGRAM:
             create_head();
             break;
-        case AST_NODE_FUNCTION:
-            char *fun_name_token = string_from_token(node->left);
-            current_func_name = string_from_token(fun_name_token);
+        case AST_NODE_FUNCTION: {
+            current_func_name = string_from_token(node->left);
             gen_fun_def_start();
             gen_fun_def_args(node->extra);
             gen_fun_def_vars(node->right);
             break;
+        }
         case AST_NODE_IF:
             gen_if(node);
             break;
@@ -128,13 +128,13 @@ void gen_fun_call(ASTNode *node, char *result_var){
     }
 
     while(arg_node != NULL){
-        Token token = get_token_from_node(arg_node);
+        Token *token = get_token_from_node(arg_node);
         //TODO check if logic is correct
         //TODO- this type of code repeats itself in many places, maybe we can create a function for it
-        if(token.type == TOKEN_IDENTIFIER){
+        if(token->type == TOKEN_IDENTIFIER){
             gen_pushs(string_from_token(arg_node));
         } else {
-            gen_pushs_data_types(&token);
+            gen_pushs_data_types(arg_node);
         }
         gen_new_line();
 
@@ -195,13 +195,13 @@ check if my logic is correct
 i will push every variable onto the stack and then on top there will be the result of the condition
 */
 void decide_condition(ASTNode *condition_node){
-    Token *condition = get_token_attributes(condition_node); 
+    Token *condition = get_token_from_node(condition_node); 
 
     ASTNode *op1 = condition_node->left;
-    Token *op1_attr = get_token_attributes(op1);
+    Token *op1_attr = get_token_from_node(op1);
 
     ASTNode *op2 = condition_node->right;
-    Token *op2_attr = get_token_attributes(op2);
+    Token *op2_attr = get_token_from_node(op2);
 
     gen_pushs(op1_attr->attribute.string_value);
     gen_pushs(op2_attr->attribute.string_value);
@@ -268,17 +268,17 @@ void gen_while(ASTNode *node){
 //generation of constants
 //Consider: types NIL, BOOL, ARRAY
 void gen_data_type(ASTNode *node){
-    Token token = get_token_from_node(node);
-    switch (token.type) {
+    Token *token = get_token_from_node(node);
+    switch (token->type) {
         case TOKEN_INTEGER:
-            printf("int@%d", token.attribute.integer_value);
+            printf("int@%d", token->attribute.integer_value);
             break;
         //TODO chceck if float is correct as a
         case TOKEN_DOUBLE:
-            printf("float@%a", token.attribute.double_value);
+            printf("float@%a", token->attribute.double_value);
             break;
         case TOKEN_STRING:
-            printf("string@%s", token.attribute.string_value);
+            printf("string@%s", token->attribute.string_value);
             break;
         default:
             break;
@@ -294,9 +294,9 @@ void gen_pushs(char* symb){
     gen_new_line();
 }
 
-void gen_pushs_data_types(Token *symb){
+void gen_pushs_data_types(ASTNode *node){
     printf("PUSHS");
-    gen_data_type(symb);
+    gen_data_type(node);
     gen_new_line();
 }
 
@@ -317,7 +317,7 @@ void equation_traversal(ASTNode *node){
         if(node->val.type == TOKEN_IDENTIFIER){
             gen_pushs(string_from_token(node));
         } else {
-            gen_pushs_data_types(&node->val);
+            gen_pushs_data_types(node);
         }
     }
 }
