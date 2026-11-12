@@ -3,13 +3,13 @@
 #include "../helper_func.h"
 
 //TODO function for checking if name is assigned or no
-Symbol* symbol_create(const char *name, SymbolType s_type, DataType d_type, bool is_init) {
+Symbol* symbol_create(char *name, SymbolType s_type, DataType d_type, bool is_init) {
     if (!name) return NULL;
 
     Symbol *sym = malloc(sizeof(Symbol));
     if (!sym) return NULL;
 
-    sym->name = strdup(name);
+    sym->name = str_duplicate(name);
     if (!sym->name) {
         free(sym);
         return NULL;
@@ -101,7 +101,7 @@ bool symtable_insert_var(Symtable *st, char *name, DataType type, bool is_init) 
         snprintf(mangled_buf, sizeof(mangled_buf), "LF@%s$%d", name, st->block_counter);
     }
 
-    sym->mangled_name = strdup(mangled_buf);
+    sym->mangled_name = str_duplicate(mangled_buf);
     ht_item_t *inserted_item = ht_insert(st->scopes[st->top], name, (void*) sym);
     if (!inserted_item) {
         if (sym->mangled_name) free(sym->mangled_name);
@@ -166,7 +166,7 @@ bool symtable_insert_func(Symtable *st, char *name, DataType return_type, Param 
         }
     }
 
-    ht_item_t *inserted_item = ht_insert(st->scopes[0], name, (const void*) sym);
+    ht_item_t *inserted_item = ht_insert(st->scopes[0], name, (void*) sym);
     if (!inserted_item) {
         symbol_free(sym);
         return false;

@@ -4,13 +4,16 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include "ast.h"
-#include "scanner.h"
+#include "../syntactic_analysis/ast.h"
+#include "../scanner/scanner.h"
+#include "../syntactic_analysis/parser.h"
+
 #include <string.h>
-#include "parser.h"
 
 #include "gen_func.h"
 #include "codegen_helper.h"
+
+char* current_func_name;
 
 void gen_code(ASTNode *root);
 void gen_node(ASTNode *node);
@@ -19,13 +22,13 @@ void gen_node(ASTNode *node);
 /*
 Function definition
 */
-void gen_fun_def_start(char *function_name);
+void gen_fun_def_start();
 
-void gen_fun_def_args(ASTNode *root, char *function_name);
+void gen_fun_def_args(ASTNode *root);
 
-void gen_fun_def_vars(ASTNode *root, int *var_counter, char *function_name);
+void gen_fun_def_vars(ASTNode *root);
 
-void gen_fun_def_body(ASTNode *root, char *function_name);
+void gen_fun_def_body(ASTNode *root);
 
 void gen_fun_def_end();
 

@@ -1,19 +1,20 @@
 #include "gen_func.h"
 #include "scanner.h"
 
+
 //function declaration
-void gen_params_declaration(char *scope, char* func_name, char* var_name){
+void gen_params_declaration(char *scope, char* var_name){
     gen_defvar();
-    gen_var(scope, func_name, var_name, NULL);
+    gen_var(scope, current_func_name, var_name, NULL);
     gen_new_line();
     gen_pops();
-    gen_var(scope, func_name, var_name, NULL);
+    gen_var(scope, current_func_name, var_name, NULL);
     gen_new_line();
 }
 
 //variable generation
-void gen_var(char *scope, char* func_name, char* var_name, int number){
-    printf("%s@%s$%s%d", scope, func_name, var_name, number);
+void gen_var(char *scope, char* var_name, int number){
+    printf("%s@%s$%s%d", scope, current_func_name, var_name, number);
 }
 
 //rest code

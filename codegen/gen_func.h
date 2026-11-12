@@ -4,9 +4,11 @@
 #include <stddef.h>
 #include <stdio.h>
 
+extern char *current_func_name; 
+
 void gen_params_declaration(char *scope, char* func_name, char* var_name);
 
-void gen_var(char *scope, char* func_name, char* var_name, int number);
+void gen_var(char *scope, char* var_name, int number);
 
 void create_head();
 

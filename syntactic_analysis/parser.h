@@ -1,7 +1,7 @@
 #ifndef PARSER_H
 #define PARSER_H
 #include <stdbool.h>
-#include "scanner.h" 
+#include "../scanner/scanner.h"
 
 extern Token current_token;
 

@@ -1,7 +1,7 @@
 #ifndef EXPRESSION_H
 #define EXPRESSION_H
 #include <stdbool.h>
-#include "scanner.h"
+#include "../syntactic_analysis/ast.h"
 #include "ast.h"
 
 typedef enum {
