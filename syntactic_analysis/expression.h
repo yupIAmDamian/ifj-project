@@ -29,7 +29,7 @@ typedef enum {
     SYM_MARK,     // symbol used for precedence parsing
 } StackItemType;
 
-typedef struct {
+typedef struct StackItem{
     StackItemType type;
     PrecTableIndex prec_index;
     Token token; 
