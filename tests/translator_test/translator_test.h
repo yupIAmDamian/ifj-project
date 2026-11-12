@@ -1,0 +1,4 @@
+#ifndef TRANSLATOR_TEST_H
+#define TRANSLATOR_TEST_H
+
+#endif
