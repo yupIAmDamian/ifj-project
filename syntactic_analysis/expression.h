@@ -1,17 +1,19 @@
 #ifndef EXPRESSION_H
 #define EXPRESSION_H
 #include <stdbool.h>
-#include "scanner.h"
+#include "../syntactic_analysis/ast.h"
 #include "ast.h"
 
 typedef enum {
-    PREC_MUL_DIV, // *, /
-    PREC_ADD_SUB, // +, -
-    PREC_REL,     // <, <=, >, >=, ==, !=
-    PREC_LPAREN,  // (
-    PREC_RPAREN,  // )
-    PREC_OPERAND, // id, int, double, string
-    PREC_DOLLAR,  // $ 
+    PREC_UNARY,     // unary +, -
+    PREC_MUL_DIV,   // *, /
+    PREC_ADD_SUB,   // binary +, -
+    PREC_REL,       // <, <=, >, >=
+    PREC_EQ_NOT_EQ, // ==, !=
+    PREC_LPAREN,    // (
+    PREC_RPAREN,    // )
+    PREC_OPERAND,   // id, int, double, string
+    PREC_DOLLAR,    // $ 
 } PrecTableIndex;
 
 typedef enum {
@@ -27,7 +29,7 @@ typedef enum {
     SYM_MARK,     // symbol used for precedence parsing
 } StackItemType;
 
-typedef struct {
+typedef struct StackItem{
     StackItemType type;
     PrecTableIndex prec_index;
     Token token; 
@@ -45,6 +47,7 @@ bool expr_stack_insert_mark(PrecStack *stack);
 void expr_stack_pop(PrecStack *stack);
 StackItem *expr_stack_top_terminal(PrecStack *stack);
 void expr_stack_free(PrecStack *stack);
+PrecTableIndex get_prec_index(TokenType token_type, PrecStack *stack);
 
 ASTNode* parse_expression();
 

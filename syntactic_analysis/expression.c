@@ -15,7 +15,8 @@ void expr_stack_init(PrecStack *stack) {
 bool expr_stack_push(PrecStack *stack, StackItemType type, PrecTableIndex index, Token token, ASTNode *ast_node) {
     StackItem *new_item = (StackItem *)malloc(sizeof(StackItem));
     if (new_item == NULL) {
-        return false;
+        fprintf(stderr, "Internal error: Memory allocation failed in expr_stack_push.\n");
+        exit(99);
     }
     new_item->type = type;
     new_item->prec_index = index;
@@ -29,7 +30,8 @@ bool expr_stack_push(PrecStack *stack, StackItemType type, PrecTableIndex index,
 bool expr_stack_insert_mark(PrecStack *stack) {
     StackItem *new_item = (StackItem *)malloc(sizeof(StackItem));
     if (new_item == NULL) {
-        return false;
+        fprintf(stderr, "Internal error: Memory allocation failed in expr_stack_insert_mark.\n");
+        exit(99);
     }
     new_item->type = SYM_MARK;
     new_item->ast_node = NULL;
@@ -72,21 +74,27 @@ void expr_stack_free(PrecStack *stack) {
     }
 }
 
-PrecTableIndex get_prec_index(TokenType token_type) {
+PrecTableIndex get_prec_index(TokenType token_type, PrecStack *stack) {
     switch (token_type) {
         case TOKEN_MUL:
         case TOKEN_DIV:
             return PREC_MUL_DIV;
         case TOKEN_PLUS:
-        case TOKEN_MINUS:
-            return PREC_ADD_SUB;
+        case TOKEN_MINUS: {
+            StackItem *top_term = expr_stack_top_terminal(stack);
+            if (top_term != NULL && (top_term->prec_index == PREC_OPERAND || top_term->prec_index == PREC_RPAREN)) {
+                return PREC_ADD_SUB;
+            }
+            return PREC_UNARY;
+        }
         case TOKEN_LESS:
         case TOKEN_LESS_EQ:
         case TOKEN_GREATER:
         case TOKEN_GREATER_EQ:
+            return PREC_REL;
         case TOKEN_EQ:
         case TOKEN_NOT_EQ:
-            return PREC_REL;
+            return PREC_EQ_NOT_EQ;
         case TOKEN_LPAREN:
             return PREC_LPAREN;
         case TOKEN_RPAREN:
@@ -103,15 +111,17 @@ PrecTableIndex get_prec_index(TokenType token_type) {
 }
 
 // precedence table
-const PrecRelation precedence_table[7][7] = {
-    // PREC_MUL_DIV, PREC_ADD_SUB, PREC_REL, PREC_LPAREN, PREC_RPAREN, PREC_OPERAND, PREC_DOLLAR
-    { P_R, P_R, P_R, P_S, P_R, P_S, P_R }, // PREC_MUL_DIV
-    { P_S, P_R, P_R, P_S, P_R, P_S, P_R }, // PREC_ADD_SUB
-    { P_S, P_S, P_N, P_S, P_R, P_S, P_R }, // PREC_REL
-    { P_S, P_S, P_S, P_S, P_E, P_S, P_N }, // PREC_LPAREN
-    { P_R, P_R, P_R, P_N, P_R, P_N, P_R }, // PREC_RPAREN
-    { P_R, P_R, P_R, P_N, P_R, P_N, P_R }, // PREC_OPERAND
-    { P_S, P_S, P_S, P_S, P_N, P_S, P_N }  // PREC_DOLLAR
+const PrecRelation precedence_table[9][9] = {
+    // PREC_UNARY, PREC_MUL_DIV, PREC_ADD_SUB, PREC_REL, PREC_EQ_NOT_EQ, PREC_LPAREN, PREC_RPAREN, PREC_OPERAND, PREC_DOLLAR
+    /* PREC_UNARY     */ { P_S, P_R, P_R, P_R, P_R, P_S, P_R, P_S, P_R },
+    /* PREC_MUL_DIV   */ { P_S, P_R, P_R, P_R, P_R, P_S, P_R, P_S, P_R }, 
+    /* PREC_ADD_SUB   */ { P_S, P_S, P_R, P_R, P_R, P_S, P_R, P_S, P_R },
+    /* PREC_REL       */ { P_S, P_S, P_S, P_N, P_R, P_S, P_R, P_S, P_R }, 
+    /* PREC_EQ_NOT_EQ */ { P_S, P_S, P_S, P_S, P_N, P_S, P_R, P_S, P_R },
+    /* PREC_LPAREN    */ { P_S, P_S, P_S, P_S, P_S, P_S, P_E, P_S, P_N }, 
+    /* PREC_RPAREN    */ { P_N, P_R, P_R, P_R, P_R, P_N, P_R, P_N, P_R },
+    /* PREC_OPERAND   */ { P_N, P_R, P_R, P_R, P_R, P_N, P_R, P_N, P_R }, 
+    /* PREC_DOLLAR    */ { P_S, P_S, P_S, P_S, P_S, P_S, P_N, P_S, P_N }
 };
 
 ASTNode* parse_expression() {
@@ -124,13 +134,13 @@ ASTNode* parse_expression() {
 
     while (true) {
         StackItem *top_term = expr_stack_top_terminal(&stack);
-        PrecTableIndex input_idx = get_prec_index(current_token.type);
+        PrecTableIndex input_idx = get_prec_index(current_token.type, &stack);
         PrecRelation relation = precedence_table[top_term->prec_index][input_idx];
 
         if (relation == P_S) {
             expr_stack_insert_mark(&stack);
             expr_stack_push(&stack, SYM_TERMINAL, input_idx, current_token, NULL);
-            current_token = get_next_token();
+            current_token = get_token_buffered();
             if (current_token.type == TOKEN_ERROR) {
                 expr_stack_free(&stack);
                 return NULL; // lexical error
@@ -157,6 +167,10 @@ ASTNode* parse_expression() {
                 new_node = create_ast_node(AST_NODE_EXPR, NULL, NULL, NULL, items[0].token);
             }
 
+            else if (count == 2) {
+                new_node = create_ast_node(AST_NODE_EXPR, items[0].ast_node, NULL, NULL, items[1].token);
+            }
+
             else if (count == 3) {
                 if (items[2].token.type == TOKEN_LPAREN && items[0].token.type == TOKEN_RPAREN) {
                     new_node = items[1].ast_node;
@@ -179,7 +193,7 @@ ASTNode* parse_expression() {
 
         else if (relation == P_E) {
             expr_stack_push(&stack, SYM_TERMINAL, input_idx, current_token, NULL);
-            current_token = get_next_token();
+            current_token = get_token_buffered();
             if (current_token.type == TOKEN_ERROR) {
                 expr_stack_free(&stack);
                 return NULL; // lexical error

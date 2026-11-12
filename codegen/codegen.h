@@ -1,10 +1,55 @@
+#ifndef CODEGEN_H
+#define CODEGEN_H
+
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include "../syntactic_analysis/ast.h"
+#include "../scanner/scanner.h"
+#include "../syntactic_analysis/parser.h"
+
+#include <string.h>
+
+#include "gen_func.h"
+#include "codegen_helper.h"
+
+extern char* current_func_name;
+
+void gen_code(ASTNode *root);
+void gen_node(ASTNode *node);
 
 
-// dummy struct for 3AC tape
-typedef struct Tape3AC {
-    int top;
-} Tape3AC;
+/*
+Function definition
+*/
+void gen_fun_def_start();
 
-void create_head(){}
+void gen_fun_def_args(ASTNode *root);
 
-void tape_loop(Tape3AC *tape){}
+void gen_fun_def_vars(ASTNode *root);
+
+void gen_fun_def_body(ASTNode *root);
+
+void gen_fun_def_end();
+
+void gen_fun_call(ASTNode *node, char *result_var);
+
+void gen_if(ASTNode *node);
+void decide_condition(ASTNode *condition_node);
+void gen_while(ASTNode *node);
+
+void gen_data_type(ASTNode *node);
+void gen_pushs(char *symb);
+void gen_pushs_data_types(ASTNode *node);
+
+void gen_adds();
+void gen_subs();
+void gen_muls();
+void gen_divs();
+
+void gen_fun_def_vars_recursive(ASTNode *node, int *var_counter);
+
+void equation_traversal(ASTNode *node);
+void arithmetic_operation(ASTNode *node);
+
+#endif

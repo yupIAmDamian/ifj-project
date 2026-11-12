@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include "hashtable.h"
+#include "../helper_func.h"
 
 #define MAX_SCOPES 100
 
@@ -28,6 +29,7 @@ typedef struct Param {
 
 typedef struct Symbol {
     char *name;
+    char *mangled_name;
     SymbolType s_type;
     DataType d_type;
     bool is_initialized;
@@ -37,10 +39,11 @@ typedef struct Symbol {
 
 typedef struct {
     hashtable_t *scopes[MAX_SCOPES]; 
-    int top;                      
+    int top;
+    int block_counter; //counting blocks for mangling                      
 } Symtable;
 
-Symbol* symbol_create(const char *name, SymbolType s_type, DataType d_type, bool is_init);
+Symbol* symbol_create(char *name, SymbolType s_type, DataType d_type, bool is_init);
 void symbol_free(Symbol *sym);
 
 Symtable* symtable_init(void);
