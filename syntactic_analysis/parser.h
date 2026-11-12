@@ -2,6 +2,11 @@
 #define PARSER_H
 #include <stdbool.h>
 #include "../scanner/scanner.h"
+#include <stdio.h>
+#include <string.h>
+#include "parser.h"
+#include "expression.h"
+#include "ast.h"
 
 extern Token current_token;
 

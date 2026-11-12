@@ -1,11 +1,6 @@
 // Compiler of IFJ26 imperative language
 // Author: Michal Kopček (xkopcem00)
-
-#include <stdio.h>
-#include <string.h>
 #include "parser.h"
-#include "expression.h"
-#include "ast.h"
 
 Token current_token;
 ASTNode *global_ast_root = NULL;
