@@ -62,17 +62,67 @@ static void apply_mangled_name(ASTNode *node, Symbol *sym) {
     }
 }
 
+// Pre-registration of 10 built-in functions according to the IFJ26 specification
+static void register_builtin_functions(Symtable *st) {
+    symtable_insert_func(st, "readLine", TYPE_STRING, NULL, 0);
+    symtable_insert_func(st, "readInt", TYPE_INT, NULL, 0);
+    symtable_insert_func(st, "readDouble", TYPE_FLOAT, NULL, 0);
+    
+    symtable_insert_func(st, "print", TYPE_VOID, NULL, 1);
+    symtable_insert_func(st, "toStr", TYPE_STRING, NULL, 1);
+
+    Param p_double[1] = { { .name = "value", .d_type = TYPE_FLOAT } };
+    symtable_insert_func(st, "toInt", TYPE_INT, p_double, 1);
+
+    Param p_str[1] = { { .name = "value", .d_type = TYPE_STRING } };
+    symtable_insert_func(st, "strLength", TYPE_INT, p_str, 1);
+
+    Param p_substr[3] = {
+        { .name = "value", .d_type = TYPE_STRING },
+        { .name = "start", .d_type = TYPE_INT },
+        { .name = "end",   .d_type = TYPE_INT }
+    };
+    symtable_insert_func(st, "subStr", TYPE_STRING, p_substr, 3);
+
+    Param p_ord[2] = {
+        { .name = "value", .d_type = TYPE_STRING },
+        { .name = "index", .d_type = TYPE_INT }
+    };
+    symtable_insert_func(st, "ord", TYPE_INT, p_ord, 2);
+
+    Param p_int[1] = { { .name = "code", .d_type = TYPE_INT } };
+    symtable_insert_func(st, "chr", TYPE_STRING, p_int, 1);
+}
+
 // Validates presence and correct signature of the mandatory 'main' function
-static void check_main_function(Symtable *st) {
-    Symbol *main_sym = symtable_search(st, "main");
-    if (main_sym == NULL || main_sym->s_type != SYMBOL_FUNC) {
-        dominik_error(3, "Missing mandatory 'main' function");
+static void check_main_function(ASTNode *root, Symtable *st) {
+    if (root == NULL || root->type != AST_NODE_PROGRAM) return;
+
+    int main_count = 0;
+    ASTNode *func = root->left;
+    while (func != NULL) {
+        if (func->type == AST_NODE_FUNCTION && func->is_main) {
+            main_count++;
+            
+            int params_amount = 0;
+            ASTNode *curr = func->left;
+            while (curr != NULL) { params_amount++; curr = curr->next; }
+            
+            if (params_amount != 0) {
+                dominik_error(5, "'@main' function must not take any parameters");
+            }
+            if (func->inferred_type != TYPE_VOID) {
+                dominik_error(6, "'@main' function return type must be void (Unit)");
+            }
+        }
+        func = func->next;
     }
-    if (main_sym->params_amount != 0) {
-        dominik_error(4, "'main' function must not take any parameters");
+
+    if (main_count == 0) {
+        dominik_error(3, "Missing mandatory '@main' function");
     }
-    if (main_sym->d_type != TYPE_VOID) {
-        dominik_error(4, "'main' function return type must be void");
+    if (main_count > 1) {
+        dominik_error(4, "Multiple '@main' functions detected");
     }
 }
 
@@ -82,8 +132,41 @@ static DataType check_expression(ASTNode *node, Symtable *st);
 // Initiates the recursive check on the root of the AST.
 bool check_semantics(ASTNode *root, Symtable *st) {
     if (root == NULL) return true;
+    register_builtin_functions(st);
+
+    if (root->type == AST_NODE_PROGRAM) {
+        ASTNode *func = root->left;
+        while (func != NULL) {
+            if (func->type == AST_NODE_FUNCTION) {
+                int params_amount = 0;
+                ASTNode *curr = func->left;
+                while (curr != NULL) {
+                    params_amount++;
+                    curr = curr->next;
+                }
+
+                Param *extracted_params = NULL;
+                if (params_amount > 0) {
+                    extracted_params = malloc(params_amount * sizeof(Param));
+                    curr = func->left;
+                    for (int i = 0; i < params_amount; i++) {
+                        extracted_params[i].name = curr->val.attribute.string_value;
+                        extracted_params[i].d_type = curr->inferred_type; 
+                        curr = curr->next;
+                    }
+                }
+
+                bool success = symtable_insert_func(st, func->val.attribute.string_value, func->inferred_type, extracted_params, params_amount);
+                if (!success) dominik_error(3, "Redefinition of function");
+
+                if (extracted_params) free(extracted_params);
+            }
+            func = func->next;
+        }
+    }
+
     check_statement(root, st);
-    check_main_function(st);
+    check_main_function(root, st);
     return true;
 }
 
@@ -108,7 +191,7 @@ static DataType check_arithmetic(ASTNode *node, Symtable *st) {
         return TYPE_FLOAT;
     }
 
-    dominik_error(4, "Incompatible types in arithmetic operation");
+    dominik_error(6, "Incompatible types in arithmetic operation");
     return TYPE_UNKNOWN;
 }
 
@@ -124,12 +207,28 @@ static DataType check_comparison(ASTNode *node, Symtable *st) {
         return TYPE_BOOL;
     }
 
-    dominik_error(4, "Cannot compare incompatible types");
+    dominik_error(6, "Cannot compare incompatible types");
     return TYPE_UNKNOWN;
 }
 
 // Evaluates function call expressions
 static DataType check_func_call(ASTNode *node, Symtable *st) {
+    char *func_name = node->val.attribute.string_value;
+
+    if (strcmp(func_name, "print") == 0 || strcmp(func_name, "toStr") == 0) {
+        ASTNode *arg_node = node->right;
+        if (arg_node == NULL || arg_node->next != NULL) {
+            dominik_error(5, "Built-in function requires exactly one argument");
+        }
+        DataType arg_type = check_expression(arg_node, st);
+        if (arg_type == TYPE_UNKNOWN || arg_type == TYPE_BOOL) {
+            dominik_error(5, "Invalid argument type for built-in function");
+        }
+        DataType ret = (strcmp(func_name, "print") == 0) ? TYPE_VOID : TYPE_STRING;
+        node->inferred_type = ret;
+        return ret;
+    }
+
     Symbol *func_sym = symtable_search(st, node->val.attribute.string_value);
     if (func_sym == NULL || func_sym->s_type != SYMBOL_FUNC) {
         dominik_error(3, "Undefined function");
@@ -148,7 +247,7 @@ static DataType check_func_call(ASTNode *node, Symtable *st) {
         DataType param_type = func_sym->params[arg_count].d_type;
 
         if (!convert_if_needed(arg_ptr, arg_type, param_type)) {
-            dominik_error(4, "Parameter type mismatch");
+            dominik_error(5, "Parameter type mismatch");
         }
 
         if (*arg_ptr != curr_arg) {
@@ -185,7 +284,7 @@ static void check_statement(ASTNode *node, Symtable *st) {
             }
 
             if (node->inferred_type == TYPE_VOID || node->inferred_type == TYPE_UNKNOWN) {
-                dominik_error(4, "Cannot infer variable type or assign void");
+                dominik_error(6, "Cannot infer variable type or assign void");
             }
 
             ASTNode *var_node = node->left;
@@ -198,7 +297,7 @@ static void check_statement(ASTNode *node, Symtable *st) {
             apply_mangled_name(var_node, sym);
 
             if (!convert_if_needed(&node->right, expr_type, node->inferred_type)) {
-                dominik_error(4, "Cannot assign incompatible type to variable");
+                dominik_error(6, "Cannot assign incompatible type to variable");
             }
             break;
         }
@@ -212,7 +311,7 @@ static void check_statement(ASTNode *node, Symtable *st) {
 
             DataType expr_type = check_expression(node->right, st);
             if (!convert_if_needed(&node->right, expr_type, sym->d_type)) {
-                dominik_error(4, "Type mismatch in assignment");
+                dominik_error(6, "Type mismatch in assignment");
             }
             break;
         }
@@ -220,7 +319,7 @@ static void check_statement(ASTNode *node, Symtable *st) {
         case AST_NODE_IF: {
             DataType cond_type = check_expression(node->left, st);
             if (cond_type != TYPE_BOOL) {
-                dominik_error(4, "Condition in 'if' must be Boolean");
+                dominik_error(6, "Condition in 'if' must be Boolean");
             }
 
             scope_push(st);
@@ -238,7 +337,7 @@ static void check_statement(ASTNode *node, Symtable *st) {
         case AST_NODE_WHILE: {
             DataType cond_type = check_expression(node->left, st);
             if (cond_type != TYPE_BOOL) {
-                dominik_error(4, "Condition in 'while' must be Boolean");
+                dominik_error(6, "Condition in 'while' must be Boolean");
             }
 
             scope_push(st);
@@ -254,7 +353,7 @@ static void check_statement(ASTNode *node, Symtable *st) {
             }
 
             if (!convert_if_needed(&node->left, return_type, current_func_ret_type)) {
-                dominik_error(4, "Return type mismatch");
+                dominik_error(6, "Return type mismatch");
             }
             break;
         }
@@ -265,39 +364,22 @@ static void check_statement(ASTNode *node, Symtable *st) {
         }
 
         case AST_NODE_FUNCTION: {
-            int params_amount = 0;
-            ASTNode *curr = node->left;
-            while (curr != NULL) {
-                params_amount++;
-                curr = curr->next;
-            }
-
-            Param *extracted_params = NULL;
-            if (params_amount > 0) {
-                extracted_params = malloc(params_amount * sizeof(Param));
-                curr = node->left;
-                for (int i = 0; i < params_amount; i++) {
-                    extracted_params[i].name = curr->val.attribute.string_value;
-                    extracted_params[i].d_type = curr->inferred_type; 
-                    curr = curr->next;
-                }
-            }
-
-            bool success = symtable_insert_func(st, node->val.attribute.string_value, node->inferred_type, extracted_params, params_amount);
-            if (!success) dominik_error(3, "Redefinition of function");
+            Symbol *func_sym = symtable_search(st, node->val.attribute.string_value);
 
             DataType prev_ret_type = current_func_ret_type;
             current_func_ret_type = node->inferred_type;
 
             scope_push(st);
-            for (int i = 0; i < params_amount; i++) {
-                symtable_insert_var(st, extracted_params[i].name, extracted_params[i].d_type, true);
+            
+            if (func_sym != NULL && func_sym->params != NULL) {
+                for (int i = 0; i < func_sym->params_amount; i++) {
+                    symtable_insert_var(st, func_sym->params[i].name, func_sym->params[i].d_type, true);
+                }
             }
 
             check_statement(node->right, st);
             scope_pop(st);
 
-            if (extracted_params) free(extracted_params);
             current_func_ret_type = prev_ret_type;
             break;
         }
@@ -365,7 +447,7 @@ static DataType check_expression(ASTNode *node, Symtable *st) {
                         node->inferred_type = operand_type;
                         return operand_type;
                     }
-                    dominik_error(4, "Unary +/- requires numeric operand");
+                    dominik_error(6, "Unary +/- requires numeric operand");
                 }
             }
 
