@@ -19,7 +19,7 @@ static ASTNode* wrap_int2float(ASTNode *expr) {
         dominik_error(99, "Internal Error: Memory allocation failed");
     }
 
-    conv->type = NODE_INT2FLOAT;
+    conv->type = AST_NODE_INT2FLOAT;
     conv->inferred_type = TYPE_FLOAT;
     conv->left = expr;
     conv->right = NULL;
@@ -55,10 +55,10 @@ static void promote_binary_operands_if_needed(ASTNode *node, DataType *left_type
 // Replaces a node's variable identifier with its unique mangled name
 static void apply_mangled_name(ASTNode *node, Symbol *sym) {
     if (node != NULL && sym != NULL && sym->mangled_name != NULL) {
-        if (node->val.string_val != NULL) {
-            free(node->val.string_val);
+        if (node->val.attribute.string_value != NULL) {
+            free(node->val.attribute.string_value);
         }
-        node->val.string_val = strdup(sym->mangled_name);
+        node->val.attribute.string_value = strdup(sym->mangled_name);
     }
 }
 
@@ -92,8 +92,7 @@ static DataType check_arithmetic(ASTNode *node, Symtable *st) {
     DataType left_type = check_expression(node->left, st);
     DataType right_type = check_expression(node->right, st);
 
-    // string concatenation only valid for '+'
-    if (node->type == NODE_ADD && left_type == TYPE_STRING && right_type == TYPE_STRING) {
+    if (node->val.type == TOKEN_PLUS && left_type == TYPE_STRING && right_type == TYPE_STRING) {
         node->inferred_type = TYPE_STRING;
         return TYPE_STRING;
     }
@@ -131,7 +130,7 @@ static DataType check_comparison(ASTNode *node, Symtable *st) {
 
 // Evaluates function call expressions
 static DataType check_func_call(ASTNode *node, Symtable *st) {
-    Symbol *func_sym = symtable_search(st, node->val.string_val);
+    Symbol *func_sym = symtable_search(st, node->val.attribute.string_value);
     if (func_sym == NULL || func_sym->sym_type != SYMBOL_FUNC) {
         dominik_error(3, "Undefined function");
     }
@@ -168,16 +167,21 @@ static void check_statement(ASTNode *node, Symtable *st) {
     if (node == NULL) return;
 
     switch (node->type) {
-        case NODE_VAR_DECL: {
+        case AST_NODE_PROGRAM: {
+            check_statement(node->left, st);
+            break;
+        }
+        case AST_NODE_VAR_DECL: {
             DataType expr_type = check_expression(node->right, st);
             
-            bool success = symtable_insert_var(st, node->val.string_val, node->inferred_type, true);
+            ASTNode *var_node = node->left;
+            bool success = symtable_insert_var(st, var_node->val.attribute.string_value, node->inferred_type, true);
             if (!success) {
                 dominik_error(3, "Redefinition of variable");
             }
 
-            Symbol *sym = symtable_search_current_scope(st, node->val.string_val);
-            apply_mangled_name(node, sym);
+            Symbol *sym = symtable_search_current_scope(st, var_node->val.attribute.string_value);
+            apply_mangled_name(var_node, sym);
 
             if (!convert_if_needed(&node->right, expr_type, node->inferred_type)) {
                 dominik_error(4, "Cannot assign incompatible type to variable");
@@ -185,8 +189,8 @@ static void check_statement(ASTNode *node, Symtable *st) {
             break;
         }
 
-        case NODE_ASSIGN: {
-            Symbol *sym = symtable_search(st, node->left->val.string_val);
+        case AST_NODE_ASSIGN: {
+            Symbol *sym = symtable_search(st, node->left->val.attribute.string_value);
             if (sym == NULL) {
                 dominik_error(3, "Assignment to undefined variable");
             }
@@ -199,7 +203,7 @@ static void check_statement(ASTNode *node, Symtable *st) {
             break;
         }
 
-        case NODE_IF: {
+        case AST_NODE_IF: {
             DataType cond_type = check_expression(node->left, st);
             if (cond_type != TYPE_BOOL) {
                 dominik_error(4, "Condition in 'if' must be Boolean");
@@ -217,7 +221,7 @@ static void check_statement(ASTNode *node, Symtable *st) {
             break;
         }
 
-        case NODE_WHILE: {
+        case AST_NODE_WHILE: {
             DataType cond_type = check_expression(node->left, st);
             if (cond_type != TYPE_BOOL) {
                 dominik_error(4, "Condition in 'while' must be Boolean");
@@ -229,7 +233,7 @@ static void check_statement(ASTNode *node, Symtable *st) {
             break;
         }
 
-        case NODE_RETURN: {
+        case AST_NODE_RETURN: {
             DataType return_type = TYPE_VOID;
             if (node->left != NULL) {
                 return_type = check_expression(node->left, st);
@@ -241,36 +245,46 @@ static void check_statement(ASTNode *node, Symtable *st) {
             break;
         }
 
-        case NODE_CALL: {
+        case AST_NODE_CALL: {
             check_expression(node, st);
             break;
         }
 
-        case NODE_FUNC_DECL: {
-            bool success = symtable_insert_func(st, node->val.string_val, node->inferred_type, node->params, node->param_count);
-            if (!success) {
-                dominik_error(3, "Redefinition of function");
+        case AST_NODE_FUNCTION: {
+            int param_count = 0;
+            ASTNode *curr = node->left;
+            while (curr != NULL) {
+                param_count++;
+                curr = curr->next;
             }
+
+            Param *extracted_params = NULL;
+            if (param_count > 0) {
+                extracted_params = malloc(param_count * sizeof(Param));
+                curr = node->left;
+                for (int i = 0; i < param_count; i++) {
+                    extracted_params[i].name = curr->val.attribute.string_value;
+                    extracted_params[i].type = curr->inferred_type; 
+                    curr = curr->next;
+                }
+            }
+
+            bool success = symtable_insert_func(st, node->val.attribute.string_value, node->inferred_type, extracted_params, param_count);
+            if (!success) dominik_error(3, "Redefinition of function");
 
             DataType prev_ret_type = current_func_ret_type;
             current_func_ret_type = node->inferred_type;
 
             scope_push(st);
-            for (int i = 0; i < node->param_count; i++) {
-                symtable_insert_var(st, node->params[i].name, node->params[i].type, true);
+            for (int i = 0; i < param_count; i++) {
+                symtable_insert_var(st, extracted_params[i].name, extracted_params[i].type, true);
             }
 
             check_statement(node->right, st);
             scope_pop(st);
 
+            if (extracted_params) free(extracted_params);
             current_func_ret_type = prev_ret_type;
-            break;
-        }
-
-        case NODE_BLOCK: {
-            scope_push(st);
-            check_statement(node->left, st);
-            scope_pop(st);
             break;
         }
 
@@ -288,70 +302,81 @@ static DataType check_expression(ASTNode *node, Symtable *st) {
     if (node == NULL) return TYPE_VOID;
 
     switch (node->type) {
-        case NODE_INT_LITERAL:
-            node->inferred_type = TYPE_INT;
-            return TYPE_INT;
+        case AST_NODE_TERM: {
+            if (node->val.type == TOKEN_INTEGER) {
+                node->inferred_type = TYPE_INT;
+                return TYPE_INT;
+            } else if (node->val.type == TOKEN_DOUBLE) {
+                node->inferred_type = TYPE_FLOAT;
+                return TYPE_FLOAT;
+            } else if (node->val.type == TOKEN_STRING) {
+                node->inferred_type = TYPE_STRING;
+                return TYPE_STRING;
+            } else if (node->val.type == TOKEN_IDENTIFIER) {
+                Symbol *sym = symtable_search(st, node->val.attribute.string_value);
+                if (sym == NULL) dominik_error(3, "Undefined variable");
 
-        case NODE_FLOAT_LITERAL:
-            node->inferred_type = TYPE_FLOAT;
-            return TYPE_FLOAT;
-
-        case NODE_STRING_LITERAL:
-            node->inferred_type = TYPE_STRING;
-            return TYPE_STRING;
-
-        case NODE_BOOL_LITERAL:
-            node->inferred_type = TYPE_BOOL;
-            return TYPE_BOOL;
-
-        case NODE_VAR: {
-            Symbol *sym = symtable_search(st, node->val.string_val);
-            if (sym == NULL) {
-                dominik_error(3, "Undefined variable");
+                apply_mangled_name(node, sym);
+                node->inferred_type = sym->data_type;
+                return sym->data_type;
             }
-            apply_mangled_name(node, sym);
-            node->inferred_type = sym->data_type;
-            return sym->data_type;
-        }
-
-        case NODE_ADD:
-        case NODE_SUB:
-        case NODE_MUL:
-        case NODE_DIV:
-            return check_arithmetic(node, st);
-
-        case NODE_EQ:
-        case NODE_NEQ:
-        case NODE_LT:
-        case NODE_GT:
-        case NODE_LEQ:
-        case NODE_GEQ:
-            return check_comparison(node, st);
-
-        case NODE_AND:
-        case NODE_OR: {
-            DataType left_type = check_expression(node->left, st);
-            DataType right_type = check_expression(node->right, st);
-
-            if (left_type == TYPE_BOOL && right_type == TYPE_BOOL) {
-                node->inferred_type = TYPE_BOOL;
-                return TYPE_BOOL;
-            }
-            dominik_error(4, "Logical operators require Boolean operands");
             break;
         }
 
-        case NODE_NOT: {
-            DataType operand_type = check_expression(node->left, st);
-            if (operand_type == TYPE_BOOL) {
-                node->inferred_type = TYPE_BOOL;
-                return TYPE_BOOL;
+        case AST_NODE_EXPR: {
+            if (node->left == NULL && node->right == NULL) {
+                if (node->val.type == TOKEN_INTEGER) {
+                    node->inferred_type = TYPE_INT;
+                    return TYPE_INT;
+                } else if (node->val.type == TOKEN_DOUBLE) {
+                    node->inferred_type = TYPE_FLOAT;
+                    return TYPE_FLOAT;
+                } else if (node->val.type == TOKEN_STRING) {
+                    node->inferred_type = TYPE_STRING;
+                    return TYPE_STRING;
+                } else if (node->val.type == TOKEN_IDENTIFIER) {
+                    Symbol *sym = symtable_search(st, node->val.attribute.string_value);
+                    if (sym == NULL) dominik_error(3, "Undefined variable");
+
+                    apply_mangled_name(node, sym);
+                    node->inferred_type = sym->data_type;
+                    return sym->data_type;
+                }
             }
-            dominik_error(4, "Operator '!' requires Boolean operand");
+
+            if (node->left != NULL && node->right == NULL) {
+                if (node->val.type == TOKEN_PLUS || node->val.type == TOKEN_MINUS) {
+                    DataType operand_type = check_expression(node->left, st);
+                    if (operand_type == TYPE_INT || operand_type == TYPE_FLOAT) {
+                        node->inferred_type = operand_type;
+                        return operand_type;
+                    }
+                    dominik_error(4, "Unary +/- requires numeric operand");
+                }
+            }
+
+            switch (node->val.type) {
+                case TOKEN_PLUS:
+                case TOKEN_MINUS:
+                case TOKEN_MUL:
+                case TOKEN_DIV:
+                    return check_arithmetic(node, st);
+
+                case TOKEN_LESS:
+                case TOKEN_LESS_EQ:
+                case TOKEN_GREATER:
+                case TOKEN_GREATER_EQ:
+                case TOKEN_EQ:
+                case TOKEN_NOT_EQ:
+                    return check_comparison(node, st);
+
+                default:
+                    dominik_error(99, "Unknown operator in expression");
+            }
             break;
         }
 
-        case NODE_CALL:
+        case AST_NODE_CALL:
             return check_func_call(node, st);
 
         default:
