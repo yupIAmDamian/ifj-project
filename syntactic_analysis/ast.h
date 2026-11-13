@@ -2,6 +2,9 @@
 #define AST_H
 #include "../scanner/scanner.h"
 #include "../hashtable/symtable.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
 
 typedef enum {
     AST_NODE_PROGRAM,       // root node for the program

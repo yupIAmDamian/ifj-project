@@ -1,8 +1,11 @@
 #ifndef EXPRESSION_H
 #define EXPRESSION_H
-#include <stdbool.h>
-#include "../syntactic_analysis/ast.h"
+#include "../scanner/scanner.h"
 #include "ast.h"
+#include "parser.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
 
 typedef enum {
     PREC_UNARY,     // unary +, -

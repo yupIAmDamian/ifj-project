@@ -1,8 +1,6 @@
 // Compiler of IFJ26 imperative language
 // Author: Michal Kopček (xkopcem00)
 
-#include <stdlib.h>
-#include <stdio.h>
 #include "ast.h"
 
 ASTNode *create_ast_node(ASTNodeType type, ASTNode *left, ASTNode *right, ASTNode *extra, Token val) {
