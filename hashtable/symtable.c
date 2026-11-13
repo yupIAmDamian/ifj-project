@@ -1,3 +1,6 @@
+// Compiler of IFJ 2026 imperative language
+// Author: Daniel Jurkovič (xjurkod00)
+
 #include <stdlib.h>
 #include "symtable.h"
 #include "../helper_func.h"
