@@ -86,7 +86,7 @@ void scope_pop(Symtable *st) {
     st->top--;
 }
 
-bool symtable_insert_var(Symtable *st, char *name, DataType type, bool is_init) {
+bool symtable_insert_var(Symtable *st, char *name, DataType type, bool is_init, bool is_const) {
     if (st->top < 0 || !name) return false;
 
     if (symtable_search_current_scope(st, name) != NULL) {
@@ -105,6 +105,7 @@ bool symtable_insert_var(Symtable *st, char *name, DataType type, bool is_init) 
     }
 
     sym->mangled_name = str_duplicate(mangled_buf);
+    sym->is_const = is_const;
     ht_item_t *inserted_item = ht_insert(st->scopes[st->top], name, (void*) sym);
     if (!inserted_item) {
         if (sym->mangled_name) free(sym->mangled_name);
