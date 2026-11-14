@@ -283,9 +283,17 @@ static DataType check_comparison(ASTNode *node, Symtable *st) {
 
     promote_binary_operands_if_needed(node, &left_type, &right_type);
 
-    if (left_type == right_type && left_type != TYPE_VOID && left_type != TYPE_UNKNOWN) {
-        node->inferred_type = TYPE_BOOL;
-        return TYPE_BOOL;
+    bool is_equality = (node->val.type == TOKEN_EQ || node->val.type == TOKEN_NOT_EQ);
+
+    if (left_type == right_type) {
+        if (left_type == TYPE_INT || left_type == TYPE_FLOAT || left_type == TYPE_STRING) {
+            node->inferred_type = TYPE_BOOL;
+            return TYPE_BOOL;
+        }
+        if (is_equality && left_type == TYPE_VOID) {
+            node->inferred_type = TYPE_BOOL;
+            return TYPE_BOOL;
+        }
     }
 
     dominik_error(6, "Cannot compare incompatible types");
