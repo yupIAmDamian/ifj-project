@@ -407,7 +407,7 @@ static void check_statement(ASTNode *node, Symtable *st) {
 
         case AST_NODE_ASSIGN: {
             Symbol *sym = symtable_search(st, node->left->val.attribute.string_value);
-            if (sym == NULL) {
+            if (sym == NULL|| sym->s_type != SYMBOL_VAR) {
                 dominik_error(3, "Assignment to undefined variable");
             }
             // Prevent reassignment to immutable 'val' variables or formal function parameters
@@ -548,7 +548,7 @@ static DataType check_expression(ASTNode *node, Symtable *st) {
                 return TYPE_STRING;
             } else if (node->val.type == TOKEN_IDENTIFIER) {
                 Symbol *sym = symtable_search(st, node->val.attribute.string_value);
-                if (sym == NULL) dominik_error(3, "Undefined variable");
+                if (sym == NULL|| sym->s_type != SYMBOL_VAR) dominik_error(3, "Undefined variable");
 
                 apply_mangled_name(node, sym);
                 node->inferred_type = sym->d_type;
