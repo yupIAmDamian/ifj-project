@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
 
     printf("--- Spustam testy pre parser.c ---\n");
 
-    if (argc < 3 || argc > 4) {
+    if (argc < 3 || argc > 5) {
         printf("Pouzitie: ./test_parser <subor.ifj> <ocakavany_vysledok> [is_main]\n");
         printf("Ocakavany vysledok: 0 = uspech, 1 = lexical error, 2 = syntax error\n");
         return 1;
@@ -46,6 +46,16 @@ int main(int argc, char *argv[]) {
 
         if (*endptr != '\0' || (expected_main != 0 && expected_main != 1)) {
             printf("[CHYBA] Nespravna hodnota is_main\n");
+            return 1;
+        }
+    }
+
+    int expected_const = -1;
+
+    if (argc == 5) {
+        expected_const = (int)strtol(argv[4], &endptr, 10);
+        if (*endptr != '\0' || (expected_const != 0 && expected_const != 1)) {
+            printf("[CHYBA] Nespravna hodnota is_const\n");
             return 1;
         }
     }
@@ -106,6 +116,37 @@ int main(int argc, char *argv[]) {
         }
         else {
             printf("[CHYBA] Program neobsahuje ziadnu funkciu\n");
+            failures++;
+        }
+    }
+
+    if (result == 0 && expected_const != -1) {
+        printf("\nTest 4: Kontrola deklaracie premennej (is_const)\n");
+
+        if (global_ast_root != NULL &&
+            global_ast_root->left != NULL &&
+            global_ast_root->left->right != NULL) {
+
+            ASTNode *stmt_node = global_ast_root->left->right;
+
+            CHECK(stmt_node->type == AST_NODE_VAR_DECL,
+                  "Prvy prikaz vo funkcii nie je AST_NODE_VAR_DECL");
+
+            CHECK(stmt_node->is_const == (expected_const == 1),
+                  "Nespravna hodnota is_const na uzle AST_NODE_VAR_DECL");
+
+            if (stmt_node->left != NULL) {
+                CHECK(stmt_node->left->is_const == (expected_const == 1),
+                      "Nespravna hodnota is_const na vnorenom uzle AST_NODE_VAR");
+            }
+
+            if (stmt_node->type == AST_NODE_VAR_DECL &&
+                stmt_node->is_const == (expected_const == 1)) {
+                printf("[OK] Deklaracia premennej ma spravne nastaveny is_const = %d\n", expected_const);
+            }
+        }
+        else {
+            printf("[CHYBA] Funkcia neobsahuje ziadny prikaz na otestovanie is_const\n");
             failures++;
         }
     }

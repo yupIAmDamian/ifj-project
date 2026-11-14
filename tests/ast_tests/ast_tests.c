@@ -64,6 +64,9 @@ int main() {
         CHECK(node->is_main == false,
               "is_main mal byt defaultne false");
 
+        CHECK(node->is_const == false,              
+              "is_const mal byt defaultne false");
+
         CHECK(node->val.type == dummy_token.type,
               "Token nebol spravne priradeny");
 
@@ -115,6 +118,9 @@ int main() {
 
         CHECK(leaf_node->is_main == false,
               "is_main mal byt defaultne false");
+
+        CHECK(leaf_node->is_const == false,
+              "is_const mal byt defaultne false");
 
         CHECK(leaf_node->val.type == token_var.type,
               "Token nebol spravne priradeny");

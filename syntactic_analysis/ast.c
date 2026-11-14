@@ -17,5 +17,6 @@ ASTNode *create_ast_node(ASTNodeType type, ASTNode *left, ASTNode *right, ASTNod
     node->next = NULL;
     node->prev = NULL;
     node->is_main = false;
+    node->is_const = false;
     return node;
 }

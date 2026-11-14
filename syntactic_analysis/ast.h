@@ -36,6 +36,7 @@ typedef struct ASTNode {
     struct ASTNode *prev;
     Token val;
     bool is_main;
+    bool is_const;
 } ASTNode;
 
 ASTNode *create_ast_node(ASTNodeType type,ASTNode *left, ASTNode *right, ASTNode *extra, Token val);

@@ -290,6 +290,7 @@ ASTNode* parse_statement() {
         return create_ast_node(AST_NODE_IF, cond_node, then_node, else_node, if_token);
     }
     else if (current_token.type == TOKEN_VAL || current_token.type == TOKEN_VAR) {
+        bool is_const = (current_token.type == TOKEN_VAL);
         current_token = get_token_buffered();
         
         if (current_token.type != TOKEN_IDENTIFIER) return NULL;
@@ -303,7 +304,15 @@ ASTNode* parse_statement() {
         if (expr_node == NULL) return NULL;
         
         ASTNode *var_node = create_ast_node(AST_NODE_VAR, NULL, NULL, NULL, id_token);
-        return create_ast_node(AST_NODE_VAR_DECL, var_node, expr_node, NULL, id_token);
+        ASTNode *var_decl_node= create_ast_node(AST_NODE_VAR_DECL, var_node, expr_node, NULL, id_token);
+        
+        if (var_decl_node != NULL) {
+            var_decl_node->is_const = is_const;
+        }
+        if (var_node != NULL) {
+            var_node->is_const = is_const;
+        }
+        return var_decl_node;
     }
     else if (current_token.type == TOKEN_IDENTIFIER) {
         Token next_token = get_token_buffered();
