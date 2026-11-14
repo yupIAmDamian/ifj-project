@@ -173,10 +173,15 @@ ASTNode* parse_expression() {
             else if (count == 2) {
                 if (items[1].type == SYM_TERMINAL && 
                    (items[1].token.type == TOKEN_PLUS || items[1].token.type == TOKEN_MINUS) && 
-                   items[0].type == SYM_NONTERM) {
+                    items[0].type == SYM_NONTERM) {
                     
                     new_node = create_ast_node(AST_NODE_EXPR, items[0].ast_node, NULL, NULL, items[1].token);
-                } else {
+                } 
+                else if (items[1].type == SYM_TERMINAL && items[1].token.type == TOKEN_LPAREN &&
+                         items[0].type == SYM_TERMINAL && items[0].token.type == TOKEN_RPAREN) {
+                    new_node = create_ast_node(AST_NODE_UNIT, NULL, NULL, NULL, items[1].token);
+                }
+                else {
                     expr_stack_free(&stack);
                     return NULL; // syntax error
                 }

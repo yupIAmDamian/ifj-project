@@ -23,7 +23,8 @@ typedef enum {
     AST_NODE_TERM,          // term node (identifier, integer, double, string)
     AST_NODE_ASSIGN,        // assignment node
     AST_NODE_CALL,          // function call node
-    AST_NODE_INT2FLOAT      // integer to float conversion node
+    AST_NODE_INT2FLOAT,     // integer to float conversion node
+    AST_NODE_UNIT           // unit node
 } ASTNodeType;
 
 typedef struct ASTNode {

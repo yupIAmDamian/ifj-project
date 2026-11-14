@@ -332,6 +332,14 @@ ASTNode* parse_statement() {
             return parse_expr_or_call();
         }
     }
+    else if (current_token.type == TOKEN_LPAREN) {
+        Token lparen_token = current_token;
+        current_token = get_token_buffered();
+        if (!match(TOKEN_RPAREN)) {
+            return NULL; // syntax error
+        }
+        return create_ast_node(AST_NODE_UNIT, NULL, NULL, NULL, lparen_token);
+    }
     else {
         return parse_expr_or_call();
     }
