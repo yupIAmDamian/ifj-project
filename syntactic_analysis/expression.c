@@ -1,12 +1,7 @@
 // Compiler of IFJ26 imperative language
 // Author: Michal Kopček (xkopcem00)
 
-#include <stdio.h>
-#include <stdlib.h>
 #include "expression.h"
-#include "scanner.h"
-#include "ast.h"
-#include "parser.h"
 
 void expr_stack_init(PrecStack *stack) {
     stack->top = NULL;
@@ -164,20 +159,50 @@ ASTNode* parse_expression() {
 
             ASTNode *new_node = NULL;
             if (count == 1) {
-                new_node = create_ast_node(AST_NODE_EXPR, NULL, NULL, NULL, items[0].token);
+                if (items[0].type == SYM_TERMINAL && 
+                   (items[0].token.type == TOKEN_INTEGER || items[0].token.type == TOKEN_DOUBLE || 
+                    items[0].token.type == TOKEN_STRING || items[0].token.type == TOKEN_IDENTIFIER)) {
+                    
+                    new_node = create_ast_node(AST_NODE_EXPR, NULL, NULL, NULL, items[0].token);
+                } else {
+                    expr_stack_free(&stack);
+                    return NULL; // syntax error
+                }
             }
 
             else if (count == 2) {
-                new_node = create_ast_node(AST_NODE_EXPR, items[0].ast_node, NULL, NULL, items[1].token);
+                if (items[1].type == SYM_TERMINAL && 
+                   (items[1].token.type == TOKEN_PLUS || items[1].token.type == TOKEN_MINUS) && 
+                    items[0].type == SYM_NONTERM) {
+                    
+                    new_node = create_ast_node(AST_NODE_EXPR, items[0].ast_node, NULL, NULL, items[1].token);
+                } 
+                else if (items[1].type == SYM_TERMINAL && items[1].token.type == TOKEN_LPAREN &&
+                         items[0].type == SYM_TERMINAL && items[0].token.type == TOKEN_RPAREN) {
+                    new_node = create_ast_node(AST_NODE_UNIT, NULL, NULL, NULL, items[1].token);
+                }
+                else {
+                    expr_stack_free(&stack);
+                    return NULL; // syntax error
+                }
             }
 
             else if (count == 3) {
-                if (items[2].token.type == TOKEN_LPAREN && items[0].token.type == TOKEN_RPAREN) {
+                if (items[2].type == SYM_TERMINAL && items[2].token.type == TOKEN_LPAREN && 
+                    items[0].type == SYM_TERMINAL && items[0].token.type == TOKEN_RPAREN && 
+                    items[1].type == SYM_NONTERM) {
+                    
                     new_node = items[1].ast_node;
                 }
-
-                else {
+                else if (items[2].type == SYM_NONTERM && 
+                         items[1].type == SYM_TERMINAL && 
+                         items[0].type == SYM_NONTERM) {
+                    
                     new_node = create_ast_node(AST_NODE_EXPR, items[2].ast_node, items[0].ast_node, NULL, items[1].token);
+                } 
+                else {
+                    expr_stack_free(&stack);
+                    return NULL; // syntax error
                 }
             } 
 

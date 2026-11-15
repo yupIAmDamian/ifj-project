@@ -4,7 +4,11 @@
 #ifndef SCANNER_H
 #define SCANNER_H
 
+#include <stdio.h>
+#include <ctype.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
 // token types
 typedef enum {
@@ -34,7 +38,6 @@ typedef enum {
     TOKEN_INTEGER,
     TOKEN_DOUBLE,
     TOKEN_STRING,
-    TOKEN_UNIT,          // literal ()
     
     // operators and special characters
     TOKEN_ASSIGN,        // =
@@ -77,6 +80,7 @@ typedef struct {
 // states of the scanner FSM
 typedef enum {
     STATE_INDENT_DEDENT,
+    STATE_INDENT_DEDENT_SLASH,
     STATE_START,
     STATE_ID_OR_KEYWORD,
     STATE_INTEGER,

@@ -1,0 +1,4 @@
+import ifj26.*
+def foo(x: Int): Int = return x
+@main
+def main() = foo(1)
