@@ -11,7 +11,7 @@ int symtable_tests() {
 
     scope_push(st);
 
-    if (!symtable_insert_var(st, "var1", TYPE_INT, true)) {
+    if (!symtable_insert_var(st, "var1", TYPE_INT, true, false)) {
         printf("Failed to insert var1\n");
         return 1;
     }

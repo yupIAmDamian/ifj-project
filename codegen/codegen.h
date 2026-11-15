@@ -26,6 +26,9 @@ void gen_fun_def_start();
 
 void gen_fun_def_args(ASTNode *root);
 
+//TODO change name of it
+void gen_fun_init_args(ASTNode *node);
+
 void gen_fun_def_body(ASTNode *root);
 
 void gen_fun_def_end();

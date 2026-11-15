@@ -4,84 +4,192 @@
 002 TOKEN_DOT line=1
 003 TOKEN_MUL line=1
 004 TOKEN_EOL line=1
-005 TOKEN_AT line=2
-006 TOKEN_IDENTIFIER line=3 string_value="main"
-007 TOKEN_DEF line=3
-008 TOKEN_IDENTIFIER line=3 string_value="run"
-009 TOKEN_LPAREN line=3
-010 TOKEN_RPAREN line=3
-011 TOKEN_COLON line=3
-012 TOKEN_TYPE_UNIT line=3
-013 TOKEN_ASSIGN line=3
-014 TOKEN_EOL line=3
-015 TOKEN_INDENT line=4
-016 TOKEN_VAL line=4
-017 TOKEN_IDENTIFIER line=4 string_value="n"
-018 TOKEN_COLON line=4
-019 TOKEN_TYPE_INT line=4
-020 TOKEN_ASSIGN line=4
-021 TOKEN_INTEGER line=4 integer_value=6
-022 TOKEN_EOL line=4
-023 TOKEN_IF line=5
-024 TOKEN_IDENTIFIER line=5 string_value="n"
-025 TOKEN_LESS line=5
-026 TOKEN_INTEGER line=5 integer_value=0
-027 TOKEN_THEN line=5
+005 TOKEN_DEF line=2
+006 TOKEN_IDENTIFIER line=3 string_value="factorialIterative"
+007 TOKEN_LPAREN line=3
+008 TOKEN_IDENTIFIER line=3 string_value="n"
+009 TOKEN_COLON line=3
+010 TOKEN_TYPE_INT line=3
+011 TOKEN_RPAREN line=3
+012 TOKEN_COLON line=3
+013 TOKEN_TYPE_INT line=3
+014 TOKEN_ASSIGN line=3
+015 TOKEN_EOL line=3
+016 TOKEN_INDENT line=4
+017 TOKEN_VAR line=4
+018 TOKEN_IDENTIFIER line=4 string_value="result"
+019 TOKEN_ASSIGN line=4
+020 TOKEN_INTEGER line=4 integer_value=1
+021 TOKEN_EOL line=4
+022 TOKEN_VAR line=5
+023 TOKEN_IDENTIFIER line=5 string_value="i"
+024 TOKEN_COLON line=5
+025 TOKEN_TYPE_INT line=5
+026 TOKEN_ASSIGN line=5
+027 TOKEN_INTEGER line=5 integer_value=2
 028 TOKEN_EOL line=5
-029 TOKEN_INDENT line=6
-030 TOKEN_IDENTIFIER line=6 string_value="print"
-031 TOKEN_LPAREN line=6
-032 TOKEN_STRING line=6 string_value="Factorial is not defined for negative numbers\n"
-033 TOKEN_RPAREN line=6
+029 TOKEN_WHILE line=6
+030 TOKEN_IDENTIFIER line=6 string_value="i"
+031 TOKEN_LESS_EQ line=6
+032 TOKEN_IDENTIFIER line=6 string_value="n"
+033 TOKEN_DO line=6
 034 TOKEN_EOL line=6
-035 TOKEN_DEDENT line=7
-036 TOKEN_ELSE line=7
-037 TOKEN_EOL line=7
-038 TOKEN_INDENT line=8
-039 TOKEN_VAR line=8
-040 TOKEN_IDENTIFIER line=8 string_value="f"
-041 TOKEN_COLON line=8
-042 TOKEN_TYPE_INT line=8
+035 TOKEN_INDENT line=7
+036 TOKEN_IDENTIFIER line=7 string_value="result"
+037 TOKEN_ASSIGN line=7
+038 TOKEN_IDENTIFIER line=7 string_value="result"
+039 TOKEN_MUL line=7
+040 TOKEN_IDENTIFIER line=7 string_value="i"
+041 TOKEN_EOL line=7
+042 TOKEN_IDENTIFIER line=8 string_value="i"
 043 TOKEN_ASSIGN line=8
-044 TOKEN_INTEGER line=8 integer_value=1
-045 TOKEN_EOL line=8
-046 TOKEN_VAR line=9
-047 TOKEN_IDENTIFIER line=9 string_value="i"
-048 TOKEN_COLON line=9
-049 TOKEN_TYPE_INT line=9
-050 TOKEN_ASSIGN line=9
-051 TOKEN_INTEGER line=9 integer_value=1
-052 TOKEN_EOL line=9
-053 TOKEN_WHILE line=10
-054 TOKEN_IDENTIFIER line=10 string_value="i"
-055 TOKEN_LESS_EQ line=10
-056 TOKEN_IDENTIFIER line=10 string_value="n"
-057 TOKEN_DO line=10
-058 TOKEN_EOL line=10
-059 TOKEN_INDENT line=11
-060 TOKEN_IDENTIFIER line=11 string_value="f"
+044 TOKEN_IDENTIFIER line=8 string_value="i"
+045 TOKEN_PLUS line=8
+046 TOKEN_INTEGER line=8 integer_value=1
+047 TOKEN_EOL line=8
+048 TOKEN_DEDENT line=9
+049 TOKEN_IDENTIFIER line=9 string_value="result"
+050 TOKEN_EOL line=9
+051 TOKEN_DEDENT line=10
+052 TOKEN_DEF line=11
+053 TOKEN_IDENTIFIER line=11 string_value="factorialRecursive"
+054 TOKEN_LPAREN line=11
+055 TOKEN_IDENTIFIER line=11 string_value="n"
+056 TOKEN_COLON line=11
+057 TOKEN_TYPE_INT line=11
+058 TOKEN_RPAREN line=11
+059 TOKEN_COLON line=11
+060 TOKEN_TYPE_INT line=11
 061 TOKEN_ASSIGN line=11
-062 TOKEN_IDENTIFIER line=11 string_value="f"
-063 TOKEN_MUL line=11
-064 TOKEN_IDENTIFIER line=11 string_value="i"
-065 TOKEN_EOL line=11
-066 TOKEN_IDENTIFIER line=12 string_value="i"
-067 TOKEN_ASSIGN line=12
-068 TOKEN_IDENTIFIER line=12 string_value="i"
-069 TOKEN_PLUS line=12
-070 TOKEN_INTEGER line=12 integer_value=1
-071 TOKEN_EOL line=12
-072 TOKEN_DEDENT line=13
-073 TOKEN_IDENTIFIER line=13 string_value="print"
-074 TOKEN_LPAREN line=13
-075 TOKEN_IDENTIFIER line=13 string_value="f"
-076 TOKEN_RPAREN line=13
-077 TOKEN_EOL line=13
-078 TOKEN_IDENTIFIER line=14 string_value="print"
-079 TOKEN_LPAREN line=14
-080 TOKEN_STRING line=14 string_value="\n"
-081 TOKEN_RPAREN line=14
-082 TOKEN_EOL line=14
-083 TOKEN_DEDENT line=15
-084 TOKEN_DEDENT line=15
-085 TOKEN_EOF line=15
+062 TOKEN_EOL line=11
+063 TOKEN_INDENT line=12
+064 TOKEN_IF line=12
+065 TOKEN_IDENTIFIER line=12 string_value="n"
+066 TOKEN_LESS_EQ line=12
+067 TOKEN_INTEGER line=12 integer_value=1
+068 TOKEN_THEN line=12
+069 TOKEN_EOL line=12
+070 TOKEN_INDENT line=13
+071 TOKEN_RETURN line=13
+072 TOKEN_INTEGER line=13 integer_value=1
+073 TOKEN_EOL line=13
+074 TOKEN_DEDENT line=14
+075 TOKEN_ELSE line=14
+076 TOKEN_EOL line=14
+077 TOKEN_INDENT line=15
+078 TOKEN_VAL line=15
+079 TOKEN_IDENTIFIER line=15 string_value="previous"
+080 TOKEN_ASSIGN line=15
+081 TOKEN_IDENTIFIER line=15 string_value="n"
+082 TOKEN_MINUS line=15
+083 TOKEN_INTEGER line=15 integer_value=1
+084 TOKEN_EOL line=15
+085 TOKEN_VAL line=16
+086 TOKEN_IDENTIFIER line=16 string_value="smaller"
+087 TOKEN_ASSIGN line=16
+088 TOKEN_IDENTIFIER line=16 string_value="factorialRecursive"
+089 TOKEN_LPAREN line=16
+090 TOKEN_IDENTIFIER line=16 string_value="previous"
+091 TOKEN_RPAREN line=16
+092 TOKEN_EOL line=16
+093 TOKEN_RETURN line=17
+094 TOKEN_IDENTIFIER line=17 string_value="n"
+095 TOKEN_MUL line=17
+096 TOKEN_IDENTIFIER line=17 string_value="smaller"
+097 TOKEN_EOL line=17
+098 TOKEN_DEDENT line=18
+099 TOKEN_DEDENT line=19
+100 TOKEN_AT line=19
+101 TOKEN_IDENTIFIER line=19 string_value="main"
+102 TOKEN_DEF line=19
+103 TOKEN_IDENTIFIER line=19 string_value="factorialExample"
+104 TOKEN_LPAREN line=19
+105 TOKEN_RPAREN line=19
+106 TOKEN_COLON line=19
+107 TOKEN_TYPE_UNIT line=19
+108 TOKEN_ASSIGN line=19
+109 TOKEN_EOL line=19
+110 TOKEN_INDENT line=20
+111 TOKEN_VAL line=20
+112 TOKEN_IDENTIFIER line=20 string_value="n"
+113 TOKEN_ASSIGN line=20
+114 TOKEN_IDENTIFIER line=20 string_value="readInt"
+115 TOKEN_LPAREN line=20
+116 TOKEN_RPAREN line=20
+117 TOKEN_EOL line=20
+118 TOKEN_IF line=24
+119 TOKEN_IDENTIFIER line=24 string_value="n"
+120 TOKEN_LESS line=24
+121 TOKEN_INTEGER line=24 integer_value=0
+122 TOKEN_THEN line=24
+123 TOKEN_EOL line=24
+124 TOKEN_INDENT line=25
+125 TOKEN_IDENTIFIER line=25 string_value="print"
+126 TOKEN_LPAREN line=25
+127 TOKEN_STRING line=25 string_value="Use an integer from 0 to 12.\n"
+128 TOKEN_RPAREN line=25
+129 TOKEN_EOL line=25
+130 TOKEN_DEDENT line=26
+131 TOKEN_ELSE line=26
+132 TOKEN_EOL line=26
+133 TOKEN_INDENT line=27
+134 TOKEN_IF line=27
+135 TOKEN_IDENTIFIER line=27 string_value="n"
+136 TOKEN_GREATER line=27
+137 TOKEN_INTEGER line=27 integer_value=12
+138 TOKEN_THEN line=27
+139 TOKEN_EOL line=27
+140 TOKEN_INDENT line=28
+141 TOKEN_IDENTIFIER line=28 string_value="print"
+142 TOKEN_LPAREN line=28
+143 TOKEN_STRING line=28 string_value="Use an integer from 0 to 12.\n"
+144 TOKEN_RPAREN line=28
+145 TOKEN_EOL line=28
+146 TOKEN_DEDENT line=29
+147 TOKEN_ELSE line=29
+148 TOKEN_EOL line=29
+149 TOKEN_INDENT line=30
+150 TOKEN_VAL line=30
+151 TOKEN_IDENTIFIER line=30 string_value="iterative"
+152 TOKEN_ASSIGN line=30
+153 TOKEN_IDENTIFIER line=30 string_value="factorialIterative"
+154 TOKEN_LPAREN line=30
+155 TOKEN_IDENTIFIER line=30 string_value="n"
+156 TOKEN_RPAREN line=30
+157 TOKEN_EOL line=30
+158 TOKEN_VAL line=31
+159 TOKEN_IDENTIFIER line=31 string_value="recursive"
+160 TOKEN_ASSIGN line=31
+161 TOKEN_IDENTIFIER line=31 string_value="factorialRecursive"
+162 TOKEN_LPAREN line=31
+163 TOKEN_IDENTIFIER line=31 string_value="n"
+164 TOKEN_RPAREN line=31
+165 TOKEN_EOL line=31
+166 TOKEN_IDENTIFIER line=32 string_value="print"
+167 TOKEN_LPAREN line=32
+168 TOKEN_STRING line=32 string_value="iterative: "
+169 TOKEN_RPAREN line=32
+170 TOKEN_EOL line=32
+171 TOKEN_IDENTIFIER line=33 string_value="print"
+172 TOKEN_LPAREN line=33
+173 TOKEN_IDENTIFIER line=33 string_value="iterative"
+174 TOKEN_RPAREN line=33
+175 TOKEN_EOL line=33
+176 TOKEN_IDENTIFIER line=34 string_value="print"
+177 TOKEN_LPAREN line=34
+178 TOKEN_STRING line=34 string_value="\nrecursive: "
+179 TOKEN_RPAREN line=34
+180 TOKEN_EOL line=34
+181 TOKEN_IDENTIFIER line=35 string_value="print"
+182 TOKEN_LPAREN line=35
+183 TOKEN_IDENTIFIER line=35 string_value="recursive"
+184 TOKEN_RPAREN line=35
+185 TOKEN_EOL line=35
+186 TOKEN_IDENTIFIER line=36 string_value="print"
+187 TOKEN_LPAREN line=36
+188 TOKEN_STRING line=36 string_value="\n"
+189 TOKEN_RPAREN line=36
+190 TOKEN_DEDENT line=36
+191 TOKEN_DEDENT line=36
+192 TOKEN_DEDENT line=36
+193 TOKEN_EOF line=36

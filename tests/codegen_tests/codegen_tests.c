@@ -25,24 +25,33 @@ static Token string_token(const char *value, int line) {
     return result;
 }
 
-static ASTNode *term_identifier(const char *name, int line) {
-    return create_ast_node(AST_NODE_TERM, NULL, NULL, NULL,
-                           identifier_token(name, line));
+static ASTNode *expression_value(Token token) {
+    return create_ast_node(AST_NODE_EXPR, NULL, NULL, NULL, token);
 }
 
-static ASTNode *term_integer(int value, int line) {
-    return create_ast_node(AST_NODE_TERM, NULL, NULL, NULL,
-                           integer_token(value, line));
+static ASTNode *identifier_expression(const char *name, int line) {
+    return expression_value(identifier_token(name, line));
+}
+
+static ASTNode *integer_expression(int value, int line) {
+    return expression_value(integer_token(value, line));
+}
+
+static ASTNode *term(Token token) {
+    return create_ast_node(AST_NODE_TERM, NULL, NULL, NULL, token);
+}
+
+static ASTNode *term_identifier(const char *name, int line) {
+    return term(identifier_token(name, line));
 }
 
 static ASTNode *term_string(const char *value, int line) {
-    return create_ast_node(AST_NODE_TERM, NULL, NULL, NULL,
-                           string_token(value, line));
+    return term(string_token(value, line));
 }
 
-static ASTNode *binary_expression(ASTNodeType type, TokenType operator_type,
+static ASTNode *binary_expression(TokenType operator_type,
                                   ASTNode *left, ASTNode *right, int line) {
-    return create_ast_node(type, left, right, NULL,
+    return create_ast_node(AST_NODE_EXPR, left, right, NULL,
                            make_token(operator_type, line));
 }
 
@@ -56,14 +65,24 @@ static ASTNode *variable(const char *name, int line) {
                            identifier_token(name, line));
 }
 
-static ASTNode *declaration(const char *name, ASTNode *initializer, int line) {
-    return create_ast_node(AST_NODE_VAR_DECL, variable(name, line),
-                           initializer, NULL, identifier_token(name, line));
+static ASTNode *declaration(const char *name, ASTNode *initializer,
+                            bool is_const, int line) {
+    ASTNode *var_node = variable(name, line);
+    ASTNode *node = create_ast_node(AST_NODE_VAR_DECL, var_node, initializer,
+                                    NULL, identifier_token(name, line));
+    node->is_const = is_const;
+    var_node->is_const = is_const;
+    return node;
 }
 
 static ASTNode *assignment(const char *name, ASTNode *value, int line) {
     return create_ast_node(AST_NODE_ASSIGN, variable(name, line), value,
                            NULL, identifier_token(name, line));
+}
+
+static ASTNode *return_statement(ASTNode *value, int line) {
+    return create_ast_node(AST_NODE_RETURN, value, NULL, NULL,
+                           make_token(TOKEN_RETURN, line));
 }
 
 static void append_node(ASTNode **first, ASTNode **last, ASTNode *node) {
@@ -76,125 +95,157 @@ static void append_node(ASTNode **first, ASTNode **last, ASTNode *node) {
     *last = node;
 }
 
+static ASTNode *parameter(const char *name, int line) {
+    return create_ast_node(AST_NODE_PARAM, NULL, NULL, NULL,
+                           identifier_token(name, line));
+}
+
+static ASTNode *if_node(ASTNode *condition, ASTNode *then_body,
+                        ASTNode *else_body, int line) {
+    return create_ast_node(AST_NODE_IF, condition, then_body, else_body,
+                           make_token(TOKEN_IF, line));
+}
+
+static ASTNode *while_node(ASTNode *condition, ASTNode *body, int line) {
+    return create_ast_node(AST_NODE_WHILE, condition, body, NULL,
+                           make_token(TOKEN_WHILE, line));
+}
+
+static ASTNode *function(const char *name, ASTNode *parameters,
+                         ASTNode *body, bool is_main, int line) {
+    ASTNode *node = create_ast_node(AST_NODE_FUNCTION, parameters, body, NULL,
+                                    identifier_token(name, line));
+    node->is_main = is_main;
+    return node;
+}
+
 static ASTNode *create_factorial_tree(void) {
+    ASTNode *iterative_body = NULL;
+    ASTNode *iterative_last = NULL;
+
+    append_node(&iterative_body, &iterative_last,
+                declaration("result", integer_expression(1, 4), false, 4));
+    append_node(&iterative_body, &iterative_last,
+                declaration("i", integer_expression(2, 5), false, 5));
+
+    ASTNode *iterative_loop_body = NULL;
+    ASTNode *iterative_loop_last = NULL;
+    append_node(&iterative_loop_body, &iterative_loop_last,
+                assignment("result",
+                           binary_expression(
+                               TOKEN_MUL,
+                               identifier_expression("result", 7),
+                               identifier_expression("i", 7), 7),
+                           7));
+    append_node(&iterative_loop_body, &iterative_loop_last,
+                assignment("i",
+                           binary_expression(
+                               TOKEN_PLUS,
+                               identifier_expression("i", 8),
+                               integer_expression(1, 8), 8),
+                           8));
+    append_node(&iterative_body, &iterative_last,
+                while_node(
+                    binary_expression(TOKEN_LESS_EQ,
+                                      identifier_expression("i", 6),
+                                      identifier_expression("n", 6), 6),
+                    iterative_loop_body, 6));
+    append_node(&iterative_body, &iterative_last,
+                identifier_expression("result", 9));
+
+    ASTNode *iterative_function = function(
+        "factorialIterative", parameter("n", 3), iterative_body, false, 3);
+
+    ASTNode *recursive_then = return_statement(integer_expression(1, 13), 13);
+    ASTNode *recursive_else = NULL;
+    ASTNode *recursive_else_last = NULL;
+    append_node(&recursive_else, &recursive_else_last,
+                declaration("previous",
+                            binary_expression(TOKEN_MINUS,
+                                              identifier_expression("n", 15),
+                                              integer_expression(1, 15), 15),
+                            true, 15));
+    append_node(&recursive_else, &recursive_else_last,
+                declaration("smaller",
+                            call("factorialRecursive",
+                                 term_identifier("previous", 16), 16),
+                            true, 16));
+    append_node(&recursive_else, &recursive_else_last,
+                return_statement(
+                    binary_expression(TOKEN_MUL,
+                                      identifier_expression("n", 17),
+                                      identifier_expression("smaller", 17), 17),
+                    17));
+
+    ASTNode *recursive_body = if_node(
+        binary_expression(TOKEN_LESS_EQ,
+                          identifier_expression("n", 12),
+                          integer_expression(1, 12), 12),
+        recursive_then, recursive_else, 12);
+    ASTNode *recursive_function = function(
+        "factorialRecursive", parameter("n", 11), recursive_body, false, 11);
+
     ASTNode *main_body = NULL;
     ASTNode *main_last = NULL;
-
     append_node(&main_body, &main_last,
-                declaration("n", call("readInt", NULL, 4), 4));
+                declaration("n", call("readInt", NULL, 20), true, 20));
 
-    ASTNode *calc_argument = term_integer(5, 5);
-    ASTNode *calc_call = call("calc", calc_argument, 5);
-    append_node(&main_body, &main_last,
-                declaration("k",
-                            binary_expression(AST_NODE_ADD, TOKEN_PLUS,
-                                              term_integer(5, 5), calc_call, 5),
-                            5));
-    append_node(&main_body, &main_last,
-                call("print", term_identifier("k", 6), 6));
-
-    ASTNode *then_body = call(
+    ASTNode *negative_then = call(
         "print",
-        term_string("Factorial is not defined for negative numbers\n", 8),
-        8
-    );
+        term_string("Use an integer from 0 to 12.\n", 25), 25);
+    ASTNode *too_large_then = call(
+        "print",
+        term_string("Use an integer from 0 to 12.\n", 28), 28);
 
-    ASTNode *else_body = NULL;
-    ASTNode *else_last = NULL;
-    append_node(&else_body, &else_last,
-                declaration("f", term_integer(1, 10), 10));
-    append_node(&else_body, &else_last,
-                declaration("i", term_integer(1, 11), 11));
+    ASTNode *valid_else = NULL;
+    ASTNode *valid_else_last = NULL;
+    append_node(&valid_else, &valid_else_last,
+                declaration("iterative",
+                            call("factorialIterative",
+                                 term_identifier("n", 30), 30),
+                            true, 30));
+    append_node(&valid_else, &valid_else_last,
+                declaration("recursive",
+                            call("factorialRecursive",
+                                 term_identifier("n", 31), 31),
+                            true, 31));
+    append_node(&valid_else, &valid_else_last,
+                call("print", term_string("iterative: ", 32), 32));
+    append_node(&valid_else, &valid_else_last,
+                call("print", term_identifier("iterative", 33), 33));
+    append_node(&valid_else, &valid_else_last,
+                call("print", term_string("\nrecursive: ", 34), 34));
+    append_node(&valid_else, &valid_else_last,
+                call("print", term_identifier("recursive", 35), 35));
+    append_node(&valid_else, &valid_else_last,
+                call("print", term_string("\n", 36), 36));
 
-    ASTNode *while_body = NULL;
-    ASTNode *while_last = NULL;
-    append_node(&while_body, &while_last,
-                assignment("f",
-                           binary_expression(AST_NODE_MUL, TOKEN_MUL,
-                                             term_identifier("f", 13),
-                                             term_identifier("i", 13), 13),
-                           13));
-    append_node(&while_body, &while_last,
-                assignment("i",
-                           binary_expression(AST_NODE_ADD, TOKEN_PLUS,
-                                             term_identifier("i", 14),
-                                             term_integer(1, 14), 14),
-                           14));
-
-    ASTNode *while_node = create_ast_node(
-        AST_NODE_WHILE,
-        binary_expression(AST_NODE_EXPR, TOKEN_LESS_EQ,
-                          term_identifier("i", 12),
-                          term_identifier("n", 12), 12),
-        while_body,
-        NULL,
-        make_token(TOKEN_WHILE, 12)
-    );
-    append_node(&else_body, &else_last, while_node);
-    append_node(&else_body, &else_last,
-                call("print", term_identifier("f", 15), 15));
-    append_node(&else_body, &else_last,
-                call("print", term_string("\n", 16), 16));
-
+    ASTNode *range_else = if_node(
+        binary_expression(TOKEN_GREATER,
+                          identifier_expression("n", 27),
+                          integer_expression(12, 27), 27),
+        too_large_then, valid_else, 27);
     append_node(&main_body, &main_last,
-                create_ast_node(
-                    AST_NODE_IF,
-                    binary_expression(AST_NODE_EXPR, TOKEN_LESS,
-                                      term_identifier("n", 7),
-                                      term_integer(0, 7), 7),
-                    then_body,
-                    else_body,
-                    make_token(TOKEN_IF, 7)
-                ));
+                if_node(
+                    binary_expression(TOKEN_LESS,
+                                      identifier_expression("n", 24),
+                                      integer_expression(0, 24), 24),
+                    negative_then, range_else, 24));
 
-    ASTNode *main_function = create_ast_node(
-        AST_NODE_FUNCTION,
-        NULL,
-        main_body,
-        NULL,
-        identifier_token("run", 3)
-    );
-    main_function->is_main = true;
+    ASTNode *main_function = function(
+        "factorialExample", NULL, main_body, true, 19);
+    iterative_function->next = recursive_function;
+    recursive_function->prev = iterative_function;
+    recursive_function->next = main_function;
+    main_function->prev = recursive_function;
 
-    ASTNode *calc_body = create_ast_node(
-        AST_NODE_RETURN,
-        binary_expression(
-            AST_NODE_ADD,
-            TOKEN_PLUS,
-            term_identifier("x", 20),
-            binary_expression(AST_NODE_MUL, TOKEN_MUL,
-                              term_integer(8, 20),
-                              term_integer(7, 20), 20),
-            20
-        ),
-        NULL,
-        NULL,
-        make_token(TOKEN_RETURN, 20)
-    );
-
-    ASTNode *calc_parameter = create_ast_node(
-        AST_NODE_PARAM, NULL, NULL, NULL, identifier_token("x", 19));
-    ASTNode *calc_function = create_ast_node(
-        AST_NODE_FUNCTION,
-        calc_parameter,
-        calc_body,
-        NULL,
-        identifier_token("calc", 19)
-    );
-
-    main_function->next = calc_function;
-    calc_function->prev = main_function;
-
-    return create_ast_node(
-        AST_NODE_PROGRAM,
-        main_function,
-        NULL,
-        NULL,
-        make_token(TOKEN_EOF, 21)
-    );
+    return create_ast_node(AST_NODE_PROGRAM, iterative_function, NULL, NULL,
+                           make_token(TOKEN_EOF, 36));
 }
 
 void codegen_tests(void) {
     ASTNode *root = create_factorial_tree();
     gen_code(root);
 }
+
+

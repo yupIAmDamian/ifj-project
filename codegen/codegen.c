@@ -26,7 +26,9 @@ void gen_node(ASTNode *node){
             }
             gen_fun_def_start();
             gen_fun_def_args(node->left);
-            gen_fun_def_vars_recursive(node);
+            gen_fun_def_vars_recursive(node->right);
+            gen_fun_init_args(node->left);
+
             gen_fun_def_body(node->right);
             gen_fun_def_end();
             break;
@@ -39,22 +41,23 @@ void gen_node(ASTNode *node){
             break;
         case AST_NODE_CALL:
             gen_fun_call(node, NULL);
-            
             break;
         case AST_NODE_VAR_DECL:
-            equation_traversal(node->right, NULL);
-            printf("POPS ");
-            gen_var(gen_string_from_node(node->left));
+            equation_traversal(node->right, gen_string_from_node(node->left));
+
+            //TODO: part time fix
+            gen_pops("tmp_var");
+            gen_move(gen_string_from_node(node->left));
+            gen_var("tmp_var");
             gen_new_line();
             break;
         case AST_NODE_RETURN:
+            equation_traversal(node->left, "temp_return");
+            printf("PUSHS %s\n", "temp_return");
             gen_return();
             break;
         case AST_NODE_ASSIGN:
-        printf("result_var: %s\n", gen_string_from_node(node->left));
             equation_traversal(node->right, gen_string_from_node(node->left));
-            printf("POPS ");
-            gen_var(gen_string_from_node(node->left));
             gen_new_line();
             break;
         default:
@@ -75,6 +78,14 @@ void gen_fun_def_args(ASTNode *node){
     while(node != NULL){
         char *param_name = gen_string_from_node(node);
         gen_params_declaration(param_name);
+        node = node->next;
+    }
+}
+
+void gen_fun_init_args(ASTNode *node){
+    while(node != NULL){
+        char *param_name = gen_string_from_node(node);
+        gen_pops(param_name);
         node = node->next;
     }
 }
@@ -123,7 +134,7 @@ void gen_if(ASTNode *node){
 
     decide_condition(condition_node);
 
-    printf("PUSHS bool@false\n");
+    printf("PUSHS bool@true\n");
     gen_jumpifeqs(else_label);
 
     gen_code(then_body);
@@ -216,10 +227,7 @@ void gen_while(ASTNode *node){
     free(end_label);
 }
 
-//pushs 
-//push on stack func
-//TODO resolve this
-//TODO join it in one function with gen_pushs_data_types
+
 void gen_pushs(ASTNode *node){
     printf("PUSHS ");
     gen_argument(node);
@@ -244,8 +252,8 @@ void equation_traversal(ASTNode *node, char *result_var){
         return;
     }
 
+
     if (node->type == AST_NODE_CALL) {
-        printf("result_var: %s\n", result_var);
         gen_fun_call(node, result_var);
         return;
     }
@@ -253,22 +261,26 @@ void equation_traversal(ASTNode *node, char *result_var){
     equation_traversal(node->left, result_var);
     equation_traversal(node->right, result_var);
 
-    switch (node->type) {
-        case AST_NODE_ADD:
-            gen_adds();
-            break;
-        case AST_NODE_SUB:
-            gen_subs();
-            break;
-        case AST_NODE_MUL:
-            gen_muls();
-            break;
-        case AST_NODE_DIV:
-            gen_divs();
-            break;
-        default:
-            gen_pushs(node);
-            break;
+    switch (node->val.type) {
+            case TOKEN_PLUS:
+                gen_adds();
+                gen_pops(result_var);
+                break;
+            case TOKEN_MINUS:
+                gen_subs();
+                gen_pops(result_var);
+                break;
+            case TOKEN_MUL:
+                gen_muls();
+                gen_pops(result_var);
+                break;
+            case TOKEN_DIV:
+                gen_divs();
+                gen_pops(result_var);
+                break;
+            default:
+                gen_pushs(node);
+                break;
     }
 }
 
@@ -319,18 +331,16 @@ void gen_call(ASTNode *node, char *result_var) {
     }
     else {
         printf("CALL %s\n", label);
-        gen_pops(result_var);
+
     }
 }
 
 
 void gen_fun_call(ASTNode *node, char *result_var){
     ASTNode *arg_node = node->right; 
-    int arg_count = 0;
     //finding last argument in the list of arguments
     //first it will send leftmost data so function call will be in the correct order
     while(arg_node != NULL){
-        arg_count++;
         if(arg_node->next != NULL) {
             arg_node = arg_node->next;
         } else {
@@ -348,13 +358,8 @@ void gen_fun_call(ASTNode *node, char *result_var){
         }
     }
 
-
     gen_call(node, result_var);
-
-    //take care of the arguments that were pushed onto the stack
-    for(int i = 0; i < arg_count; i++){
-        gen_pops(NULL);
-    }
 }
+
 
 

@@ -10,9 +10,6 @@ void gen_params_declaration(char *var_name){
     gen_defvar();
     gen_var(var_name);
     gen_new_line();
-    gen_pops(var_name);
-    gen_var(var_name);
-    gen_new_line();
 }
 
 //variable generation
@@ -232,7 +229,9 @@ void gen_exit(){
 
 //variable name + data type
 void gen_read(char *var, char *data_type){
-    printf("READ %s %s\n", var, data_type);
+    printf("READ ");
+    gen_var(var);
+    printf(" %s\n", data_type);
 }
 
 
