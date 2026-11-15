@@ -1,0 +1,13 @@
+import ifj26.*
+
+@main def run(): Unit =
+    val d: Double = 12.99
+    val i: Int = toInt(d)
+    val text: String = toStr(d)
+    val length: Int = strLength("hello")
+    print(i)
+    print("\n")
+    print(text)
+    print("\n")
+    print(length)
+    print("\n")
