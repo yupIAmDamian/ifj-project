@@ -4,7 +4,7 @@ Token* get_token_from_node(ASTNode *node) {
     return &(node->val);
 }
 
-char* string_from_token(ASTNode *node) {
+char* gen_string_from_node(ASTNode *node) {
     Token *token = get_token_from_node(node);
     return token->attribute.string_value;
 }
@@ -21,5 +21,5 @@ char *create_label(int number, char* label_name, char* label_type) {
 
     snprintf(label, (size_t)len, "$%s$%s$%d$%s", current_func_name, label_name, number, label_type);
 
-    return label; // Remember to free(else_label) when done!
+    return label; 
 }

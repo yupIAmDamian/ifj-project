@@ -6,7 +6,7 @@
 
 Token* get_token_from_node(ASTNode *node);
 
-char* string_from_token(ASTNode *node);
+char* gen_string_from_node(ASTNode *node);
 
 
 extern char *current_func_name;

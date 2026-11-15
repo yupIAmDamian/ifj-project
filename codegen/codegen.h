@@ -26,8 +26,6 @@ void gen_fun_def_start();
 
 void gen_fun_def_args(ASTNode *root);
 
-void gen_fun_def_vars(ASTNode *root);
-
 void gen_fun_def_body(ASTNode *root);
 
 void gen_fun_def_end();
@@ -38,18 +36,18 @@ void gen_if(ASTNode *node);
 void decide_condition(ASTNode *condition_node);
 void gen_while(ASTNode *node);
 
-void gen_data_type(ASTNode *node);
-void gen_pushs(char *symb);
-void gen_pushs_data_types(ASTNode *node);
+void gen_pushs(ASTNode *node);
+void gen_argument(ASTNode *arg_node);
 
 void gen_adds();
 void gen_subs();
 void gen_muls();
 void gen_divs();
 
-void gen_fun_def_vars_recursive(ASTNode *node, int *var_counter);
+void gen_fun_def_vars_recursive(ASTNode *node);
 
-void equation_traversal(ASTNode *node);
+void equation_traversal(ASTNode *node, char *result_var);
 void arithmetic_operation(ASTNode *node);
+void gen_call(ASTNode *node, char *result_var);
 
 #endif
