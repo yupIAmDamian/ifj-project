@@ -1,7 +1,9 @@
 import ifj26.*
 
 @main def run(): Unit =
-    val n: Int = 6
+    val n: Int = readInt()
+    val k: Int = 5 + calc(5)
+    print(k)
     if n < 0 then
         print("Factorial is not defined for negative numbers\n")
     else
@@ -12,3 +14,5 @@ import ifj26.*
             i = i + 1
         print(f)
         print("\n")
+def calc(x: Int): Int =
+    return x + 8 * 7
