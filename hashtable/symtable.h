@@ -33,6 +33,7 @@ typedef struct Symbol {
     SymbolType s_type;
     DataType d_type;
     bool is_initialized;
+    bool is_const;
     int params_amount;
     Param *params;
 } Symbol;
@@ -52,7 +53,7 @@ void symtable_dispose(Symtable *st);
 void scope_push(Symtable *st);
 void scope_pop(Symtable *st);
 
-bool symtable_insert_var(Symtable *st, char *name, DataType type, bool is_init);
+bool symtable_insert_var(Symtable *st, char *name, DataType type, bool is_init, bool is_const);
 bool symtable_insert_func(Symtable *st, char *name, DataType return_type, Param *params, int param_count);
 
 Symbol* symtable_search(Symtable *st, char *name);

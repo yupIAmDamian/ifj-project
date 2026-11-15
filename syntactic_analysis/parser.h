@@ -1,12 +1,11 @@
 #ifndef PARSER_H
 #define PARSER_H
-#include <stdbool.h>
 #include "../scanner/scanner.h"
-#include <stdio.h>
-#include <string.h>
-#include "parser.h"
 #include "expression.h"
 #include "ast.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdbool.h>
 
 extern Token current_token;
 
@@ -20,7 +19,7 @@ int parse(); // return an error code or 0 if everithing runs smoothly
 // function for non-terminals
 ASTNode* parse_program(); 
 bool parse_prolog(); 
-ASTNode* parse_functions(); 
+bool parse_functions(ASTNode **out_functions); 
 ASTNode* parse_function(); 
 bool parse_main_annotation(bool *is_main); 
 ASTNode* parse_params_opt(); 

@@ -2,6 +2,9 @@
 #define AST_H
 #include "../scanner/scanner.h"
 #include "../hashtable/symtable.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
 
 typedef enum {
     AST_NODE_PROGRAM,       // root node for the program
@@ -20,7 +23,8 @@ typedef enum {
     AST_NODE_TERM,          // term node (identifier, integer, double, string)
     AST_NODE_ASSIGN,        // assignment node
     AST_NODE_CALL,          // function call node
-    AST_NODE_INT2FLOAT      // integer to float conversion node
+    AST_NODE_INT2FLOAT,     // integer to float conversion node
+    AST_NODE_UNIT           // unit node
 } ASTNodeType;
 
 typedef struct ASTNode {
@@ -33,6 +37,7 @@ typedef struct ASTNode {
     struct ASTNode *prev;
     Token val;
     bool is_main;
+    bool is_const;
 } ASTNode;
 
 ASTNode *create_ast_node(ASTNodeType type,ASTNode *left, ASTNode *right, ASTNode *extra, Token val);

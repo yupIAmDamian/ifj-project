@@ -51,7 +51,10 @@ ASTNode* parse_program() {
         return NULL;
     }
 
-    ASTNode *functions_node = parse_functions();
+    ASTNode *functions_node = NULL;
+    if (!parse_functions(&functions_node)) {
+        return NULL;
+    }
     if (current_token.type == TOKEN_EOF) {
         Token root_token = current_token;
         return create_ast_node(AST_NODE_PROGRAM, functions_node, NULL, NULL, root_token);
@@ -73,14 +76,16 @@ bool parse_prolog() {
     return true;
 }
 
-ASTNode* parse_functions() {
+bool parse_functions(ASTNode **out_functions) {
     ASTNode *first_function = NULL;
     ASTNode *last_function = NULL;
+    *out_functions = NULL;
+
     while (current_token.type == TOKEN_AT || current_token.type == TOKEN_DEF) {
 
         ASTNode *function_node = parse_function();
         if (function_node == NULL) {
-            return NULL;
+            return false; // syntax error
         }
         if (first_function == NULL) {
             first_function = function_node;
@@ -91,7 +96,8 @@ ASTNode* parse_functions() {
             last_function = function_node;
         }
     }
-    return first_function;
+    *out_functions = first_function;
+    return true;
 }
 
 ASTNode* parse_function() {
@@ -128,6 +134,8 @@ bool parse_main_annotation(bool *is_main) {
 
         *is_main = true;
         current_token = get_token_buffered(); 
+
+        match(TOKEN_EOL);
     }
     return true;
 }
@@ -196,7 +204,7 @@ ASTNode* parse_function_body() {
     } else {
         ASTNode *stmt_node = parse_statement();
         if (stmt_node == NULL) return NULL;
-        if (!match(TOKEN_EOL)) return NULL;
+        if (!match(TOKEN_EOL) && current_token.type != TOKEN_EOF) return NULL;
         return stmt_node;
     }
 }
@@ -222,7 +230,7 @@ ASTNode* parse_statements() {
                 last_statement_node = last_statement_node->next;
             }
         }
-        if (!match(TOKEN_EOL)) return NULL;
+        if (!match(TOKEN_EOL) && current_token.type != TOKEN_DEDENT && current_token.type != TOKEN_EOF) return NULL;
     }
     return first_statement_node;
 }
@@ -282,6 +290,7 @@ ASTNode* parse_statement() {
         return create_ast_node(AST_NODE_IF, cond_node, then_node, else_node, if_token);
     }
     else if (current_token.type == TOKEN_VAL || current_token.type == TOKEN_VAR) {
+        bool is_const = (current_token.type == TOKEN_VAL);
         current_token = get_token_buffered();
         
         if (current_token.type != TOKEN_IDENTIFIER) return NULL;
@@ -295,7 +304,15 @@ ASTNode* parse_statement() {
         if (expr_node == NULL) return NULL;
         
         ASTNode *var_node = create_ast_node(AST_NODE_VAR, NULL, NULL, NULL, id_token);
-        return create_ast_node(AST_NODE_VAR_DECL, var_node, expr_node, NULL, id_token);
+        ASTNode *var_decl_node= create_ast_node(AST_NODE_VAR_DECL, var_node, expr_node, NULL, id_token);
+        
+        if (var_decl_node != NULL) {
+            var_decl_node->is_const = is_const;
+        }
+        if (var_node != NULL) {
+            var_node->is_const = is_const;
+        }
+        return var_decl_node;
     }
     else if (current_token.type == TOKEN_IDENTIFIER) {
         Token next_token = get_token_buffered();
@@ -314,6 +331,14 @@ ASTNode* parse_statement() {
             unget_token(next_token);
             return parse_expr_or_call();
         }
+    }
+    else if (current_token.type == TOKEN_LPAREN) {
+        Token lparen_token = current_token;
+        current_token = get_token_buffered();
+        if (!match(TOKEN_RPAREN)) {
+            return NULL; // syntax error
+        }
+        return create_ast_node(AST_NODE_UNIT, NULL, NULL, NULL, lparen_token);
     }
     else {
         return parse_expr_or_call();
