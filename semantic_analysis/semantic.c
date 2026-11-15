@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include "semantic.h"
-
+void dominik_error(int code, const char *msg); //dočásné riešenie
 static DataType current_func_ret_type = TYPE_VOID;
 
 /**
@@ -156,7 +156,7 @@ static bool check_implicit_return(ASTNode **stmt_list_ptr, DataType expected_ret
  * @param root Root AST node of the program.
  * @param st Pointer to the symbol table.
  */
-static void check_main_function(ASTNode *root, Symtable *st) {
+static void check_main_function(ASTNode *root) {
     if (root == NULL || root->type != AST_NODE_PROGRAM) return;
 
     int main_count = 0;
@@ -236,7 +236,7 @@ bool check_semantics(ASTNode *root, Symtable *st) {
 
     // Second pass: recursively validate all function bodies and statements, then verify '@main'
     check_statement(root, st);
-    check_main_function(root, st);
+    check_main_function(root);
     return true;
 }
 
