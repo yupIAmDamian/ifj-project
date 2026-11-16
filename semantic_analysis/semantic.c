@@ -337,6 +337,11 @@ static DataType check_expression(ASTNode *node, Symtable *st);
  */
 bool check_semantics(ASTNode *root, Symtable *st) {
     if (root == NULL) return true;
+
+    program_root = root;
+    checked_funcs_count = 0;
+    visiting_funcs_count = 0;
+
     register_builtin_functions(st);
 
     // First pass: register all user-defined function signatures to allow forward calls and recursion
@@ -449,7 +454,7 @@ static DataType check_func_call(ASTNode *node, Symtable *st) {
 
     // Special handling for built-in 'print' and 'toStr' accepting a single argument of type Any
     if (strcmp(func_name, "print") == 0 || strcmp(func_name, "toStr") == 0) {
-        ASTNode *arg_node = node->right;
+        ASTNode *arg_node = node->left;
         if (arg_node == NULL || arg_node->next != NULL) {
             dominik_error(5, "Built-in function requires exactly one argument");
         }
@@ -462,14 +467,23 @@ static DataType check_func_call(ASTNode *node, Symtable *st) {
         return ret;
     }
 
-    Symbol *func_sym = symtable_search(st, node->val.attribute.string_value);
+    Symbol *func_sym = symtable_search(st, func_name);
     if (func_sym == NULL || func_sym->s_type != SYMBOL_FUNC) {
         dominik_error(3, "Undefined function");
     }
 
+    //If the function does not have a specific return type defined, evaluate
+    if (func_sym->d_type == TYPE_UNKNOWN) {
+        ASTNode *target_func = find_func_node(func_name);
+        if (target_func == NULL || is_in_func_list(visiting_funcs, visiting_funcs_count, target_func)) {
+            dominik_error(6, "Cannot infer return type of recursive function");
+        }
+        check_function(target_func, st);
+    }
+
     // Iterate through linked argument list via pointer-to-pointer to allow in-place conversion wrapping
     int arg_count = 0;
-    ASTNode **arg_ptr = &node->right;
+    ASTNode **arg_ptr = &node->left;
 
     while (*arg_ptr != NULL) {
         if (arg_count >= func_sym->params_amount) {
@@ -484,7 +498,7 @@ static DataType check_func_call(ASTNode *node, Symtable *st) {
             dominik_error(5, "Parameter type mismatch");
         }
 
-        // Preserve the sibling chain if the argument node was wrapped in an AST_NODE_INT2FLOAT node
+        //preserve the sibling chain if the argument node was wrapped in an AST_NODE_INT2FLOAT node
         if (*arg_ptr != curr_arg) {
             (*arg_ptr)->next = curr_arg->next;
             curr_arg->next = NULL;
@@ -599,7 +613,13 @@ static void check_statement(ASTNode *node, Symtable *st) {
                 return_type = check_expression(node->left, st);
             }
 
-            if (!convert_if_needed(&node->left, return_type, current_func_ret_type)) {
+            // when the return type of the function is evaluated
+            if (current_func_ret_type == TYPE_UNKNOWN) {
+                if (return_type == TYPE_UNKNOWN || return_type == TYPE_BOOL) {
+                    dominik_error(6, "Invalid return type");
+                }
+                current_func_ret_type = return_type;
+            } else if (!convert_if_needed(&node->left, return_type, current_func_ret_type)) {
                 dominik_error(6, "Return type mismatch");
             }
             break;
@@ -676,7 +696,7 @@ static DataType check_expression(ASTNode *node, Symtable *st) {
                     return TYPE_STRING;
                 } else if (node->val.type == TOKEN_IDENTIFIER) {
                     Symbol *sym = symtable_search(st, node->val.attribute.string_value);
-                    if (sym == NULL) dominik_error(3, "Undefined variable");
+                    if (sym == NULL || sym->s_type != SYMBOL_VAR) dominik_error(3, "Undefined variable");
 
                     apply_mangled_name(node, sym);
                     node->inferred_type = sym->d_type;
