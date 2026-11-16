@@ -1,3 +1,6 @@
+// Compiler of IFJ26 imperative language
+// Author: Damian Frantisek Girasek (xgirasd00)
+
 #include "codegen_helper.h"
 
 Token* get_token_from_node(ASTNode *node) {

@@ -1,3 +1,6 @@
+// Compiler of IFJ26 imperative language
+// Author: Damian Frantisek Girasek (xgirasd00)
+
 #ifndef CODEGEN_HELPER_H
 #define CODEGEN_HELPER_H
 #include "../syntactic_analysis/ast.h"

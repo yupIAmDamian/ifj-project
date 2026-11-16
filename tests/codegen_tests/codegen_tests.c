@@ -1,3 +1,6 @@
+// Compiler of IFJ26 imperative language
+// Author: Damian Frantisek Girasek (xgirasd00)
+
 #include "codegen_tests.h"
 
 static Token make_token(TokenType type, int line) {

@@ -1,3 +1,5 @@
+// Compiler of IFJ26 imperative language
+// Author: Damian Frantisek Girasek (xgirasd00)
 #include "codegen.h"
 
 char* current_func_name = NULL;

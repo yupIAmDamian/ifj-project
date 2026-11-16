@@ -1,3 +1,6 @@
+// Compiler of IFJ26 imperative language
+// Author: Damian Frantisek Girasek (xgirasd00)
+
 #include "gen_func.h"
 #include "codegen_helper.h"
 #include "scanner.h"

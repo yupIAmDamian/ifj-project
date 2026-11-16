@@ -1,3 +1,6 @@
+# Compiler of IFJ26 imperative language
+# Author: Damian Frantisek Girasek (xgirasd00)
+
 CC = gcc
 #Compiler flags - check which are really needed and remove the rest
 CFLAGS = -std=c11 -Wall -Wextra -pedantic -g -I . -I codegen -I syntactic_analysis -I scanner -I hashtable

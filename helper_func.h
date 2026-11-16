@@ -1,3 +1,6 @@
+// Compiler of IFJ26 imperative language
+// Author: Damian Frantisek Girasek (xgirasd00)
+
 #ifndef HELPER_FUNC_H
 #define HELPER_FUNC_H
 

@@ -1,3 +1,5 @@
+// Compiler of IFJ26 imperative language
+// Author: Damian Frantisek Girasek (xgirasd00)
 #ifndef CODEGEN_H
 #define CODEGEN_H
 
