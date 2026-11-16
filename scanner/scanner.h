@@ -26,7 +26,8 @@ typedef enum {
     TOKEN_VAL,
     TOKEN_VAR,
     TOKEN_WHILE,
-    
+    TOKEN_UNDERSCORE,
+
     // data types
     TOKEN_TYPE_INT,
     TOKEN_TYPE_DOUBLE,
@@ -55,8 +56,8 @@ typedef enum {
     TOKEN_RPAREN,        // )
     TOKEN_COLON,         // :
     TOKEN_COMMA,         // ,
-    TOKEN_DOT,           // . 
-    TOKEN_AT,            // @ 
+    TOKEN_DOT,           // .
+    TOKEN_AT,            // @
     
     // support for indentation
     TOKEN_INDENT,        // increase indentation level
@@ -84,9 +85,13 @@ typedef enum {
     STATE_START,
     STATE_ID_OR_KEYWORD,
     STATE_INTEGER,
+    STATE_INTEGER_UNDERSCORE,
+    STATE_ZERO,
     STATE_DOUBLE_DOT,
     STATE_DOUBLE_FRACTION,
+    STATE_DOUBLE_FRACTION_UNDERSCORE,
     STATE_DOUBLE_EXP,
+    STATE_DOUBLE_EXP_DIGITS_UNDERSCORE,
     STATE_DOUBLE_EXP_SIGN,
     STATE_DOUBLE_EXP_DIGITS,
     STATE_DOUBLE_SUFFIX,
@@ -98,6 +103,7 @@ typedef enum {
     STATE_STRING_MULTI,
     STATE_STRING_MULTI_END1,
     STATE_STRING_MULTI_END2,
+    STATE_COMMENT_TAIL,
     STATE_LESS_THAN,
     STATE_GREATER_THAN,
     STATE_EQUALS,
@@ -109,10 +115,10 @@ typedef enum {
     STATE_COMMENT_BLOCK_NESTED,
 } State;
 
-Token get_next_token();
+Token get_next_token(void);
 
-void scanner_init();
-
+void scanner_init(void);
+void scanner_free(void);
 // structure for dynamic string buffer
 typedef struct {
     char *str;
@@ -127,4 +133,4 @@ void buffer_free(StringKeywordID *buffer);
 Token error_buffer_init();
 Token error_buffer_add_char(StringKeywordID *buffer);
 
-#endif 
+#endif

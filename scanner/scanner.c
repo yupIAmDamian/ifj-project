@@ -4,25 +4,72 @@
 
 #include "scanner.h"
 
-int current_line;
-bool line_start; // variable for counting indentation level
+static int current_line;
+static bool line_start; // variable for counting indentation level
 
 //Indentation stack suggested by AI
 /*Prompt: "What is the best way for the lexical scanner to keep track of indentation in the input code?
 should i have a variable for counting whitespace characters at the beginning of each line or should i send
 every whitespace as an indent token? what is the simplest implementation?"*/
-#define MAX_INDENT_LEVELS 100 // max indentation level - can it be defined this way??
-int indent_stack[MAX_INDENT_LEVELS];
-int indent_top;
-int pending_dedents;
+#define INIT_MAX_INDENT 20 // initial capacity for indent stack
+static int *indent_stack = NULL;
+static int indent_capacity = 0;
+static int indent_top;
+static int pending_dedents;
+static bool pending_slash; // flag for putting a slash in the input without using another "ungetc"
+static int paren_count; // counter of left parentheses (EOL tokens arent returned inside parentheses)
+static TokenType last_token;
+
+// function for the initialization of the indent stack
+static void indent_stack_init(void) {
+    if (indent_stack == NULL) {
+        indent_stack = malloc(INIT_MAX_INDENT * sizeof(int));
+        if (indent_stack == NULL) {
+            return; // need to call error func
+        }
+        indent_capacity = INIT_MAX_INDENT;
+    }
+    indent_top = 0;
+    indent_stack[0] = 0;
+}
+
+// function for putting an indent level in the stack
+static void indent_stack_push(int indent_level) {
+    if (indent_top + 1 >= indent_capacity) {
+        int new_capacity = indent_capacity * 2; // doubles the capacity
+        int *new_stack = realloc(indent_stack, new_capacity * sizeof(int));
+        if (new_stack == NULL) {
+            return; // need to call error func
+        }
+        indent_stack = new_stack;
+        indent_capacity = new_capacity;
+    }
+    indent_top++;
+    indent_stack[indent_top] = indent_level;
+}
+
+//function fo freeing the allocated stack memory
+static void indent_stack_free(void) {
+    free(indent_stack);
+    indent_stack = NULL;
+    indent_capacity = 0;
+    indent_top = 0;
+}
 
 // function for the initialization of the scanner
-void scanner_init() {
+void scanner_init(void) {
     current_line = 1;
     line_start = true;
-    indent_top = 0;
-    indent_stack[indent_top] = 0; // stack is at 0
     pending_dedents = 0;
+    pending_slash = false;
+    paren_count = 0;
+    indent_stack_init();
+    last_token = TOKEN_EOL;
+}
+
+// function for freeing allocated memory at the end of the program (or do i just use indent stack free?)
+void scanner_free(void) {
+    indent_stack_free();
 }
 
 // function for the initialization of the buffer
@@ -62,7 +109,7 @@ void buffer_free(StringKeywordID *buffer) {
 }
 
 // helper function for checking buffer initialization errors
-Token error_buffer_init() {
+Token error_buffer_init(void) {
     Token token;
     token.type = TOKEN_ERROR;
     return token;
@@ -76,18 +123,16 @@ Token error_buffer_add_char(StringKeywordID *buffer) {
     return token;
 }
 
-int paren_count = 0; // counter of left parentheses (EOL tokens arent returned inside parentheses)
-
 // function to get the next token from the input
-Token get_next_token_fsm()
+static Token get_next_token_fsm(void)
 {
     Token token;
-    token.line = current_line;    
     State state = STATE_START; // initial state of the FSM
 
     if (pending_dedents > 0) { // processing of pending dedents
         pending_dedents--;
         token.type = TOKEN_DEDENT;
+        token.line = current_line;
         return token;
     }
 
@@ -99,8 +144,10 @@ Token get_next_token_fsm()
     StringKeywordID buffer; // buffer for storing keywords, IDs, strings, digits, ...
     buffer.str = NULL;
     int comment_nested_count = 0; // counter for nested block comments
-    static bool pending_slash = false; // flag for putting a slash in the input without using another "ungetc"
     bool found_tab = false; // flag for returning an error if TAB is at the start of a non-empty line
+    bool comment_line_start = false;
+    bool comment_had_newline = false;
+    bool after_comment = false;
 
     while(1) {
         int character;
@@ -114,14 +161,19 @@ Token get_next_token_fsm()
 
         switch (state) {
             case STATE_INDENT_DEDENT:
+                token.line = current_line;
                 if (character == ' ') {
-                    space_count++;
+                    if (!after_comment) {
+                        space_count++;
+                    }
                 } else if (character == '\t') {
-                    found_tab = true; // if the line isnt empty, TAB will result in error
+                    if (!after_comment) {
+                        found_tab = true;} // if the line isnt empty, TAB will result in error
                 } else if (character == '\n') { // line is empty, reset the space counter
                     current_line++;
                     space_count = 0;
                     found_tab = false;
+                    after_comment = false;
                 } else if (character == EOF) { // end of file, dedents must be returned
                     if (indent_top > 0) {
                         pending_dedents = indent_top;
@@ -147,10 +199,9 @@ Token get_next_token_fsm()
                     state = STATE_COMMENT_SINGLE;
                     found_tab = false;
                 } else if (character == '*') {
-                    line_start = false;
+                    comment_line_start = true;
                     comment_nested_count = 1;
                     state = STATE_COMMENT_BLOCK;
-                    found_tab = false;
                 } else { // the slash wasnt the beginning of a comment, indents/dedents need to be returned
                     ungetc(character, stdin);
                     process_indent_dedent = true;
@@ -159,6 +210,7 @@ Token get_next_token_fsm()
                 break;
 
             case STATE_START:
+                token.line = current_line;
                 if (character == EOF) { // end of file
                     state = STATE_INDENT_DEDENT; // to return possible pending dedents
                     break;
@@ -187,15 +239,23 @@ Token get_next_token_fsm()
                         return token;
                     }
                     state = STATE_ID_OR_KEYWORD;
-                    break;
-                } else if (isdigit(character)) { // numbers
+                } else if (character == '0') {
+                    if (!buffer_init(&buffer)) {
+                        return error_buffer_init();
+                    }
+                    if (!buffer_add_char(&buffer, character)) {
+                        return error_buffer_add_char(&buffer);
+                    }
+                    state = STATE_ZERO;
+                } else if (isdigit(character)) { // numbers except 0
                     if (!buffer_init(&buffer)) {
                         token.type = TOKEN_ERROR;
                         return token;
                     }
-                    buffer_add_char(&buffer, character);
+                    if (!buffer_add_char(&buffer, character)) {
+                        return error_buffer_add_char(&buffer);
+                    }
                     state = STATE_INTEGER;
-                    break;
                 } else if (character == '"') {
                     state = STATE_STRING;
                 } else if (character == '+') {
@@ -295,6 +355,9 @@ Token get_next_token_fsm()
                     } else if (strcmp(buffer.str, "while") == 0) {
                         token.type = TOKEN_WHILE;
                         buffer_free(&buffer);
+                    } else if (strcmp(buffer.str, "_") == 0) {
+                        token.type = TOKEN_UNDERSCORE;
+                        buffer_free(&buffer);
                     } else { // no keyword matched, its an ID
                         token.type = TOKEN_IDENTIFIER;
                         token.attribute.string_value = buffer.str;
@@ -308,8 +371,8 @@ Token get_next_token_fsm()
                     if(!buffer_add_char(&buffer, character)) {
                         return error_buffer_add_char(&buffer);
                     }
-                } else if (character == '_') { // underscores in int/double are ignored
-                    break;
+                } else if (character == '_') {
+                    state = STATE_INTEGER_UNDERSCORE;
                 } else if (character == '.') {
                     if (!buffer_add_char(&buffer, character)) {
                         return error_buffer_add_char(&buffer);
@@ -336,13 +399,54 @@ Token get_next_token_fsm()
                 }
                 break;
 
+            case STATE_INTEGER_UNDERSCORE:
+                if (character == '_') {
+                    break;
+                } else if (isdigit(character)) {
+                    if (!buffer_add_char(&buffer, character)) {
+                        return error_buffer_add_char(&buffer);
+                    }
+                    state = STATE_INTEGER;
+                } else { // underscore cant be at the end of the number
+                    buffer_free(&buffer);
+                    token.type = TOKEN_ERROR;
+                    return token;
+                }
+                break;
+
+            case STATE_ZERO:
+                if (character == '.') {
+                    if (!buffer_add_char(&buffer, character)) {
+                        return error_buffer_add_char(&buffer);
+                    }
+                    state = STATE_DOUBLE_DOT;
+                } else if (character == 'e' || character == 'E') {
+                    if (!buffer_add_char(&buffer, character)) {
+                        return error_buffer_add_char(&buffer);
+                    }
+                    state = STATE_DOUBLE_EXP;
+                } else if (character == 'd' || character == 'D') {
+                    state = STATE_DOUBLE_SUFFIX;
+                } else if (isalnum(character) || character == '_') { // non-zero int cant begin with the digit '0'
+                    buffer_free(&buffer);
+                    token.type = TOKEN_ERROR;
+                    return token;
+                } else {
+                    ungetc(character, stdin);
+                    token.type = TOKEN_INTEGER;
+                    token.attribute.integer_value = 0;
+                    buffer_free(&buffer);
+                    return token;
+                }
+                break;
+
             case STATE_DOT: // differentiates between a regular dot and a double starting with a dot
                 if (isdigit(character)) {
                     if (!buffer_init(&buffer)) {
                         return error_buffer_init();
                     }
                     if (!buffer_add_char(&buffer, '.') || !buffer_add_char(&buffer, character)) {
-                        error_buffer_add_char(&buffer);
+                        return error_buffer_add_char(&buffer);
                     }
                     state = STATE_DOUBLE_FRACTION;
                 } else {
@@ -370,8 +474,8 @@ Token get_next_token_fsm()
                     if (!buffer_add_char(&buffer, character)) {
                         return error_buffer_add_char(&buffer);
                     }
-                } else if (character == '_') { // underscores in int/double are ignored
-                    break;
+                } else if (character == '_') {
+                    state = STATE_DOUBLE_FRACTION_UNDERSCORE;
                 } else if (character == 'e' || character == 'E') {
                     if (!buffer_add_char(&buffer, character)) {
                         return error_buffer_add_char(&buffer);
@@ -388,6 +492,21 @@ Token get_next_token_fsm()
                     token.type = TOKEN_DOUBLE;
                     token.attribute.double_value = strtod(buffer.str, NULL);
                     buffer_free(&buffer);
+                    return token;
+                }
+                break;
+
+            case STATE_DOUBLE_FRACTION_UNDERSCORE:
+                if (character == '_') {
+                    break;
+                } else if (isdigit(character)) {
+                    if (!buffer_add_char(&buffer, character)) {
+                        return error_buffer_add_char(&buffer);
+                    }
+                    state = STATE_DOUBLE_FRACTION;
+                } else { // underscore cant be at the end of a fraction
+                    buffer_free(&buffer);
+                    token.type = TOKEN_ERROR;
                     return token;
                 }
                 break;
@@ -429,7 +548,7 @@ Token get_next_token_fsm()
                         return error_buffer_add_char(&buffer);
                     }
                 } else if (character == '_') {
-                    break;
+                    state = STATE_DOUBLE_EXP_DIGITS_UNDERSCORE;
                 } else if (character == 'd' || character == 'D') {
                     state = STATE_DOUBLE_SUFFIX;
                 } else if (isalpha(character)) { // no other suffixes supported
@@ -445,7 +564,27 @@ Token get_next_token_fsm()
                 }
                 break;
 
+            case STATE_DOUBLE_EXP_DIGITS_UNDERSCORE:
+                if (character == '_') {
+                    break;
+                } else if (isdigit(character)) {
+                    if (!buffer_add_char(&buffer, character)) {
+                        return error_buffer_add_char(&buffer);
+                    }
+                    state = STATE_DOUBLE_EXP_DIGITS;
+                } else { // underscore cant be at the end of the exponent
+                    buffer_free(&buffer);
+                    token.type = TOKEN_ERROR;
+                    return token;
+                }
+                break;
+
             case STATE_DOUBLE_SUFFIX:
+                if (isalnum(character) || character == '_') { // suffix must be the end of the number
+                    buffer_free(&buffer);
+                    token.type = TOKEN_ERROR;
+                    return token;
+                }
                 ungetc(character, stdin);
                 token.type = TOKEN_DOUBLE;
                 token.attribute.double_value = strtod(buffer.str, NULL);
@@ -628,6 +767,7 @@ Token get_next_token_fsm()
                 } else if (character == '/') { // slash, possibly a nested block comment
                     state = STATE_COMMENT_BLOCK_NESTED;
                 } else if (character == '\n') {
+                    comment_had_newline = true;
                     current_line++;
                 } else if (character == EOF) { // block comment isnt closed with "*/"
                     token.type = TOKEN_ERROR; 
@@ -643,6 +783,7 @@ Token get_next_token_fsm()
                     break;
                 } else if (character == '\n') {
                     current_line++;
+                    comment_had_newline = true;
                     state = STATE_COMMENT_BLOCK;
                 } else if (character == EOF) { // block comment isnt closed with "*/"
                     token.type = TOKEN_ERROR;
@@ -655,8 +796,17 @@ Token get_next_token_fsm()
             case STATE_COMMENT_BLOCK_END:
                 if (character == '/') {
                     comment_nested_count--;
-                    if (comment_nested_count == 0) { // block comment processing is finished
-                        state = STATE_START;
+                    if (comment_nested_count == 0) {
+                        if (comment_had_newline && paren_count == 0) {
+                            state = STATE_COMMENT_TAIL;
+                        } else if (comment_line_start) {
+                            state = STATE_INDENT_DEDENT;
+                            after_comment = true;
+                        } else {
+                            state = STATE_START;
+                        }
+                        comment_line_start = false;
+                        comment_had_newline = false;
                     } else {
                         state = STATE_COMMENT_BLOCK;
                     }
@@ -664,6 +814,7 @@ Token get_next_token_fsm()
                     break;
                 } else if (character == '\n') {
                     current_line++;
+                    comment_had_newline = true;
                     state = STATE_COMMENT_BLOCK;
                 } else if (character == EOF) { // block comment isnt closed with "*/"
                     token.type = TOKEN_ERROR;
@@ -673,6 +824,18 @@ Token get_next_token_fsm()
                 }
                 break;
 
+            case STATE_COMMENT_TAIL: // comment included '\n', EOL must follow
+                if (character == ' ' || character == '\t' || character == '\r') {
+                    break;
+                } else if (character == '\n' || character == EOF) {
+                    if (character == '\n') current_line++;
+                    token.type = TOKEN_EOL;
+                    line_start = true;
+                    return token;
+                } else {
+                    token.type = TOKEN_ERROR;
+                    return token;
+                }
         }
 
         // indent/dedent processing
@@ -684,8 +847,7 @@ Token get_next_token_fsm()
             line_start = false;
             int current_indent = indent_stack[indent_top];
             if (space_count > current_indent) { // current line has a higher indentation level
-                indent_top++;
-                indent_stack[indent_top] = space_count;
+                indent_stack_push(space_count);
                 token.type = TOKEN_INDENT;
                 return token;
             } else if (space_count < current_indent) { // current line has a lower indentation level
@@ -711,8 +873,7 @@ Token get_next_token_fsm()
 }
 
 // calls the fsm function to get a token, filters it 
-Token get_next_token() {
-    static TokenType last_token = TOKEN_EOL; 
+Token get_next_token(void) {
     Token t;
     while(1) {
         t = get_next_token_fsm();
