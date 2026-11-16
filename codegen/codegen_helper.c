@@ -10,6 +10,20 @@ char* gen_string_from_node(ASTNode *node) {
 }
 
 
+void gen_escaped_string(char *value) {
+    for (const unsigned char *p = (const unsigned char *)value;
+         *p != '\0'; p++) {
+        unsigned char c = *p;
+
+        if (c == ' ' || c == '\\' || c == '#' ||
+            c < 33 || c > 126) {
+            printf("\\%03u", c);
+        } else {
+            putchar(c);
+        }
+    }
+}
+
 extern char *current_func_name; 
 
 char *create_label(int number, char* label_name, char* label_type) {

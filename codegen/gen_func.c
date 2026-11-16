@@ -14,13 +14,19 @@ void gen_params_declaration(char *var_name){
 
 //variable generation
 void gen_var(char* var_name){
+    //TODO check if There is GL in name of the var if there is dont add the function name to it
+    if(strncmp(var_name, "GF@", 3) == 0 ) {
+        printf("%s", var_name);
+        return;
+    }
     printf("%s$%s", var_name, current_func_name);
 }
 
 //rest code
+//Should it be $main or main?
 void create_head(){
     printf(".IFJcode26\n");
-    printf("JUMP $main\n\n");
+    printf("JUMP main\n\n");
 }
 
 void gen_new_line(){
@@ -163,6 +169,21 @@ void gen_dprint(char *symb){
     printf("DPRINT %s\n", symb);
 }
 
+void gen_pushs(ASTNode *node){
+    printf("PUSHS ");
+    gen_argument(node);
+    gen_new_line();
+}
+
+void gen_argument(ASTNode *arg_node){
+    Token *token = get_token_from_node(arg_node);
+    if (token->type == TOKEN_IDENTIFIER) {
+        gen_var(gen_string_from_node(arg_node));
+    } else {
+        gen_data_type(arg_node);
+    }
+}
+
 void gen_data_type(ASTNode *node){
     Token *token = get_token_from_node(node);
     switch (token->type) {
@@ -174,7 +195,8 @@ void gen_data_type(ASTNode *node){
             printf("float@%a", token->attribute.double_value);
             break;
         case TOKEN_STRING:
-            printf("string@%s", token->attribute.string_value);
+            printf("string@");
+            gen_escaped_string(token->attribute.string_value);
             break;
         default:
             break;
@@ -182,8 +204,8 @@ void gen_data_type(ASTNode *node){
 }
 
 void gen_write(ASTNode *node){
-    printf("WRITE");
-    gen_data_type(node);
+    printf("WRITE ");
+    gen_argument(node);
     gen_new_line();
 }
 
@@ -225,6 +247,16 @@ void gen_jump(char *label){
 
 void gen_exit(){
     printf("EXIT ");
+}
+
+static int next_read_label_id = 0;
+
+void gen_read_default(char *var, char* data_type, char *default_val) {
+    int id = next_read_label_id++;
+    gen_read(var, data_type);
+    printf("JUMPIFNEQ $read$ok$%d %s nil@nil\n", id, var);
+    printf("MOVE %s %s\n", var, default_val);
+    printf("LABEL $read$ok$%d\n", id);
 }
 
 //variable name + data type

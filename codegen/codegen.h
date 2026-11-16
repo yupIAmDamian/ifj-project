@@ -35,12 +35,11 @@ void gen_fun_def_end();
 
 void gen_fun_call(ASTNode *node, char *result_var);
 
+
 void gen_if(ASTNode *node);
+bool always_returns(ASTNode *node);
 void decide_condition(ASTNode *condition_node);
 void gen_while(ASTNode *node);
-
-void gen_pushs(ASTNode *node);
-void gen_argument(ASTNode *arg_node);
 
 void gen_adds();
 void gen_subs();

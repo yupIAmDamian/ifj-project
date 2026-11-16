@@ -52,10 +52,13 @@ void gen_jumpifneqs(char *label);
 void gen_dprint(char *symb);
 void gen_read();
 void gen_write(ASTNode *node);
+void gen_read_default(char *var, char* data_type, char *default_val);
 void gen_concat(char *var, char *symb1, char *symb2);
 void gen_strlen(char *var, char *symb);
 void gen_getchar(char *var, char *symb1, char *symb2);
 void gen_setchar(char *var, char *symb1, char *symb2);
+void gen_pushs(ASTNode *node);
+void gen_argument(ASTNode *arg_node);
 void gen_data_type(ASTNode *node);
 
 

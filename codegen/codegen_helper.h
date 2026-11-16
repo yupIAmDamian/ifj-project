@@ -8,6 +8,8 @@ Token* get_token_from_node(ASTNode *node);
 
 char* gen_string_from_node(ASTNode *node);
 
+void gen_escaped_string(char *value);
+
 
 extern char *current_func_name;
 
