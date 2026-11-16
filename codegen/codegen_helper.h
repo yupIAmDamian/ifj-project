@@ -1,3 +1,6 @@
+// Compiler of IFJ26 imperative language
+// Author: Damian Frantisek Girasek (xgirasd00)
+
 #ifndef CODEGEN_HELPER_H
 #define CODEGEN_HELPER_H
 #include "../syntactic_analysis/ast.h"
@@ -6,7 +9,9 @@
 
 Token* get_token_from_node(ASTNode *node);
 
-char* string_from_token(ASTNode *node);
+char* gen_string_from_node(ASTNode *node);
+
+void gen_escaped_string(char *value);
 
 
 extern char *current_func_name;

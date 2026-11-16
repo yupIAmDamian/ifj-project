@@ -1,3 +1,6 @@
+// Compiler of IFJ26 imperative language
+// Author: Damian Frantisek Girasek (xgirasd00)
+
 #include "helper_func.h"
 
 //This function is used to duplicate a string. 

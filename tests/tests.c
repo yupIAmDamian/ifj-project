@@ -1,3 +1,6 @@
+// Compiler of IFJ26 imperative language
+// Author: Damian Frantisek Girasek (xgirasd00)
+
 #include "tests.h"
 #include "hashtable_tests/hashtable_func.h"
 #include "codegen_tests/codegen_tests.h"

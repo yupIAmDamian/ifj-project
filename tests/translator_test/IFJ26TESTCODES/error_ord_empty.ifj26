@@ -1,0 +1,6 @@
+import ifj26.*
+
+@main def run(): Unit =
+    val text: String = ""
+    val invalidIndex: Int = ord(text, 0)
+    print(invalidIndex)
