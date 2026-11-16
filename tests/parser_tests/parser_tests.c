@@ -151,6 +151,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    parser_cleanup();
+
     printf("\n--- Vysledok testov ---\n");
 
     if (failures == 0) {

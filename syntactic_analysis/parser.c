@@ -409,3 +409,8 @@ ASTNode* parse_term() {
     }
     return NULL;
 }
+
+void parser_cleanup(void) {
+    free_ast(global_ast_root);
+    global_ast_root = NULL;
+}

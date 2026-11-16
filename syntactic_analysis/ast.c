@@ -20,3 +20,15 @@ ASTNode *create_ast_node(ASTNodeType type, ASTNode *left, ASTNode *right, ASTNod
     node->is_const = false;
     return node;
 }
+
+void free_ast(ASTNode *node) {
+    if (node == NULL) {
+        return;
+    }
+    free_ast(node->left);
+    free_ast(node->right);
+    free_ast(node->extra);
+    free_ast(node->next);
+
+    free(node);
+}

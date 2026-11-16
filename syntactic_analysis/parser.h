@@ -34,5 +34,6 @@ ASTNode* parse_expr_or_call();
 ASTNode* parse_expr_or_call_opt(); 
 ASTNode* parse_args_opt(); 
 ASTNode* parse_term(); 
+void parser_cleanup(void);
 
 #endif
