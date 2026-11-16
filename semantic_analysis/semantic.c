@@ -369,9 +369,8 @@ bool check_semantics(ASTNode *root, Symtable *st) {
                 }
 
                 bool success = symtable_insert_func(st, func->val.attribute.string_value, func->inferred_type, extracted_params, params_amount);
-                if (!success) dominik_error(3, "Redefinition of function");
-
                 if (extracted_params) free(extracted_params);
+                if (!success) dominik_error(3, "Redefinition of function");
             }
             func = func->next;
         }
