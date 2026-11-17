@@ -15,7 +15,8 @@ block comment lvl 1 */
 
 def abcd(n: Int): /* it can be 
 /* hefug */ 
-here */ Double
+here */
+Double
    n = n*n
 
 if abcd(5) == 25 then

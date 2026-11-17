@@ -56,6 +56,7 @@ bool check_token_attribute(Token token, ExpectedToken exp) {
 }
 
 int main() {
+    scanner_init();
     // TEST buffer functions
     printf("\n------Buffer tests------\n");
     StringKeywordID buffer;
@@ -128,6 +129,7 @@ int main() {
         {.type =TOKEN_TYPE_INT},
         {.type =TOKEN_RPAREN},
         {.type =TOKEN_COLON},
+        {.type =TOKEN_EOL},
         {.type =TOKEN_TYPE_DOUBLE},
         {.type =TOKEN_EOL},
         {.type =TOKEN_INDENT},
@@ -209,6 +211,6 @@ int main() {
     } else {
         printf("\n---FAILED!---\n");
     }
-
+    scanner_free();
     return 0;
 }
