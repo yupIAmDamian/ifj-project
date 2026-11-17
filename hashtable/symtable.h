@@ -41,7 +41,8 @@ typedef struct Symbol {
 typedef struct {
     hashtable_t *scopes[MAX_SCOPES]; 
     int top;
-    int block_counter; //counting blocks for mangling                      
+    int block_counter; //counting blocks for mangling
+				bool in_main;                  
 } Symtable;
 
 Symbol* symbol_create(char *name, SymbolType s_type, DataType d_type, bool is_init);
