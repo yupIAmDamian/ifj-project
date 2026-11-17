@@ -35,7 +35,7 @@ typedef struct Symbol {
     bool is_initialized;
     bool is_const;
     int params_amount;
-    Param *params;
+	Param *params;
 } Symbol;
 
 typedef struct {
