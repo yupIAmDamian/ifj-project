@@ -66,7 +66,11 @@ bool parse_prolog() {
     if (!match(TOKEN_IMPORT)) return false;
     
     if (current_token.type != TOKEN_IDENTIFIER) return false;
-    if (strcmp(current_token.attribute.string_value, "ifj26") != 0) return false;
+    if (strcmp(current_token.attribute.string_value, "ifj26") != 0) {
+        free(current_token.attribute.string_value);
+        return false;
+    }
+    free(current_token.attribute.string_value);
     current_token = get_token_buffered();
     
     if (!match(TOKEN_DOT)) return false;
@@ -130,7 +134,11 @@ bool parse_main_annotation(bool *is_main) {
     *is_main = false;
     if (match(TOKEN_AT)) {
         if (current_token.type != TOKEN_IDENTIFIER) return false;
-        if (strcmp(current_token.attribute.string_value, "main") != 0) return false;
+        if (strcmp(current_token.attribute.string_value, "main") != 0) {
+            free(current_token.attribute.string_value);
+            return false;
+        }
+        free(current_token.attribute.string_value);
 
         *is_main = true;
         current_token = get_token_buffered(); 
@@ -165,7 +173,7 @@ ASTNode* parse_params_opt() {
 }
 
 ASTNode* parse_param() {
-    if (current_token.type != TOKEN_IDENTIFIER) return false;
+    if (current_token.type != TOKEN_IDENTIFIER) return NULL;
     Token id_token = current_token;
     current_token = get_token_buffered();
     
@@ -304,7 +312,11 @@ ASTNode* parse_statement() {
         if (expr_node == NULL) return NULL;
         
         ASTNode *var_node = create_ast_node(AST_NODE_VAR, NULL, NULL, NULL, id_token);
-        ASTNode *var_decl_node= create_ast_node(AST_NODE_VAR_DECL, var_node, expr_node, NULL, id_token);
+        
+        Token empty_id = id_token;
+        empty_id.attribute.string_value = NULL;
+
+        ASTNode *var_decl_node= create_ast_node(AST_NODE_VAR_DECL, var_node, expr_node, NULL, empty_id);
         
         if (var_decl_node != NULL) {
             var_decl_node->is_const = is_const;
@@ -325,7 +337,11 @@ ASTNode* parse_statement() {
             if (expr_node == NULL) return NULL;
 
             ASTNode *var_node = create_ast_node(AST_NODE_VAR, NULL, NULL, NULL, id_token);
-            return create_ast_node(AST_NODE_ASSIGN, var_node, expr_node, NULL, id_token);
+
+            Token empty_id = id_token;
+            empty_id.attribute.string_value = NULL;
+
+            return create_ast_node(AST_NODE_ASSIGN, var_node, expr_node, NULL, empty_id);
         }
         else {
             unget_token(next_token);
@@ -408,4 +424,9 @@ ASTNode* parse_term() {
         return create_ast_node(AST_NODE_TERM, NULL, NULL, NULL, term_token); 
     }
     return NULL;
+}
+
+void parser_cleanup(void) {
+    ast_cleanup();
+    global_ast_root = NULL;
 }

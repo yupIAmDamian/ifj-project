@@ -35,11 +35,14 @@ typedef struct ASTNode {
     struct ASTNode *extra;
     struct ASTNode *next;
     struct ASTNode *prev;
+    struct ASTNode *alloc_next;
     Token val;
     bool is_main;
     bool is_const;
 } ASTNode;
 
 ASTNode *create_ast_node(ASTNodeType type,ASTNode *left, ASTNode *right, ASTNode *extra, Token val);
+
+void ast_cleanup(void);
 
 #endif
