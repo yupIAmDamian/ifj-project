@@ -18,6 +18,8 @@ Symbol* symbol_create(char *name, SymbolType s_type, DataType d_type, bool is_in
         return NULL;
     }
 
+
+    sym->mangled_name = NULL;
     sym->s_type = s_type;
     sym->d_type = d_type;
     sym->is_initialized = is_init;
@@ -32,6 +34,9 @@ void symbol_free(Symbol *sym) {
 
     if (sym->name) {
         free(sym->name);
+    }
+    if (sym->mangled_name) {
+        free(sym->mangled_name);
     }
     if (sym->params) {
         for (int i = 0; i < sym->params_amount; i++) {
@@ -159,14 +164,11 @@ bool symtable_insert_func(Symtable *st, char *name, DataType return_type, Param 
         for (int i = 0; i < param_count; i++) {
             sym->params[i].name = str_duplicate(params[i].name);
             if (!sym->params[i].name) {
-                free(sym);
-                return false;
-            }
-            sym->params[i].d_type = params[i].d_type;
-            if (!sym->params[i].name) {
+                sym->params_amount=i;
                 symbol_free(sym);
                 return false;
             }
+            sym->params[i].d_type = params[i].d_type;
         }
     }
 

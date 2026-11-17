@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include "semantic.h"
-
+void dominik_error(int code, const char *msg); //dočásné riešenie
 static DataType current_func_ret_type = TYPE_VOID;
 
 /**
@@ -156,7 +156,7 @@ static bool check_implicit_return(ASTNode **stmt_list_ptr, DataType expected_ret
  * @param root Root AST node of the program.
  * @param st Pointer to the symbol table.
  */
-static void check_main_function(ASTNode *root, Symtable *st) {
+static void check_main_function(ASTNode *root) {
     if (root == NULL || root->type != AST_NODE_PROGRAM) return;
 
     int main_count = 0;
@@ -188,6 +188,144 @@ static void check_main_function(ASTNode *root, Symtable *st) {
     }
 }
 
+/**
+ * @brief Deduces the return DataType from the final statement or expression of a function body
+ *        when the explicit return type annotation was omitted in the function header.
+ * @param stmt_list Head of the function body's statement list.
+ * @return Deduced DataType (TYPE_VOID for block bodies without a trailing expression).
+ */
+static DataType deduce_return_type(ASTNode *stmt_list) {
+    ASTNode *last = stmt_list;
+    while (last != NULL && last->next != NULL) {
+        last = last->next;
+    }
+
+    if (last == NULL) {
+        return TYPE_VOID;
+    }
+
+    if (last->type == AST_NODE_RETURN) {
+        return (last->left != NULL) ? last->left->inferred_type : TYPE_VOID;
+    }
+
+    if (last->type == AST_NODE_EXPR || last->type == AST_NODE_TERM ||
+        last->type == AST_NODE_CALL || last->type == AST_NODE_UNIT) {
+        return last->inferred_type;
+    }
+
+    if (last->type == AST_NODE_IF && last->extra != NULL) {
+        DataType then_type = deduce_return_type(last->right);
+        DataType else_type = deduce_return_type(last->extra);
+
+        if (then_type == else_type) {
+            return then_type;
+        }
+        if ((then_type == TYPE_INT && else_type == TYPE_FLOAT) ||
+            (then_type == TYPE_FLOAT && else_type == TYPE_INT)) {
+            return TYPE_FLOAT;
+        }
+        return TYPE_UNKNOWN;
+    }
+
+    return TYPE_VOID;
+}
+
+#define MAX_TRACKED_FUNCS 1024
+static ASTNode *program_root = NULL;
+static ASTNode *checked_funcs[MAX_TRACKED_FUNCS];
+static int checked_funcs_count = 0;
+static ASTNode *visiting_funcs[MAX_TRACKED_FUNCS];
+static int visiting_funcs_count = 0;
+
+static bool is_in_func_list(ASTNode **list, int count, ASTNode *target) {
+    for (int i = 0; i < count; i++) {
+        if (list[i] == target) return true;
+    }
+    return false;
+}
+
+static ASTNode* find_func_node(const char *name) {
+    if (program_root == NULL || program_root->type != AST_NODE_PROGRAM) return NULL;
+    ASTNode *curr = program_root->left;
+    while (curr != NULL) {
+        if (curr->type == AST_NODE_FUNCTION &&
+            strcmp(curr->val.attribute.string_value, name) == 0) {
+            return curr;
+        }
+        curr = curr->next;
+    }
+    return NULL;
+}
+
+/**
+ * @brief Validates a function's parameters, body, and explicit or inferred return type,
+ *        supporting on-demand evaluation for forward function calls.
+ * @param node Function definition AST node (AST_NODE_FUNCTION).
+ * @param st Pointer to the symbol table.
+ */
+static void check_function(ASTNode *node, Symtable *st) {
+    if (node == NULL || is_in_func_list(checked_funcs, checked_funcs_count, node)) {
+        return;
+    }
+
+    if (visiting_funcs_count < MAX_TRACKED_FUNCS) {
+        visiting_funcs[visiting_funcs_count++] = node;
+    }
+
+    Symbol *func_sym = symtable_search(st, node->val.attribute.string_value);
+    bool infer_return = (node->inferred_type == TYPE_UNKNOWN);
+
+    DataType prev_ret_type = current_func_ret_type;
+    current_func_ret_type = node->inferred_type;
+
+    scope_push(st);
+
+    ASTNode *param_node = node->left;
+    if (func_sym != NULL && func_sym->params != NULL) {
+        for (int i = 0; i < func_sym->params_amount; i++) {
+            if (!symtable_insert_var(st, func_sym->params[i].name, func_sym->params[i].d_type, true, true)) {
+                dominik_error(4, "Redefinition of function parameter");
+            }
+            Symbol *p_sym = symtable_search_current_scope(st, func_sym->params[i].name);
+            apply_mangled_name(param_node, p_sym);
+            if (param_node != NULL) {
+                param_node = param_node->next;
+            }
+        }
+    }
+
+    check_statement(node->right, st);
+
+    if (infer_return) {
+        DataType deduced = deduce_return_type(node->right);
+        if (deduced == TYPE_UNKNOWN || deduced == TYPE_BOOL) {
+            dominik_error(6, "Cannot infer valid return type for function");
+        }
+        if (current_func_ret_type != TYPE_UNKNOWN && current_func_ret_type != deduced) {
+            dominik_error(6, "Conflicting return types in function");
+        }
+        node->inferred_type = deduced;
+        if (func_sym != NULL) {
+            func_sym->d_type = deduced;
+        }
+        current_func_ret_type = deduced;
+    }
+
+    if (current_func_ret_type != TYPE_VOID) {
+        if (!check_implicit_return(&node->right, current_func_ret_type)) {
+            dominik_error(6, "Missing return statement or implicit return type mismatch");
+        }
+    }
+
+    scope_pop(st);
+    current_func_ret_type = prev_ret_type;
+
+    visiting_funcs_count--;
+    if (checked_funcs_count < MAX_TRACKED_FUNCS) {
+        checked_funcs[checked_funcs_count++] = node;
+    }
+}
+
 static void check_statement(ASTNode *node, Symtable *st);
 static DataType check_expression(ASTNode *node, Symtable *st);
 
@@ -199,6 +337,11 @@ static DataType check_expression(ASTNode *node, Symtable *st);
  */
 bool check_semantics(ASTNode *root, Symtable *st) {
     if (root == NULL) return true;
+
+    program_root = root;
+    checked_funcs_count = 0;
+    visiting_funcs_count = 0;
+
     register_builtin_functions(st);
 
     // First pass: register all user-defined function signatures to allow forward calls and recursion
@@ -226,9 +369,8 @@ bool check_semantics(ASTNode *root, Symtable *st) {
                 }
 
                 bool success = symtable_insert_func(st, func->val.attribute.string_value, func->inferred_type, extracted_params, params_amount);
-                if (!success) dominik_error(3, "Redefinition of function");
-
                 if (extracted_params) free(extracted_params);
+                if (!success) dominik_error(3, "Redefinition of function");
             }
             func = func->next;
         }
@@ -236,7 +378,7 @@ bool check_semantics(ASTNode *root, Symtable *st) {
 
     // Second pass: recursively validate all function bodies and statements, then verify '@main'
     check_statement(root, st);
-    check_main_function(root, st);
+    check_main_function(root);
     return true;
 }
 
@@ -311,7 +453,7 @@ static DataType check_func_call(ASTNode *node, Symtable *st) {
 
     // Special handling for built-in 'print' and 'toStr' accepting a single argument of type Any
     if (strcmp(func_name, "print") == 0 || strcmp(func_name, "toStr") == 0) {
-        ASTNode *arg_node = node->right;
+        ASTNode *arg_node = node->left;
         if (arg_node == NULL || arg_node->next != NULL) {
             dominik_error(5, "Built-in function requires exactly one argument");
         }
@@ -324,14 +466,23 @@ static DataType check_func_call(ASTNode *node, Symtable *st) {
         return ret;
     }
 
-    Symbol *func_sym = symtable_search(st, node->val.attribute.string_value);
+    Symbol *func_sym = symtable_search(st, func_name);
     if (func_sym == NULL || func_sym->s_type != SYMBOL_FUNC) {
         dominik_error(3, "Undefined function");
     }
 
+    //If the function does not have a specific return type defined, evaluate
+    if (func_sym->d_type == TYPE_UNKNOWN) {
+        ASTNode *target_func = find_func_node(func_name);
+        if (target_func == NULL || is_in_func_list(visiting_funcs, visiting_funcs_count, target_func)) {
+            dominik_error(6, "Cannot infer return type of recursive function");
+        }
+        check_function(target_func, st);
+    }
+
     // Iterate through linked argument list via pointer-to-pointer to allow in-place conversion wrapping
     int arg_count = 0;
-    ASTNode **arg_ptr = &node->right;
+    ASTNode **arg_ptr = &node->left;
 
     while (*arg_ptr != NULL) {
         if (arg_count >= func_sym->params_amount) {
@@ -346,7 +497,7 @@ static DataType check_func_call(ASTNode *node, Symtable *st) {
             dominik_error(5, "Parameter type mismatch");
         }
 
-        // Preserve the sibling chain if the argument node was wrapped in an AST_NODE_INT2FLOAT node
+        //preserve the sibling chain if the argument node was wrapped in an AST_NODE_INT2FLOAT node
         if (*arg_ptr != curr_arg) {
             (*arg_ptr)->next = curr_arg->next;
             curr_arg->next = NULL;
@@ -461,7 +612,13 @@ static void check_statement(ASTNode *node, Symtable *st) {
                 return_type = check_expression(node->left, st);
             }
 
-            if (!convert_if_needed(&node->left, return_type, current_func_ret_type)) {
+            // when the return type of the function is evaluated
+            if (current_func_ret_type == TYPE_UNKNOWN) {
+                if (return_type == TYPE_UNKNOWN || return_type == TYPE_BOOL) {
+                    dominik_error(6, "Invalid return type");
+                }
+                current_func_ret_type = return_type;
+            } else if (!convert_if_needed(&node->left, return_type, current_func_ret_type)) {
                 dominik_error(6, "Return type mismatch");
             }
             break;
@@ -480,40 +637,7 @@ static void check_statement(ASTNode *node, Symtable *st) {
         }
 
         case AST_NODE_FUNCTION: {
-            Symbol *func_sym = symtable_search(st, node->val.attribute.string_value);
-
-            DataType prev_ret_type = current_func_ret_type;
-            current_func_ret_type = node->inferred_type;
-
-            scope_push(st);
-
-            // Register formal parameters as immutable local variables and mangle their AST nodes
-            ASTNode *param_node = node->left;
-            if (func_sym != NULL && func_sym->params != NULL) {
-                for (int i = 0; i < func_sym->params_amount; i++) {
-                    if (!symtable_insert_var(st, func_sym->params[i].name, func_sym->params[i].d_type, true, true)) {
-                        dominik_error(4, "Redefinition of function parameter");
-                    }
-                    Symbol *p_sym = symtable_search_current_scope(st, func_sym->params[i].name);
-                    apply_mangled_name(param_node, p_sym);
-                    if (param_node != NULL) {
-                        param_node = param_node->next;
-                    }
-                }
-            }
-
-            check_statement(node->right, st);
-
-            // Validate implicit return value from the final statement or 'if-else' branches in non-void functions
-            if (current_func_ret_type != TYPE_VOID) {
-                if (!check_implicit_return(&node->right, current_func_ret_type)) {
-                    dominik_error(6, "Missing return statement or implicit return type mismatch");
-                }
-            }
-
-            scope_pop(st);
-
-            current_func_ret_type = prev_ret_type;
+            check_function(node, st);
             break;
         }
 
@@ -571,7 +695,7 @@ static DataType check_expression(ASTNode *node, Symtable *st) {
                     return TYPE_STRING;
                 } else if (node->val.type == TOKEN_IDENTIFIER) {
                     Symbol *sym = symtable_search(st, node->val.attribute.string_value);
-                    if (sym == NULL) dominik_error(3, "Undefined variable");
+                    if (sym == NULL || sym->s_type != SYMBOL_VAR) dominik_error(3, "Undefined variable");
 
                     apply_mangled_name(node, sym);
                     node->inferred_type = sym->d_type;
