@@ -41,6 +41,11 @@ valgrind: tests/tests
 		--error-exitcode=1 \
 		./tests/tests
 
+SEM_TEST_BIN = tests/semantic_tests/test_sem
+SEM_TEST_SRCS = tests/semantic_tests/test_semantic.c semantic_analysis/semantic.c syntactic_analysis/ast.c hashtable/symtable.c hashtable/hashtable.c helper_func.c
+
+test-sem:
+	gcc -g -O0 -Wall -Wextra -Isemantic_analysis -Isyntactic_analysis -Ihashtable -I. $(SEM_TEST_SRCS) -o $(SEM_TEST_BIN)
 #tests for singular input file where we can test only one file from bunch
 translator-test: $(TRANSLATOR_TESTTOCOMPILE)
 	$(CC) $(CFLAGS) -g -O0 $(TRANSLATOR_TESTTOCOMPILE) \
