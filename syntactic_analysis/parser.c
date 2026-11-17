@@ -1,5 +1,6 @@
 // Compiler of IFJ26 imperative language
 // Author: Michal Kopček (xkopcem00)
+
 #include "parser.h"
 
 Token current_token;
@@ -222,6 +223,8 @@ ASTNode* parse_statements() {
     ASTNode *last_statement_node = NULL;
 
     while (current_token.type != TOKEN_DEDENT && current_token.type != TOKEN_EOF) {
+        bool is_block_stmt = (current_token.type == TOKEN_IF || current_token.type == TOKEN_WHILE);
+
         ASTNode *stmt_node = parse_statement();
         if (stmt_node == NULL) {
             return NULL;
@@ -238,7 +241,11 @@ ASTNode* parse_statements() {
                 last_statement_node = last_statement_node->next;
             }
         }
-        if (!match(TOKEN_EOL) && current_token.type != TOKEN_DEDENT && current_token.type != TOKEN_EOF) return NULL;
+        if (!is_block_stmt) {
+            if (!match(TOKEN_EOL) && current_token.type != TOKEN_DEDENT && current_token.type != TOKEN_EOF) {
+                return NULL;
+            }
+        }
     }
     return first_statement_node;
 }
@@ -348,14 +355,6 @@ ASTNode* parse_statement() {
             return parse_expr_or_call();
         }
     }
-    else if (current_token.type == TOKEN_LPAREN) {
-        Token lparen_token = current_token;
-        current_token = get_token_buffered();
-        if (!match(TOKEN_RPAREN)) {
-            return NULL; // syntax error
-        }
-        return create_ast_node(AST_NODE_UNIT, NULL, NULL, NULL, lparen_token);
-    }
     else {
         return parse_expr_or_call();
     }
@@ -422,6 +421,14 @@ ASTNode* parse_term() {
         Token term_token = current_token;
         current_token = get_token_buffered();
         return create_ast_node(AST_NODE_TERM, NULL, NULL, NULL, term_token); 
+    }
+    else if (current_token.type == TOKEN_LPAREN) {
+        Token lparen_token = current_token;
+        current_token = get_token_buffered();
+        if (!match(TOKEN_RPAREN)) {
+            return NULL;
+        }
+        return create_ast_node(AST_NODE_UNIT, NULL, NULL, NULL, lparen_token);
     }
     return NULL;
 }

@@ -1,3 +1,6 @@
+// Compiler of IFJ26 imperative language
+// Author: Michal Kopček (xkopcem00)
+
 #ifndef PARSER_H
 #define PARSER_H
 #include "../scanner/scanner.h"

@@ -76,8 +76,10 @@ PrecTableIndex get_prec_index(TokenType token_type, PrecStack *stack) {
             return PREC_MUL_DIV;
         case TOKEN_PLUS:
         case TOKEN_MINUS: {
-            StackItem *top_term = expr_stack_top_terminal(stack);
-            if (top_term != NULL && (top_term->prec_index == PREC_OPERAND || top_term->prec_index == PREC_RPAREN)) {
+            if (stack->top != NULL &&
+                (stack->top->type == SYM_NONTERM ||
+                 stack->top->prec_index == PREC_OPERAND ||
+                 stack->top->prec_index == PREC_RPAREN)) {
                 return PREC_ADD_SUB;
             }
             return PREC_UNARY;
