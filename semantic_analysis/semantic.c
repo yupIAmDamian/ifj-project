@@ -279,6 +279,9 @@ static void check_function(ASTNode *node, Symtable *st) {
     DataType prev_ret_type = current_func_ret_type;
     current_func_ret_type = node->inferred_type;
 
+    bool prev_in_main = st->in_main;
+    st->in_main = node->is_main;
+
     scope_push(st);
 
     ASTNode *param_node = node->left;
@@ -319,6 +322,8 @@ static void check_function(ASTNode *node, Symtable *st) {
     }
 
     scope_pop(st);
+
+    st->in_main = prev_in_main;
     current_func_ret_type = prev_ret_type;
 
     visiting_funcs_count--;
