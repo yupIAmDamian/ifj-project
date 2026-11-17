@@ -1,0 +1,91 @@
+================================================================
+[TRANSLATOR] builtins_control_flow.ifj26
+exit code: 2
+Parsing failed: code=2, token=TOKEN_LPAREN (31), line=7
+
+================================================================
+[TRANSLATOR] builtins_literals.ifj26
+exit code: 2
+Parsing failed: code=2, token=TOKEN_PLUS (21), line=14
+
+================================================================
+[TRANSLATOR] builtins_nested.ifj26
+exit code: 2
+Parsing failed: code=2, token=TOKEN_LPAREN (31), line=8
+
+================================================================
+[TRANSLATOR] conversions.ifj26
+exit code: 3
+Semantic error 3: Undefined function
+
+================================================================
+[TRANSLATOR] error_substr_negative_end.ifj26
+exit code: 2
+Parsing failed: code=2, token=TOKEN_MINUS (22), line=5
+
+================================================================
+[TRANSLATOR] error_substr_start.ifj26
+exit code: 2
+Parsing failed: code=2, token=TOKEN_MINUS (22), line=5
+
+================================================================
+[TRANSLATOR] factorial.ifj26
+exit code: 2
+Parsing failed: code=2, token=TOKEN_IDENTIFIER (16), line=9
+
+================================================================
+[TRANSLATOR] strings.ifj26
+exit code: 2
+Parsing failed: code=2, token=TOKEN_EOL (1), line=15
+
+================================================================
+[TRANSLATOR] strings_edges.ifj26
+exit code: 2
+Parsing failed: code=2, token=TOKEN_LPAREN (31), line=5
+
+================================================================
+[TRANSLATOR] strings_minimal.ifj26
+exit code: 2
+Parsing failed: code=2, token=TOKEN_LPAREN (31), line=9
+
+================================================================
+[TRANSLATOR] strings_valid.ifj26
+exit code: 3
+Semantic error 3: Redefinition of variable
+
+================================================================
+[INTERPRETER] error_ord_empty_output.ifjcode
+exit code: 55
+Error at line: 5
+Frame does not exist!
+
+================================================================
+[INTERPRETER] error_substr_end_output.ifjcode
+exit code: 55
+Error at line: 5
+Frame does not exist!
+
+================================================================
+[INTERPRETER] error_substr_order_output.ifjcode
+exit code: 55
+Error at line: 5
+Frame does not exist!
+
+================================================================
+[INTERPRETER] error_substr_start_at_length_output.ifjcode
+exit code: 55
+Error at line: 5
+Frame does not exist!
+
+================================================================
+[INTERPRETER] input_builtins_output.ifjcode
+exit code: 55
+Error at line: 5
+Frame does not exist!
+
+================================================================
+[INTERPRETER] ord_out_of_range_output.ifjcode
+exit code: 55
+Error at line: 5
+Frame does not exist!
+

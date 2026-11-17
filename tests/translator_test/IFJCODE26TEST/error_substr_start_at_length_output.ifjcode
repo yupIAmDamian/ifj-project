@@ -1,0 +1,55 @@
+.IFJcode26
+JUMP main
+
+LABEL main
+DEFVAR LF@text$2$main
+DEFVAR LF@invalidStart$2$main
+PUSHS string@abc
+POPS LF@text$2$main
+PUSHS int@3
+PUSHS int@3
+PUSHS LF@text$2$main
+LABEL $subStr
+DEFVAR LF@substr$value
+DEFVAR LF@substr$start
+DEFVAR LF@substr$end
+DEFVAR LF@substr$length
+DEFVAR LF@substr$result
+DEFVAR LF@substr$index
+DEFVAR LF@substr$char
+DEFVAR LF@substr$invalid
+POPS LF@substr$value
+POPS LF@substr$start
+POPS LF@substr$end
+STRLEN LF@substr$length LF@substr$value
+MOVE LF@substr$invalid bool@false
+LT LF@substr$invalid LF@substr$start int@0
+LT LF@substr$char LF@substr$end int@0
+OR LF@substr$invalid LF@substr$invalid LF@substr$char
+GT LF@substr$char LF@substr$start LF@substr$end
+OR LF@substr$invalid LF@substr$invalid LF@substr$char
+GT LF@substr$char LF@substr$start LF@substr$length
+EQ LF@substr$result LF@substr$start LF@substr$length
+OR LF@substr$char LF@substr$char LF@substr$result
+OR LF@substr$invalid LF@substr$invalid LF@substr$char
+GT LF@substr$char LF@substr$end LF@substr$length
+OR LF@substr$invalid LF@substr$invalid LF@substr$char
+JUMPIFEQ $substr$error LF@substr$invalid bool@true
+MOVE LF@substr$result string@
+MOVE LF@substr$index LF@substr$start
+LABEL $substr$loop
+JUMPIFEQ $substr$done LF@substr$index LF@substr$end
+GETCHAR LF@substr$char LF@substr$value LF@substr$index
+CONCAT LF@substr$result LF@substr$result LF@substr$char
+ADD LF@substr$index LF@substr$index int@1
+JUMP $substr$loop
+LABEL $substr$done
+PUSHS LF@substr$result
+RETURN
+LABEL $substr$error
+EXIT int@40
+POPS LF@invalidStart$2$main
+POPS LF@invalidStart$2$main
+WRITE LF@invalidStart$2$main
+EXIT int@0
+

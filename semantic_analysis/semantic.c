@@ -73,7 +73,7 @@ static void apply_mangled_name(ASTNode *node, Symbol *sym) {
         if (node->val.attribute.string_value != NULL) {
             free(node->val.attribute.string_value);
         }
-        node->val.attribute.string_value = strdup(sym->mangled_name);
+        node->val.attribute.string_value = str_duplicate(sym->mangled_name);
     }
 }
 
