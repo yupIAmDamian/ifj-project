@@ -54,6 +54,7 @@ Symtable* symtable_init(void) {
     if (!st) return NULL;
     st->top = -1;
     st->block_counter=0;
+    st->in_main=false;
     scope_push(st);
     return st;
 }
@@ -102,7 +103,7 @@ bool symtable_insert_var(Symtable *st, char *name, DataType type, bool is_init, 
     if (!sym) return false;
 
     char mangled_buf[256];
-    if (st->top == 0) {
+    if (st->in_main) {
         snprintf(mangled_buf, sizeof(mangled_buf), "GF@%s", name);
     } 
     else {
