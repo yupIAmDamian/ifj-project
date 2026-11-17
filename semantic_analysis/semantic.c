@@ -6,6 +6,7 @@
 void dominik_error(int code, const char *msg); //dočásné riešenie
 static DataType current_func_ret_type = TYPE_VOID;
 
+static void check_statement(ASTNode *node, Symtable *st);
 /**
  * @brief Allocates and initializes an AST conversion node (Int -> Float).
  * @param expr Pointer to the integer expression AST node to be wrapped.
@@ -326,7 +327,6 @@ static void check_function(ASTNode *node, Symtable *st) {
     }
 }
 
-static void check_statement(ASTNode *node, Symtable *st);
 static DataType check_expression(ASTNode *node, Symtable *st);
 
 /**
