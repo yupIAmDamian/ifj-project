@@ -50,8 +50,8 @@ Semantic error 5: Too few arguments for function
 
 ================================================================
 [TRANSLATOR] factorial.ifj26
-exit code: 2
-Parsing failed: code=2, token=TOKEN_IDENTIFIER (17), line=9
+exit code: 6
+Semantic error 6: Cannot compare incompatible types
 
 ================================================================
 [TRANSLATOR] input_builtins.ifj26
