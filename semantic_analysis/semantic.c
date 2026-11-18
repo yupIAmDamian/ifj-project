@@ -460,7 +460,7 @@ static DataType check_func_call(ASTNode *node, Symtable *st) {
 
     // Special handling for built-in 'print' and 'toStr' accepting a single argument of type Any
     if (strcmp(func_name, "print") == 0 || strcmp(func_name, "toStr") == 0) {
-        ASTNode *arg_node = node->left;
+        ASTNode *arg_node = node->right;
         if (arg_node == NULL || arg_node->next != NULL) {
             dominik_error(5, "Built-in function requires exactly one argument");
         }
@@ -489,7 +489,7 @@ static DataType check_func_call(ASTNode *node, Symtable *st) {
 
     // Iterate through linked argument list via pointer-to-pointer to allow in-place conversion wrapping
     int arg_count = 0;
-    ASTNode **arg_ptr = &node->left;
+    ASTNode **arg_ptr = &node->right;
 
     while (*arg_ptr != NULL) {
         if (arg_count >= func_sym->params_amount) {
