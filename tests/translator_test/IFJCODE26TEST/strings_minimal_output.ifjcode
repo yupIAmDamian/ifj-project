@@ -55,7 +55,6 @@ RETURN
 LABEL $substr$error
 EXIT int@40
 POPS GF@emptyPart$2
-POPS GF@emptyPart$2
 PUSHS int@1
 PUSHS int@0
 PUSHS GF@one$2
@@ -99,7 +98,6 @@ RETURN
 LABEL $substr$error
 EXIT int@40
 POPS GF@lastPart$2
-POPS GF@lastPart$2
 PUSHS int@0
 PUSHS GF@one$2
 LABEL $ord
@@ -125,7 +123,6 @@ RETURN
 LABEL $ord$invalid
 PUSHS int@-1
 RETURN
-POPS GF@lastCode$2
 POPS GF@lastCode$2
 PUSHS GF@empty$2
 STRLEN GF@emptyLength$2 GF@empty$2

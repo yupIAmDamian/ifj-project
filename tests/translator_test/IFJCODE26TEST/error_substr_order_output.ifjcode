@@ -49,7 +49,6 @@ RETURN
 LABEL $substr$error
 EXIT int@40
 POPS GF@invalidOrder$2
-POPS GF@invalidOrder$2
 WRITE GF@invalidOrder$2
 EXIT int@0
 

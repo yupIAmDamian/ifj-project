@@ -52,7 +52,6 @@ LABEL $ord$invalid
 PUSHS int@-1
 RETURN
 POPS LF@code$4$withoutLineFeed
-POPS LF@code$4$withoutLineFeed
 PUSHS LF@code$4$withoutLineFeed
 PUSHS int@10
 EQS
@@ -100,7 +99,6 @@ PUSHS LF@substr$result
 RETURN
 LABEL $substr$error
 EXIT int@40
-POPS 
 POPFRAME
 RETURN
 
@@ -165,11 +163,8 @@ LABEL $ord$invalid
 PUSHS int@-1
 RETURN
 POPS LF@code$8$reverse
-POPS LF@code$8$reverse
-PUSHS LF@code$8$reverse
 PUSHS LF@code$8$reverse
 INT2CHARS
-POPS LF@character$8$reverse
 POPS LF@character$8$reverse
 PUSHS LF@result$7$reverse
 PUSHS LF@character$8$reverse
@@ -259,7 +254,6 @@ PUSHS LF@substr$result
 RETURN
 LABEL $substr$error
 EXIT int@40
-POPS 
 POPFRAME
 RETURN
 
@@ -273,6 +267,7 @@ PUSHFRAME
 DEFVAR LF@length$14$halfLength
 POPS LF@length$14$halfLength
 PUSHS LF@length$14$halfLength
+INT2FLOATS
 PUSHS float@0x1p+1
 DIVS
 POPFRAME
@@ -316,9 +311,7 @@ PUSHS GF@length$16
 CALL halfLength
 POPS GF@half$16
 PUSHS GF@half$16
-PUSHS GF@half$16
-INT2STRS
-POPS GF@halfText$16
+FLOAT2STRS
 POPS GF@halfText$16
 PUSHS GF@backwards$16
 CALL showLine

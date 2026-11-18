@@ -4,11 +4,6 @@ exit code: 2
 Parsing failed: code=2, token=TOKEN_LPAREN (32), line=7
 
 ================================================================
-[TRANSLATOR] builtins_nested.ifj26
-exit code: 139
-(no message)
-
-================================================================
 [TRANSLATOR] error_substr_negative_end.ifj26
 exit code: 3
 Semantic error 3: Undefined variable
@@ -24,9 +19,15 @@ exit code: 2
 Parsing failed: code=2, token=TOKEN_LPAREN (32), line=8
 
 ================================================================
+[INTERPRETER] builtins_nested_output.ifjcode
+exit code: 55
+Error at line: 33
+Frame does not exist!
+
+================================================================
 [INTERPRETER] conversions_output.ifjcode
 exit code: 51
-22.20-24: syntax error, unexpected ID
+18.20-24: syntax error, unexpected ID
 Syntax error!
 
 ================================================================
@@ -61,9 +62,8 @@ Frame does not exist!
 
 ================================================================
 [INTERPRETER] strings_output.ifjcode
-exit code: 51
-104.1: syntax error, unexpected NEWLINE, expecting sLF or sGF or sTF
-Syntax error!
+exit code: 52
+Label already exists!
 
 ================================================================
 [INTERPRETER] strings_minimal_output.ifjcode

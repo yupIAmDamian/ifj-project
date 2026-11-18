@@ -135,6 +135,20 @@ ASTNode* parse_expression() {
         PrecRelation relation = precedence_table[top_term->prec_index][input_idx];
 
         if (relation == P_S) {
+            if (current_token.type == TOKEN_IDENTIFIER) {
+                Token next_token = get_token_buffered();
+                unget_token(next_token);
+                if (next_token.type == TOKEN_LPAREN) {
+                    ASTNode *call_node = parse_func_call();
+                    if (call_node == NULL) {
+                        expr_stack_free(&stack);
+                        return NULL;
+                    }
+                    expr_stack_push(&stack, SYM_NONTERM, PREC_OPERAND, dollar_token, call_node);
+                    continue;
+                }
+            }
+
             expr_stack_insert_mark(&stack);
             expr_stack_push(&stack, SYM_TERMINAL, input_idx, current_token, NULL);
             current_token = get_token_buffered();
@@ -227,7 +241,9 @@ ASTNode* parse_expression() {
             }
         }
         else if (relation == P_N) {
-            if (top_term->prec_index == PREC_DOLLAR && input_idx == PREC_DOLLAR) {
+            if (top_term->prec_index == PREC_DOLLAR &&
+                (input_idx == PREC_DOLLAR || input_idx == PREC_RPAREN) &&
+                stack.top != NULL && stack.top->type == SYM_NONTERM) {
                 ASTNode *final_tree = stack.top->ast_node;
                 expr_stack_free(&stack);
                 return final_tree;

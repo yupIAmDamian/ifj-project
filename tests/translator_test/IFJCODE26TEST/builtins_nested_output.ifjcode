@@ -1,0 +1,72 @@
+.IFJcode26
+JUMP main
+
+LABEL main
+DEFVAR GF@integerText$2
+DEFVAR GF@doubleText$2
+DEFVAR GF@stringText$2
+DEFVAR GF@converted$2
+DEFVAR GF@numText$2
+DEFVAR GF@size$2
+DEFVAR GF@code$2
+DEFVAR GF@character$2
+PUSHS int@123
+INT2STRS
+POPS GF@integerText$2
+PUSHS float@0x1.2p+2
+FLOAT2STRS
+POPS GF@doubleText$2
+PUSHS string@abc
+POPS GF@stringText$2
+PUSHS float@0x1.3fae147ae147bp+3
+FLOAT2INTS
+POPS GF@converted$2
+PUSHS int@12345
+INT2STRS
+POPS GF@numText$2
+PUSHS GF@numText$2
+STRLEN GF@size$2 GF@numText$2
+POPS GF@size$2
+PUSHS int@1
+PUSHS string@xyz
+LABEL $ord
+DEFVAR LF@ord$value
+DEFVAR LF@ord$index
+DEFVAR LF@ord$length
+DEFVAR LF@ord$char
+DEFVAR LF@ord$result
+DEFVAR LF@ord$invalid
+POPS LF@ord$index
+POPS LF@ord$value
+STRLEN LF@ord$length LF@ord$value
+LT LF@ord$invalid LF@ord$index int@0
+GT LF@ord$result LF@ord$index LF@ord$length
+EQ LF@ord$char LF@ord$index LF@ord$length
+OR LF@ord$result LF@ord$result LF@ord$char
+OR LF@ord$invalid LF@ord$invalid LF@ord$result
+JUMPIFEQ $ord$invalid LF@ord$invalid bool@true
+GETCHAR LF@ord$char LF@ord$value LF@ord$index
+STRI2INT LF@ord$result LF@ord$char int@0
+PUSHS LF@ord$result
+RETURN
+LABEL $ord$invalid
+PUSHS int@-1
+RETURN
+POPS GF@code$2
+PUSHS GF@code$2
+INT2CHARS
+POPS GF@character$2
+WRITE GF@integerText$2
+WRITE string@\010
+WRITE GF@doubleText$2
+WRITE string@\010
+WRITE GF@stringText$2
+WRITE string@\010
+WRITE GF@converted$2
+WRITE string@\010
+WRITE GF@size$2
+WRITE string@\010
+WRITE GF@character$2
+WRITE string@\010
+EXIT int@0
+

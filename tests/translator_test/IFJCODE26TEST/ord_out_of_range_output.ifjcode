@@ -32,7 +32,6 @@ LABEL $ord$invalid
 PUSHS int@-1
 RETURN
 POPS GF@invalidIndex$2
-POPS GF@invalidIndex$2
 WRITE GF@invalidIndex$2
 EXIT int@0
 

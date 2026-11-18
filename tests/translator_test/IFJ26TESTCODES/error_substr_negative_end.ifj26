@@ -4,4 +4,4 @@ import ifj26.*
     val text: String = "abc"
     val negative: Int = -1
     val invalid: String = subStr(text, 0, negative)
-    print(invalidStart)
+    print(invalid)

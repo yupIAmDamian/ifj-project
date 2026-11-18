@@ -19,6 +19,8 @@ bool match(TokenType expected_type); // check if the current token matches the e
 
 int parse(); // return an error code or 0 if everithing runs smoothly
 
+ASTNode* parse_func_call();
+
 // function for non-terminals
 ASTNode* parse_program(); 
 bool parse_prolog(); 

@@ -53,7 +53,6 @@ RETURN
 LABEL $substr$error
 EXIT int@40
 POPS GF@first$2
-POPS GF@first$2
 PUSHS int@5
 PUSHS int@1
 PUSHS GF@text$2
@@ -96,7 +95,6 @@ PUSHS LF@substr$result
 RETURN
 LABEL $substr$error
 EXIT int@40
-POPS GF@middle$2
 POPS GF@middle$2
 PUSHS int@6
 PUSHS int@0
@@ -141,7 +139,6 @@ RETURN
 LABEL $substr$error
 EXIT int@40
 POPS GF@whole$2
-POPS GF@whole$2
 PUSHS int@2
 PUSHS GF@text$2
 LABEL $ord
@@ -168,11 +165,8 @@ LABEL $ord$invalid
 PUSHS int@-1
 RETURN
 POPS GF@code$2
-POPS GF@code$2
-PUSHS int@65
 PUSHS int@65
 INT2CHARS
-POPS GF@letter$2
 POPS GF@letter$2
 WRITE GF@first$2
 WRITE string@\010

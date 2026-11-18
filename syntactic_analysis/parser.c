@@ -382,22 +382,26 @@ bool parse_type_opt(DataType *out) {
     return true;
 }
 
-ASTNode* parse_expr_or_call() {
-    if (current_token.type == TOKEN_IDENTIFIER) {
-        Token next_token = get_token_buffered();
-        if (next_token.type == TOKEN_LPAREN) {
-            Token id_token = current_token;
-            current_token = get_token_buffered();
+ASTNode* parse_func_call() {
+    if (current_token.type != TOKEN_IDENTIFIER) return NULL;
+    Token id_token = current_token;
+    current_token = get_token_buffered();
 
-            ASTNode *args_node = parse_args_opt();
-            if (!match(TOKEN_RPAREN)) return NULL;
-            return create_ast_node(AST_NODE_CALL, NULL, args_node, NULL, id_token);
-        }
-        else {
-            unget_token(next_token);
-            return parse_expression();
+    if (!match(TOKEN_LPAREN)) return NULL;
+
+    ASTNode *args_node = NULL;
+    if (current_token.type != TOKEN_RPAREN) {
+        args_node = parse_args_opt();
+        if (args_node == NULL) {
+            return NULL;
         }
     }
+
+    if (!match(TOKEN_RPAREN)) return NULL;
+    return create_ast_node(AST_NODE_CALL, NULL, args_node, NULL, id_token);
+}
+
+ASTNode* parse_expr_or_call() {
     return parse_expression();
 }
 
@@ -409,16 +413,16 @@ ASTNode* parse_expr_or_call_opt() {
 }
 
 ASTNode* parse_args_opt() {
-    if (current_token.type == TOKEN_RPAREN) return NULL; 
+    if (current_token.type == TOKEN_RPAREN) return NULL;
 
-    ASTNode *first_arg = parse_term();
+    ASTNode *first_arg = parse_expression();
     if (first_arg == NULL) return NULL;
 
     ASTNode *last_arg = first_arg;
     while (match(TOKEN_COMMA)) {
-        ASTNode *next_arg = parse_term();
+        ASTNode *next_arg = parse_expression();
         if (next_arg == NULL) return NULL;
-        
+
         last_arg->next = next_arg;
         next_arg->prev = last_arg;
         last_arg = next_arg;
