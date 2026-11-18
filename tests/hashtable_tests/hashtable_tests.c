@@ -5,52 +5,104 @@
 #include <stdio.h>
 #include "hashtable_func.h"
 #include "../../hashtable/hashtable.h"
+#include <stdlib.h>
+#include <stdbool.h> 
 
-/*
-TODO: Add more tests for edge cases and error handling, including:
-Hash collisions correctly.
-Inserting into a full table.
-Deleting nonexistent keys.
-Repeated insertions and deletions.
-NULL pointers.
-Invalid input parameters.
-Double-free errors in code paths your tests don't execute.
-*/
-
-int hashtable_tests() {
-    hashtable_t* hashtable = ht_create(10);
-    if (hashtable == NULL) {
-        printf("Failed to create hashtable\n");
-        return 1;
+void insert_test(hashtable_t* hashtable, char* key, void* data) {
+    ht_item_t* item = ht_insert(hashtable, key, data);
+    if (item == NULL) {
+        printf("Failed to insert key: %s\n", key);
     }
+}
 
-    int data1 = 42;
-    ht_insert(hashtable, "key1", &data1);
-
-    int data2 = 84;
-    ht_insert(hashtable, "key2", &data2);
-
-    ht_item_t* item = ht_search(hashtable, "key1");
+void search_test(hashtable_t* hashtable, char* key) {
+    ht_item_t* item = ht_search(hashtable, key);
     if (item != NULL) {
-        printf("Found key1: %d\n", *(int*)item->data);
+        printf("Found key: %s, data: %s\n", item->key, (char*)item->data);
     } else {
-        printf("key1 not found\n");
+        printf("Key not found: %s\n", key);
     }
+}
 
-    ht_delete(hashtable, "key1");
-
-    item = ht_search(hashtable, "key1");
-    if (item != NULL) {
-        printf("Found key1: %d\n", *(int*)item->data);
+void delete_test(hashtable_t* hashtable, char* key) {
+    bool success = ht_delete(hashtable, key);
+    if (success) {
+        printf("Deleted key: %s\n", key);
     } else {
-        printf("key1 not found after deletion\n");
+        printf("Failed to delete key: %s\n", key);
+    }
+}
+
+
+void cleanup(hashtable_t** hashtable) {
+    if(hashtable == NULL || *hashtable == NULL){
+        return;
     }
 
-    ht_clear(&hashtable);
-
-    if (hashtable != NULL) {
-        printf("Hashtable not properly cleared\n");
+    if((*hashtable)->items != NULL){
+        for(int item_index =0; item_index < (*hashtable)->size; item_index++){
+            free((*hashtable)->items[item_index].key);
+        }
     }
+
+    free((*hashtable)->items);
+    free(*hashtable);
+    *hashtable = NULL;
+}
+
+int main() {
+    hashtable_t* hashtable = ht_create(3);
+    
+    // Probing test
+    insert_test(hashtable, "key1", "data1");
+    insert_test(hashtable, "key2", "data2");
+    insert_test(hashtable, "key3", "data3");
+    delete_test(hashtable, "key3");
+
+
+    //Fail tests
+    //blinding
+    insert_test(hashtable, "key3", "data3");
+
+    //Duplication
+    insert_test(hashtable, "key1", "data1");
+
+    //Overflow
+    insert_test(hashtable, "key4", "data4");    
+    cleanup(&hashtable);
+
+
+    //Search test
+    hashtable = ht_create(3);
+    insert_test(hashtable, "key1", "data1");
+    insert_test(hashtable, "key2", "data2");
+
+    search_test(hashtable, "key1");
+    search_test(hashtable, "key2");
+
+    //Fail test
+    search_test(hashtable, "key3"); 
+
+    cleanup(&hashtable);
+
+    //Delete test
+    hashtable = ht_create(2);
+    insert_test(hashtable, "key1", "data1");
+    search_test(hashtable, "key1");
+
+    //Fail test
+    delete_test(hashtable, "key2");
+
+    delete_test(hashtable, "key1");
+
+    search_test(hashtable, "key1");
+
+    //Fail test
+    delete_test(hashtable, "key1");
+
+    cleanup(&hashtable);
+
+
 
     return 0;
 }

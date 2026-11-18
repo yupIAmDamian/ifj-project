@@ -9,6 +9,8 @@ TESTTOCOMPILE = tests/tests.c tests/hashtable_tests/hashtable_tests.c tests/hash
 
 TRANSLATOR_TESTTOCOMPILE = tests/translator_test/translator_test.c semantic_analysis/semantic.c hashtable/hashtable.c hashtable/symtable.c helper_func.c codegen/codegen.c codegen/gen_func.c codegen/codegen_helper.c syntactic_analysis/ast.c syntactic_analysis/expression.c syntactic_analysis/parser.c scanner/scanner.c
 
+VALGRIND_FLAGS = --leak-check=full --show-leak-kinds=all --track-origins=yes --num-callers=30 --error-exitcode=1
+
 .PHONY: all build check build-check clean tests clean-tests translator-test valgrind
 
 all: build
@@ -25,6 +27,41 @@ build-check: main.c
 clean:
 	rm -f main
 
+#####################################################
+# Tests
+#####################################################
+#Hashtable tests
+#####################################################
+hashtable-tests: tests/hashtable_tests/hashtable_tests.c hashtable/hashtable.c helper_func.c
+	$(CC) $(CFLAGS) -g -O0 tests/hashtable_tests/hashtable_tests.c hashtable/hashtable.c helper_func.c \
+		-o tests/hashtable_tests/hashtable_tests
+	./tests/hashtable_tests/hashtable_tests
+
+valgrind-hashtable-tests: tests/hashtable_tests/hashtable_tests.c hashtable/hashtable.c helper_func.c
+	valgrind $(VALGRIND_FLAGS) \
+			./tests/hashtable_tests/hashtable_tests
+
+clean-hashtable-tests: tests/hashtable_tests/hashtable_tests
+	rm -f tests/hashtable_tests/hashtable_tests
+
+#####################################################
+#Symtable tests
+#####################################################
+symtable-tests: tests/hashtable_tests/symtable_tests.c hashtable/symtable.c hashtable/hashtable.c helper_func.c
+	$(CC) $(CFLAGS) -g -O0 tests/hashtable_tests/symtable_tests.c hashtable/symtable.c hashtable/hashtable.c helper_func.c \
+		-o tests/hashtable_tests/symtable_tests
+	./tests/hashtable_tests/symtable_tests
+
+valgrind-symtable-tests: tests/hashtable_tests/symtable_tests.c hashtable/symtable.c hashtable/hashtable.c helper_func.c
+	valgrind $(VALGRIND_FLAGS) \
+			./tests/hashtable_tests/symtable_tests
+
+clean-symtable-tests: tests/hashtable_tests/symtable_tests
+	rm -f tests/hashtable_tests/symtable_tests
+
+
+#Symtable tests
+
 tests: $(TESTTOCOMPILE)
 	$(CC) $(CFLAGS) -g -O0 $(TESTTOCOMPILE) \
 		-o tests/tests
@@ -34,11 +71,7 @@ clean-tests: tests/tests
 	rm -f tests/tests
 
 valgrind: tests/tests
-	valgrind --leak-check=full \
-		--show-leak-kinds=all \
-		--track-origins=yes \
-		--num-callers=30 \
-		--error-exitcode=1 \
+	valgrind $(VALGRIND_FLAGS) \
 		./tests/tests
 
 SEM_TEST_BIN = tests/semantic_tests/test_sem
