@@ -11,7 +11,9 @@ import ifj26.*
     print("\n")
     print(s)
     print("\n")
-    print(i + 8)
+    val sum: Int= i + 8
+    print(sum)
     print("\n")
-    print(d * 2.0)
+    val product: Double = d * 2.0
+    print(product)
     print("\n")

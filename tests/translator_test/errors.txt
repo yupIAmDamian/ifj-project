@@ -19,49 +19,14 @@ exit code: 3
 Semantic error 3: Undefined function
 
 ================================================================
-[TRANSLATOR] error_ord_empty.ifj26
-exit code: 5
-Semantic error 5: Too few arguments for function
-
-================================================================
-[TRANSLATOR] error_substr_end.ifj26
-exit code: 5
-Semantic error 5: Too few arguments for function
-
-================================================================
 [TRANSLATOR] error_substr_negative_end.ifj26
 exit code: 2
 Parsing failed: code=2, token=TOKEN_MINUS (23), line=5
 
 ================================================================
-[TRANSLATOR] error_substr_order.ifj26
-exit code: 5
-Semantic error 5: Too few arguments for function
-
-================================================================
-[TRANSLATOR] error_substr_start_at_length.ifj26
-exit code: 5
-Semantic error 5: Too few arguments for function
-
-================================================================
 [TRANSLATOR] error_substr_start.ifj26
 exit code: 2
 Parsing failed: code=2, token=TOKEN_MINUS (23), line=5
-
-================================================================
-[TRANSLATOR] factorial.ifj26
-exit code: 6
-Semantic error 6: Cannot compare incompatible types
-
-================================================================
-[TRANSLATOR] input_builtins.ifj26
-exit code: 5
-Semantic error 5: Built-in function requires exactly one argument
-
-================================================================
-[TRANSLATOR] ord_out_of_range.ifj26
-exit code: 5
-Semantic error 5: Too few arguments for function
 
 ================================================================
 [TRANSLATOR] strings_edges.ifj26
@@ -80,6 +45,36 @@ Parsing failed: code=2, token=TOKEN_LPAREN (32), line=9
 
 ================================================================
 [TRANSLATOR] strings_valid.ifj26
-exit code: 5
-Semantic error 5: Too few arguments for function
+exit code: 134
+free(): double free detected in tcache 2
+
+================================================================
+[INTERPRETER] error_ord_empty_output.ifjcode
+exit code: 55
+Error at line: 12
+Frame does not exist!
+
+================================================================
+[INTERPRETER] error_substr_end_output.ifjcode
+exit code: 55
+Error at line: 13
+Frame does not exist!
+
+================================================================
+[INTERPRETER] error_substr_order_output.ifjcode
+exit code: 55
+Error at line: 13
+Frame does not exist!
+
+================================================================
+[INTERPRETER] error_substr_start_at_length_output.ifjcode
+exit code: 55
+Error at line: 13
+Frame does not exist!
+
+================================================================
+[INTERPRETER] ord_out_of_range_output.ifjcode
+exit code: 55
+Error at line: 12
+Frame does not exist!
 

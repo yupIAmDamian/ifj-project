@@ -2,13 +2,14 @@ import ifj26.*
 
 @main def run(): Unit =
     val text: String = "abc"
-    print(ord(text, 0))
+    val first: Int = ord(text, 0)
+    print(first)
     print("\n")
     print(ord(text, 2))
     print("\n")
     print(ord(text, 3))
     print("\n")
-    print(ord(text, -1))
-    print("\n")
-    print(subStr(text, 1, 1))
+    val negative: Int = -1
+    val outside: Int = ord(text, negative)
+    print(outside)
     print("\n")
