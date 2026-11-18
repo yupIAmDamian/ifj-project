@@ -5,8 +5,8 @@
 #include "hashtable.h"
 #include "stdlib.h"
 #include "../helper_func.h"
+#include <string.h>
 
-//TODO: apply DRY principle 
 
 int hash_function(char* key, int size){
     unsigned long hash = 0;
@@ -15,31 +15,30 @@ int hash_function(char* key, int size){
         hash += (unsigned long)key[i];
         hash = (hash * (unsigned long)key[i]) % size;
     }
-    return (int)hash;
+    return ((int)hash) % size;
 }
 
 int probing(hashtable_t* hashtable, char* key, int attempt){
     int index = hash_function(key, hashtable->size);
+    index = (index + attempt) % hashtable->size;
     if(hashtable->items[index].state == EMPTY){
         return index;
     }
     if(hashtable->items[index].state == OCCUPIED && strcmp(hashtable->items[index].key, key) == 0){
         return index;
     }
-    if(attempt < hashtable->size){
+    if(attempt < hashtable->size-1){
         return probing(hashtable, key, attempt + 1);
     }
     return -1;
 }
 
 ht_item_t* ht_search(hashtable_t* hashtable, char* key){
-    //check this is good. its a bit sus
     int index = probing(hashtable, key, 0);
-    if(index == -1){
-        return NULL;
+    if(index != -1 && hashtable->items[index].state == OCCUPIED && strcmp(hashtable->items[index].key, key) == 0){
+        return &hashtable->items[index];
     }
-
-    return &hashtable->items[index];
+    return NULL;
 }
 
 ht_item_t* ht_insert(hashtable_t* hashtable, char* key, void* data){
@@ -48,30 +47,36 @@ ht_item_t* ht_insert(hashtable_t* hashtable, char* key, void* data){
         return NULL;
     }
 
+    //Redefinition of symbol problem
+    //it should return something different to user
+    if(hashtable->items[index].state == OCCUPIED && strcmp(hashtable->items[index].key, key) == 0){
+        return NULL;
+    }
+
+    char* hash_item_key = str_duplicate(key);
+    if(hash_item_key == NULL) {
+        return NULL;
+    }
+    hashtable->items[index].key = hash_item_key;
     hashtable->items[index].state = OCCUPIED;
     hashtable->items[index].data = data;
-    hashtable->items[index].key = str_duplicate(key);
 
     hashtable->count++;
     return &hashtable->items[index];
 }
 
 
-hashtable_t* ht_delete(hashtable_t* hashtable, char* key){
-    //checknut ci toto je dobre. je to trosku sus
-    int index = probing(hashtable, key, 0);
-    if(index == -1){
-        return NULL;
-    }
+//TODO data could be allocated in symtable_insert_var
+bool ht_delete(hashtable_t* hashtable, char* key){
+    ht_item_t* item = ht_search(hashtable, key);
+    if(item == NULL) return false;
 
-    hashtable->items[index].state = DELETED;
-    hashtable->items[index].data = NULL;
+    item->state = DELETED;
 
     hashtable->count--;
-    return hashtable;
+    return true;
 }
 
-//creates a new hashtable
 hashtable_t* ht_create(int size){
     hashtable_t* hashtable = malloc(sizeof(hashtable_t));
     if(hashtable == NULL){
@@ -90,19 +95,30 @@ hashtable_t* ht_create(int size){
     return hashtable;
 }
 
+bool free_keys(ht_item_t* items, int size) {
+    if (items == NULL) {
+        return false;
+    }
+
+    for (int i = 0; i < size; i++) {
+        if ((items[i].state == OCCUPIED || items[i].state == DELETED) && items[i].key != NULL) {
+            free(items[i].key);
+            items[i].key = NULL;
+        }
+    }
+    return true;
+}
+
 //frees all allocated hastable memory
+//Big TODO
+//TOTO dat do symtable_dispose
+//Treba uvolnovat kluce a data, lebo sa alokuju v symtable_insert_var a symtable_insert_func
 void ht_clear(hashtable_t** hashtable){
     if(hashtable == NULL || *hashtable == NULL){
         return;
     }
 
-    if((*hashtable)->items != NULL){
-        for(int item_index =0; item_index < (*hashtable)->size; item_index++){
-            free((*hashtable)->items[item_index].key);
-            free((*hashtable)->items[item_index].data);
-        }
-    }
-
+    free_keys((*hashtable)->items, (*hashtable)->size);
     free((*hashtable)->items);
     free(*hashtable);
     *hashtable = NULL;

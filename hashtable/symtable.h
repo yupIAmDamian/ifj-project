@@ -45,10 +45,10 @@ typedef struct {
     bool in_main;                   
 } Symtable;
 
-Symbol* symbol_create(char *name, SymbolType s_type, DataType d_type, bool is_init);
+Symbol* symbol_create(char *name, SymbolType s_type, DataType d_type, bool is_init, bool is_const);
 void symbol_free(Symbol *sym);
 
-Symtable* symtable_init(void);
+Symtable* symtable_init();
 void symtable_dispose(Symtable *st);
 
 void scope_push(Symtable *st);
