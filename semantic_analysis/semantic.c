@@ -20,8 +20,10 @@ static ASTNode* wrap_int2float(ASTNode *expr) {
         dominik_error(99, "Internal Error: Memory allocation failed");
     }
 
+    memset(&conv->val, 0, sizeof(Token)); //reset string_value and type for ast_cleanup
     conv->type = AST_NODE_INT2FLOAT;
     conv->inferred_type = TYPE_FLOAT;
+    conv->is_main = false;
     conv->left = expr;
     conv->right = NULL;
     conv->extra = NULL;
