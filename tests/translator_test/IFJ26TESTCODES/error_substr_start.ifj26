@@ -2,5 +2,6 @@ import ifj26.*
 
 @main def run(): Unit =
     val text: String = "abc"
-    val invalidStart: String = subStr(text, -1, 2)
-    print(invalidStart)
+    val negative: Int = -1
+    val invalid: String = subStr(text, 0, negative)
+    print(invalid)

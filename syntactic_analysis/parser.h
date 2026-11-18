@@ -19,6 +19,8 @@ bool match(TokenType expected_type); // check if the current token matches the e
 
 int parse(); // return an error code or 0 if everithing runs smoothly
 
+ASTNode* parse_func_call();
+
 // function for non-terminals
 ASTNode* parse_program(); 
 bool parse_prolog(); 
@@ -27,12 +29,12 @@ ASTNode* parse_function();
 bool parse_main_annotation(bool *is_main); 
 ASTNode* parse_params_opt(); 
 ASTNode* parse_param(); 
-bool parse_return_type_opt(); 
-bool parse_type(); 
+bool parse_return_type_opt(DataType *out); 
+bool parse_type(DataType *out); 
 ASTNode* parse_function_body(); 
 ASTNode* parse_statements(); 
 ASTNode* parse_statement(); 
-bool parse_type_opt(); 
+bool parse_type_opt(DataType *out); 
 ASTNode* parse_expr_or_call();
 ASTNode* parse_expr_or_call_opt(); 
 ASTNode* parse_args_opt(); 

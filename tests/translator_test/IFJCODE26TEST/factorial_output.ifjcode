@@ -1,0 +1,107 @@
+.IFJcode26
+JUMP main
+
+LABEL factorialIterative
+CREATEFRAME
+PUSHFRAME
+DEFVAR LF@n$2$factorialIterative
+DEFVAR LF@result$2$factorialIterative
+DEFVAR LF@i$2$factorialIterative
+POPS LF@n$2$factorialIterative
+PUSHS int@1
+POPS LF@result$2$factorialIterative
+PUSHS int@2
+POPS LF@i$2$factorialIterative
+LABEL $factorialIterative$while$0$start
+PUSHS LF@i$2$factorialIterative
+PUSHS LF@n$2$factorialIterative
+GTS
+PUSHS bool@true
+JUMPIFEQS $factorialIterative$while$0$end
+PUSHS LF@result$2$factorialIterative
+PUSHS LF@i$2$factorialIterative
+MULS
+POPS LF@result$2$factorialIterative
+PUSHS LF@i$2$factorialIterative
+PUSHS int@1
+ADDS
+POPS LF@i$2$factorialIterative
+JUMP $factorialIterative$while$0$start
+LABEL $factorialIterative$while$0$end
+PUSHS LF@result$2$factorialIterative
+POPFRAME
+RETURN
+
+LABEL factorialRecursive
+CREATEFRAME
+PUSHFRAME
+DEFVAR LF@n$4$factorialRecursive
+DEFVAR LF@previous$6$factorialRecursive
+DEFVAR LF@smaller$6$factorialRecursive
+POPS LF@n$4$factorialRecursive
+PUSHS LF@n$4$factorialRecursive
+PUSHS int@1
+GTS
+PUSHS bool@true
+JUMPIFEQS $factorialRecursive$if$1$else
+PUSHS int@1
+POPFRAME
+RETURN
+
+LABEL $factorialRecursive$if$1$else
+PUSHS LF@n$4$factorialRecursive
+PUSHS int@1
+SUBS
+POPS LF@previous$6$factorialRecursive
+PUSHS LF@previous$6$factorialRecursive
+CALL factorialRecursive
+POPS LF@smaller$6$factorialRecursive
+PUSHS LF@n$4$factorialRecursive
+PUSHS LF@smaller$6$factorialRecursive
+MULS
+POPFRAME
+RETURN
+
+LABEL $factorialRecursive$if$1$end
+POPFRAME
+RETURN
+
+LABEL main
+DEFVAR GF@n$7
+DEFVAR GF@iterative$11
+DEFVAR GF@recursive$11
+READ GF@n$7 int
+JUMPIFNEQ $read$ok$0 GF@n$7 nil@nil
+MOVE GF@n$7 int@0
+LABEL $read$ok$0
+PUSHS GF@n$7
+PUSHS int@0
+LTS
+PUSHS bool@false
+JUMPIFEQS $main$if$2$else
+WRITE string@Use\032an\032integer\032from\0320\032to\03212.\010
+JUMP $main$if$2$end
+LABEL $main$if$2$else
+PUSHS GF@n$7
+PUSHS int@12
+GTS
+PUSHS bool@false
+JUMPIFEQS $main$if$3$else
+WRITE string@Use\032an\032integer\032from\0320\032to\03212.\010
+JUMP $main$if$3$end
+LABEL $main$if$3$else
+PUSHS GF@n$7
+CALL factorialIterative
+POPS GF@iterative$11
+PUSHS GF@n$7
+CALL factorialRecursive
+POPS GF@recursive$11
+WRITE string@iterative:\032
+WRITE GF@iterative$11
+WRITE string@\010recursive:\032
+WRITE GF@recursive$11
+WRITE string@\010
+LABEL $main$if$3$end
+LABEL $main$if$2$end
+EXIT int@0
+

@@ -1,0 +1,37 @@
+.IFJcode26
+JUMP main
+
+LABEL main
+DEFVAR GF@text$2
+DEFVAR GF@invalidIndex$2
+PUSHS string@
+POPS GF@text$2
+PUSHS int@0
+PUSHS GF@text$2
+LABEL $ord
+DEFVAR LF@ord$value
+DEFVAR LF@ord$index
+DEFVAR LF@ord$length
+DEFVAR LF@ord$char
+DEFVAR LF@ord$result
+DEFVAR LF@ord$invalid
+POPS LF@ord$index
+POPS LF@ord$value
+STRLEN LF@ord$length LF@ord$value
+LT LF@ord$invalid LF@ord$index int@0
+GT LF@ord$result LF@ord$index LF@ord$length
+EQ LF@ord$char LF@ord$index LF@ord$length
+OR LF@ord$result LF@ord$result LF@ord$char
+OR LF@ord$invalid LF@ord$invalid LF@ord$result
+JUMPIFEQ $ord$invalid LF@ord$invalid bool@true
+GETCHAR LF@ord$char LF@ord$value LF@ord$index
+STRI2INT LF@ord$result LF@ord$char int@0
+PUSHS LF@ord$result
+RETURN
+LABEL $ord$invalid
+PUSHS int@-1
+RETURN
+POPS GF@invalidIndex$2
+WRITE GF@invalidIndex$2
+EXIT int@0
+

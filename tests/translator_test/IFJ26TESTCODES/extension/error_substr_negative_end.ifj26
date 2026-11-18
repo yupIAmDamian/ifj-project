@@ -1,0 +1,6 @@
+import ifj26.*
+
+@main def run(): Unit =
+    val text: String = "abc"
+    val invalidStart: String = subStr(text, 0, -1)
+    print(invalidStart)

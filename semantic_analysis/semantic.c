@@ -15,21 +15,13 @@ static void check_statement(ASTNode *node, Symtable *st);
 static ASTNode* wrap_int2float(ASTNode *expr) {
     if (expr == NULL) return NULL;
 
-    ASTNode *conv = malloc(sizeof(ASTNode));
-    if (conv == NULL) {
-        dominik_error(99, "Internal Error: Memory allocation failed");
-    }
-
-    conv->type = AST_NODE_INT2FLOAT;
+    Token t;
+    memset(&t, 0, sizeof(Token));
+    ASTNode *conv = create_ast_node(AST_NODE_INT2FLOAT, expr, NULL, NULL, t);
     conv->inferred_type = TYPE_FLOAT;
-    conv->left = expr;
-    conv->right = NULL;
-    conv->extra = NULL;
-    conv->next = NULL;
-
+    conv->prev = expr->prev;
     return conv;
 }
-
 /**
  * @brief Validates type compatibility and performs implicit Int-to-Float conversion if needed.
  * @param expr_ptr Address of the pointer to the expression AST node (modified in-place if wrapped).
@@ -458,7 +450,7 @@ static DataType check_func_call(ASTNode *node, Symtable *st) {
 
     // Special handling for built-in 'print' and 'toStr' accepting a single argument of type Any
     if (strcmp(func_name, "print") == 0 || strcmp(func_name, "toStr") == 0) {
-        ASTNode *arg_node = node->left;
+        ASTNode *arg_node = node->right;
         if (arg_node == NULL || arg_node->next != NULL) {
             dominik_error(5, "Built-in function requires exactly one argument");
         }
@@ -487,7 +479,7 @@ static DataType check_func_call(ASTNode *node, Symtable *st) {
 
     // Iterate through linked argument list via pointer-to-pointer to allow in-place conversion wrapping
     int arg_count = 0;
-    ASTNode **arg_ptr = &node->left;
+    ASTNode **arg_ptr = &node->right;
 
     while (*arg_ptr != NULL) {
         if (arg_count >= func_sym->params_amount) {
@@ -617,18 +609,20 @@ static void check_statement(ASTNode *node, Symtable *st) {
                 return_type = check_expression(node->left, st);
             }
 
-            // when the return type of the function is evaluated
             if (current_func_ret_type == TYPE_UNKNOWN) {
-                if (return_type == TYPE_UNKNOWN || return_type == TYPE_BOOL) {
-                    dominik_error(6, "Invalid return type");
-                }
+                dominik_error(6, "Function containing 'return' must have explicit return type");
                 current_func_ret_type = return_type;
-            } else if (!convert_if_needed(&node->left, return_type, current_func_ret_type)) {
+            }
+            else if (current_func_ret_type == TYPE_VOID) {
+                if (return_type == TYPE_UNKNOWN || return_type == TYPE_BOOL) {
+                    dominik_error(6, "Invalid return value");
+                }
+            }
+            else if (!convert_if_needed(&node->left, return_type, current_func_ret_type)) {
                 dominik_error(6, "Return type mismatch");
             }
             break;
         }
-
         case AST_NODE_CALL: {
             check_expression(node, st);
             break;

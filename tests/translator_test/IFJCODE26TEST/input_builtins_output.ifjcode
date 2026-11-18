@@ -1,0 +1,25 @@
+.IFJcode26
+JUMP main
+
+LABEL main
+DEFVAR GF@line$2
+DEFVAR GF@number$2
+DEFVAR GF@real$2
+READ GF@line$2 string
+JUMPIFNEQ $read$ok$0 GF@line$2 nil@nil
+MOVE GF@line$2 string@
+LABEL $read$ok$0
+READ GF@number$2 int
+JUMPIFNEQ $read$ok$1 GF@number$2 nil@nil
+MOVE GF@number$2 int@0
+LABEL $read$ok$1
+READ GF@real$2 float
+JUMPIFNEQ $read$ok$2 GF@real$2 nil@nil
+MOVE GF@real$2 float@0x0p+0
+LABEL $read$ok$2
+WRITE GF@line$2
+WRITE GF@number$2
+WRITE GF@real$2
+WRITE string@\010
+EXIT int@0
+

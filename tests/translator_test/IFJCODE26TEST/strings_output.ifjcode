@@ -1,0 +1,326 @@
+.IFJcode26
+JUMP main
+
+LABEL withoutLineFeed
+CREATEFRAME
+PUSHFRAME
+DEFVAR LF@text$2$withoutLineFeed
+DEFVAR LF@length$2$withoutLineFeed
+DEFVAR LF@last$4$withoutLineFeed
+DEFVAR LF@code$4$withoutLineFeed
+POPS LF@text$2$withoutLineFeed
+PUSHS LF@text$2$withoutLineFeed
+STRLEN LF@length$2 LF@text$2
+POPS LF@length$2$withoutLineFeed
+PUSHS LF@length$2$withoutLineFeed
+PUSHS int@0
+EQS
+PUSHS bool@false
+JUMPIFEQS $withoutLineFeed$if$0$else
+PUSHS LF@text$2$withoutLineFeed
+POPFRAME
+RETURN
+
+LABEL $withoutLineFeed$if$0$else
+PUSHS LF@length$2$withoutLineFeed
+PUSHS int@1
+SUBS
+POPS LF@last$4$withoutLineFeed
+PUSHS LF@last$4$withoutLineFeed
+PUSHS LF@text$2$withoutLineFeed
+LABEL $ord
+DEFVAR LF@ord$value
+DEFVAR LF@ord$index
+DEFVAR LF@ord$length
+DEFVAR LF@ord$char
+DEFVAR LF@ord$result
+DEFVAR LF@ord$invalid
+POPS LF@ord$index
+POPS LF@ord$value
+STRLEN LF@ord$length LF@ord$value
+LT LF@ord$invalid LF@ord$index int@0
+GT LF@ord$result LF@ord$index LF@ord$length
+EQ LF@ord$char LF@ord$index LF@ord$length
+OR LF@ord$result LF@ord$result LF@ord$char
+OR LF@ord$invalid LF@ord$invalid LF@ord$result
+JUMPIFEQ $ord$invalid LF@ord$invalid bool@true
+GETCHAR LF@ord$char LF@ord$value LF@ord$index
+STRI2INT LF@ord$result LF@ord$char int@0
+PUSHS LF@ord$result
+RETURN
+LABEL $ord$invalid
+PUSHS int@-1
+RETURN
+POPS LF@code$4$withoutLineFeed
+PUSHS LF@code$4$withoutLineFeed
+PUSHS int@10
+EQS
+PUSHS bool@false
+JUMPIFEQS $withoutLineFeed$if$1$else
+PUSHS LF@last$4$withoutLineFeed
+PUSHS int@0
+PUSHS LF@text$2$withoutLineFeed
+LABEL $subStr
+DEFVAR LF@substr$value
+DEFVAR LF@substr$start
+DEFVAR LF@substr$end
+DEFVAR LF@substr$length
+DEFVAR LF@substr$result
+DEFVAR LF@substr$index
+DEFVAR LF@substr$char
+DEFVAR LF@substr$invalid
+POPS LF@substr$value
+POPS LF@substr$start
+POPS LF@substr$end
+STRLEN LF@substr$length LF@substr$value
+MOVE LF@substr$invalid bool@false
+LT LF@substr$invalid LF@substr$start int@0
+LT LF@substr$char LF@substr$end int@0
+OR LF@substr$invalid LF@substr$invalid LF@substr$char
+GT LF@substr$char LF@substr$start LF@substr$end
+OR LF@substr$invalid LF@substr$invalid LF@substr$char
+GT LF@substr$char LF@substr$start LF@substr$length
+EQ LF@substr$result LF@substr$start LF@substr$length
+OR LF@substr$char LF@substr$char LF@substr$result
+OR LF@substr$invalid LF@substr$invalid LF@substr$char
+GT LF@substr$char LF@substr$end LF@substr$length
+OR LF@substr$invalid LF@substr$invalid LF@substr$char
+JUMPIFEQ $substr$error LF@substr$invalid bool@true
+MOVE LF@substr$result string@
+MOVE LF@substr$index LF@substr$start
+LABEL $substr$loop
+JUMPIFEQ $substr$done LF@substr$index LF@substr$end
+GETCHAR LF@substr$char LF@substr$value LF@substr$index
+CONCAT LF@substr$result LF@substr$result LF@substr$char
+ADD LF@substr$index LF@substr$index int@1
+JUMP $substr$loop
+LABEL $substr$done
+PUSHS LF@substr$result
+RETURN
+LABEL $substr$error
+EXIT int@40
+POPFRAME
+RETURN
+
+LABEL $withoutLineFeed$if$1$else
+PUSHS LF@text$2$withoutLineFeed
+POPFRAME
+RETURN
+
+LABEL $withoutLineFeed$if$1$end
+LABEL $withoutLineFeed$if$0$end
+POPFRAME
+RETURN
+
+LABEL reverse
+CREATEFRAME
+PUSHFRAME
+DEFVAR LF@text$7$reverse
+DEFVAR LF@length$7$reverse
+DEFVAR LF@index$7$reverse
+DEFVAR LF@result$7$reverse
+DEFVAR LF@code$8$reverse
+DEFVAR LF@character$8$reverse
+POPS LF@text$7$reverse
+PUSHS LF@text$7$reverse
+STRLEN LF@length$7 LF@text$7
+POPS LF@length$7$reverse
+PUSHS LF@length$7$reverse
+PUSHS int@1
+SUBS
+POPS LF@index$7$reverse
+PUSHS string@
+POPS LF@result$7$reverse
+LABEL $reverse$while$2$start
+PUSHS LF@index$7$reverse
+PUSHS int@0
+LTS
+PUSHS bool@true
+JUMPIFEQS $reverse$while$2$end
+PUSHS LF@index$7$reverse
+PUSHS LF@text$7$reverse
+LABEL $ord
+DEFVAR LF@ord$value
+DEFVAR LF@ord$index
+DEFVAR LF@ord$length
+DEFVAR LF@ord$char
+DEFVAR LF@ord$result
+DEFVAR LF@ord$invalid
+POPS LF@ord$index
+POPS LF@ord$value
+STRLEN LF@ord$length LF@ord$value
+LT LF@ord$invalid LF@ord$index int@0
+GT LF@ord$result LF@ord$index LF@ord$length
+EQ LF@ord$char LF@ord$index LF@ord$length
+OR LF@ord$result LF@ord$result LF@ord$char
+OR LF@ord$invalid LF@ord$invalid LF@ord$result
+JUMPIFEQ $ord$invalid LF@ord$invalid bool@true
+GETCHAR LF@ord$char LF@ord$value LF@ord$index
+STRI2INT LF@ord$result LF@ord$char int@0
+PUSHS LF@ord$result
+RETURN
+LABEL $ord$invalid
+PUSHS int@-1
+RETURN
+POPS LF@code$8$reverse
+PUSHS LF@code$8$reverse
+INT2CHARS
+POPS LF@character$8$reverse
+PUSHS LF@result$7$reverse
+PUSHS LF@character$8$reverse
+ADDS
+POPS LF@result$7$reverse
+PUSHS LF@index$7$reverse
+PUSHS int@1
+SUBS
+POPS LF@index$7$reverse
+JUMP $reverse$while$2$start
+LABEL $reverse$while$2$end
+PUSHS LF@result$7$reverse
+POPFRAME
+RETURN
+
+LABEL prefix
+CREATEFRAME
+PUSHFRAME
+DEFVAR LF@text$9$prefix
+DEFVAR LF@length$9$prefix
+DEFVAR LF@end$9$prefix
+POPS LF@text$9$prefix
+PUSHS LF@text$9$prefix
+STRLEN LF@length$9 LF@text$9
+POPS LF@length$9$prefix
+PUSHS LF@length$9$prefix
+POPS LF@end$9$prefix
+PUSHS LF@length$9$prefix
+PUSHS int@3
+GTS
+PUSHS bool@false
+JUMPIFEQS $prefix$if$3$else
+PUSHS int@3
+POPS LF@end$9$prefix
+JUMP $prefix$if$3$end
+LABEL $prefix$if$3$else
+LABEL $prefix$if$3$end
+PUSHS LF@length$9$prefix
+PUSHS int@0
+EQS
+PUSHS bool@false
+JUMPIFEQS $prefix$if$4$else
+PUSHS string@
+POPFRAME
+RETURN
+
+LABEL $prefix$if$4$else
+PUSHS LF@end$9$prefix
+PUSHS int@0
+PUSHS LF@text$9$prefix
+LABEL $subStr
+DEFVAR LF@substr$value
+DEFVAR LF@substr$start
+DEFVAR LF@substr$end
+DEFVAR LF@substr$length
+DEFVAR LF@substr$result
+DEFVAR LF@substr$index
+DEFVAR LF@substr$char
+DEFVAR LF@substr$invalid
+POPS LF@substr$value
+POPS LF@substr$start
+POPS LF@substr$end
+STRLEN LF@substr$length LF@substr$value
+MOVE LF@substr$invalid bool@false
+LT LF@substr$invalid LF@substr$start int@0
+LT LF@substr$char LF@substr$end int@0
+OR LF@substr$invalid LF@substr$invalid LF@substr$char
+GT LF@substr$char LF@substr$start LF@substr$end
+OR LF@substr$invalid LF@substr$invalid LF@substr$char
+GT LF@substr$char LF@substr$start LF@substr$length
+EQ LF@substr$result LF@substr$start LF@substr$length
+OR LF@substr$char LF@substr$char LF@substr$result
+OR LF@substr$invalid LF@substr$invalid LF@substr$char
+GT LF@substr$char LF@substr$end LF@substr$length
+OR LF@substr$invalid LF@substr$invalid LF@substr$char
+JUMPIFEQ $substr$error LF@substr$invalid bool@true
+MOVE LF@substr$result string@
+MOVE LF@substr$index LF@substr$start
+LABEL $substr$loop
+JUMPIFEQ $substr$done LF@substr$index LF@substr$end
+GETCHAR LF@substr$char LF@substr$value LF@substr$index
+CONCAT LF@substr$result LF@substr$result LF@substr$char
+ADD LF@substr$index LF@substr$index int@1
+JUMP $substr$loop
+LABEL $substr$done
+PUSHS LF@substr$result
+RETURN
+LABEL $substr$error
+EXIT int@40
+POPFRAME
+RETURN
+
+LABEL $prefix$if$4$end
+POPFRAME
+RETURN
+
+LABEL halfLength
+CREATEFRAME
+PUSHFRAME
+DEFVAR LF@length$14$halfLength
+POPS LF@length$14$halfLength
+PUSHS LF@length$14$halfLength
+INT2FLOATS
+PUSHS float@0x1p+1
+DIVS
+POPFRAME
+RETURN
+
+LABEL showLine
+CREATEFRAME
+PUSHFRAME
+DEFVAR LF@text$15$showLine
+POPS LF@text$15$showLine
+WRITE LF@text$15$showLine
+WRITE string@\010
+POPFRAME
+RETURN
+
+LABEL main
+DEFVAR GF@raw$16
+DEFVAR GF@text$16
+DEFVAR GF@backwards$16
+DEFVAR GF@first$16
+DEFVAR GF@length$16
+DEFVAR GF@half$16
+DEFVAR GF@halfText$16
+READ GF@raw$16 string
+JUMPIFNEQ $read$ok$0 GF@raw$16 nil@nil
+MOVE GF@raw$16 string@
+LABEL $read$ok$0
+PUSHS GF@raw$16
+CALL withoutLineFeed
+POPS GF@text$16
+PUSHS GF@text$16
+CALL reverse
+POPS GF@backwards$16
+PUSHS GF@text$16
+CALL prefix
+POPS GF@first$16
+PUSHS GF@text$16
+STRLEN GF@length$16 GF@text$16
+POPS GF@length$16
+PUSHS GF@length$16
+CALL halfLength
+POPS GF@half$16
+PUSHS GF@half$16
+FLOAT2STRS
+POPS GF@halfText$16
+PUSHS GF@backwards$16
+CALL showLine
+PUSHS GF@first$16
+CALL showLine
+WRITE string@length:\032
+WRITE GF@length$16
+WRITE string@\010half:\032
+PUSHS GF@halfText$16
+CALL showLine
+EXIT int@0
+

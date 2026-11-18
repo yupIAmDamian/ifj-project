@@ -1,0 +1,36 @@
+.IFJcode26
+JUMP main
+
+LABEL main
+DEFVAR GF@i$2
+DEFVAR GF@d$2
+DEFVAR GF@s$2
+DEFVAR GF@sum$2
+DEFVAR GF@product$2
+WRITE string@builtins:\032arithmetic\032and\032literals\010
+PUSHS int@42
+POPS GF@i$2
+PUSHS float@0x1.ep+1
+POPS GF@d$2
+PUSHS string@hello
+POPS GF@s$2
+WRITE GF@i$2
+WRITE string@\010
+WRITE GF@d$2
+WRITE string@\010
+WRITE GF@s$2
+WRITE string@\010
+PUSHS GF@i$2
+PUSHS int@8
+ADDS
+POPS GF@sum$2
+WRITE GF@sum$2
+WRITE string@\010
+PUSHS GF@d$2
+PUSHS float@0x1p+1
+MULS
+POPS GF@product$2
+WRITE GF@product$2
+WRITE string@\010
+EXIT int@0
+

@@ -22,6 +22,7 @@ ASTNode *create_ast_node(ASTNodeType type, ASTNode *left, ASTNode *right, ASTNod
     node->is_const = false;
     node->alloc_next = all_nodes;
     all_nodes = node;
+    node->inferred_type = TYPE_UNKNOWN;
     return node;
 }
 

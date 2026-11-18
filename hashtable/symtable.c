@@ -27,6 +27,7 @@ Symbol* symbol_create(char *name, SymbolType s_type, DataType d_type, bool is_in
     sym->is_const = is_const;
     sym->params_amount = 0;
     sym->params = NULL;
+    sym->is_const = false;
 
     return sym;
 }
@@ -110,7 +111,7 @@ bool symtable_insert_var(Symtable *st, char *name, DataType type, bool is_init, 
 
     char mangled_buf[256];
     if (st->in_main) {
-        snprintf(mangled_buf, sizeof(mangled_buf), "GF@%s", name);
+        snprintf(mangled_buf, sizeof(mangled_buf), "GF@%s$%d", name, st->block_counter);
     } 
     else {
         snprintf(mangled_buf, sizeof(mangled_buf), "LF@%s$%d", name, st->block_counter);

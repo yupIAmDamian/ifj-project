@@ -1,0 +1,27 @@
+.IFJcode26
+JUMP main
+
+LABEL main
+DEFVAR GF@d$2
+DEFVAR GF@i$2
+DEFVAR GF@text$2
+DEFVAR GF@length$2
+PUSHS float@0x1.9fae147ae147bp+3
+POPS GF@d$2
+PUSHS GF@d$2
+FLOAT2INTS
+POPS GF@i$2
+PUSHS GF@d$2
+FLOAT2STRS
+POPS GF@text$2
+PUSHS string@hello
+STRLEN GF@length$2 hello
+POPS GF@length$2
+WRITE GF@i$2
+WRITE string@\010
+WRITE GF@text$2
+WRITE string@\010
+WRITE GF@length$2
+WRITE string@\010
+EXIT int@0
+
