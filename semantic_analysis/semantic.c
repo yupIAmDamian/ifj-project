@@ -609,18 +609,20 @@ static void check_statement(ASTNode *node, Symtable *st) {
                 return_type = check_expression(node->left, st);
             }
 
-            // when the return type of the function is evaluated
             if (current_func_ret_type == TYPE_UNKNOWN) {
-                if (return_type == TYPE_UNKNOWN || return_type == TYPE_BOOL) {
-                    dominik_error(6, "Invalid return type");
-                }
+                dominik_error(6, "Function containing 'return' must have explicit return type");
                 current_func_ret_type = return_type;
-            } else if (!convert_if_needed(&node->left, return_type, current_func_ret_type)) {
+            }
+            else if (current_func_ret_type == TYPE_VOID) {
+                if (return_type == TYPE_UNKNOWN || return_type == TYPE_BOOL) {
+                    dominik_error(6, "Invalid return value");
+                }
+            }
+            else if (!convert_if_needed(&node->left, return_type, current_func_ret_type)) {
                 dominik_error(6, "Return type mismatch");
             }
             break;
         }
-
         case AST_NODE_CALL: {
             check_expression(node, st);
             break;
