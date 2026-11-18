@@ -15,23 +15,13 @@ static void check_statement(ASTNode *node, Symtable *st);
 static ASTNode* wrap_int2float(ASTNode *expr) {
     if (expr == NULL) return NULL;
 
-    ASTNode *conv = malloc(sizeof(ASTNode));
-    if (conv == NULL) {
-        dominik_error(99, "Internal Error: Memory allocation failed");
-    }
-
-    memset(&conv->val, 0, sizeof(Token)); //reset string_value and type for ast_cleanup
-    conv->type = AST_NODE_INT2FLOAT;
+    Token t;
+    memset(&t, 0, sizeof(Token));
+    ASTNode *conv = create_ast_node(AST_NODE_INT2FLOAT, expr, NULL, NULL, t);
     conv->inferred_type = TYPE_FLOAT;
-    conv->is_main = false;
-    conv->left = expr;
-    conv->right = NULL;
-    conv->extra = NULL;
-    conv->next = NULL;
-
+    conv->prev = expr->prev;
     return conv;
 }
-
 /**
  * @brief Validates type compatibility and performs implicit Int-to-Float conversion if needed.
  * @param expr_ptr Address of the pointer to the expression AST node (modified in-place if wrapped).
