@@ -5,8 +5,8 @@ Parsing failed: code=2, token=TOKEN_LPAREN (32), line=7
 
 ================================================================
 [TRANSLATOR] builtins_literals.ifj26
-exit code: 134
-free(): double free detected in tcache 2
+exit code: 3
+Semantic error 3: Redefinition of variable
 
 ================================================================
 [TRANSLATOR] builtins_nested.ifj26
@@ -40,13 +40,13 @@ Semantic error 3: Redefinition of function
 
 ================================================================
 [TRANSLATOR] strings_minimal.ifj26
-exit code: 134
-free(): double free detected in tcache 2
+exit code: 3
+Semantic error 3: Redefinition of variable
 
 ================================================================
 [TRANSLATOR] strings_valid.ifj26
-exit code: 134
-free(): double free detected in tcache 2
+exit code: 3
+Semantic error 3: Redefinition of variable
 
 ================================================================
 [INTERPRETER] error_ord_empty_output.ifjcode
