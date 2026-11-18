@@ -104,7 +104,7 @@ bool symtable_insert_var(Symtable *st, char *name, DataType type, bool is_init, 
 
     char mangled_buf[256];
     if (st->in_main) {
-        snprintf(mangled_buf, sizeof(mangled_buf), "GF@%s", name);
+        snprintf(mangled_buf, sizeof(mangled_buf), "GF@%s$%d", name, st->block_counter);
     } 
     else {
         snprintf(mangled_buf, sizeof(mangled_buf), "LF@%s$%d", name, st->block_counter);
