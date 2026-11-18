@@ -33,6 +33,8 @@ ht_item_t* ht_search(hashtable_t* hashtable, char* key);
 
 bool ht_delete(hashtable_t* hashtable, char* key);
 ht_item_t* ht_insert(hashtable_t* hashtable, char* key, void* data);
+
+bool free_keys(ht_item_t* items, int size);
 //frees all allocated hastable memory
 void ht_clear(hashtable_t** hashtable);
 

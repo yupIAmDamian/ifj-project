@@ -3,7 +3,6 @@
 
 #include <stddef.h>
 #include <stdio.h>
-#include "hashtable_func.h"
 #include "../../hashtable/hashtable.h"
 #include <stdlib.h>
 #include <stdbool.h> 

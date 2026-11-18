@@ -5,8 +5,8 @@
 #include "hashtable.h"
 #include "stdlib.h"
 #include "../helper_func.h"
+#include <string.h>
 
-//TODO: apply DRY principle 
 
 int hash_function(char* key, int size){
     unsigned long hash = 0;
@@ -48,8 +48,8 @@ ht_item_t* ht_insert(hashtable_t* hashtable, char* key, void* data){
     }
 
     //Redefinition of symbol problem
+    //it should return something different to user
     if(hashtable->items[index].state == OCCUPIED && strcmp(hashtable->items[index].key, key) == 0){
-        printf("Key already exists: %s\n", key);
         return NULL;
     }
 
@@ -95,6 +95,20 @@ hashtable_t* ht_create(int size){
     return hashtable;
 }
 
+bool free_keys(ht_item_t* items, int size) {
+    if (items == NULL) {
+        return false;
+    }
+
+    for (int i = 0; i < size; i++) {
+        if ((items[i].state == OCCUPIED || items[i].state == DELETED) && items[i].key != NULL) {
+            free(items[i].key);
+            items[i].key = NULL;
+        }
+    }
+    return true;
+}
+
 //frees all allocated hastable memory
 //Big TODO
 //TOTO dat do symtable_dispose
@@ -104,13 +118,7 @@ void ht_clear(hashtable_t** hashtable){
         return;
     }
 
-    if((*hashtable)->items != NULL){
-        for(int item_index =0; item_index < (*hashtable)->size; item_index++){
-            free((*hashtable)->items[item_index].key);
-            free((*hashtable)->items[item_index].data);
-        }
-    }
-
+    free_keys((*hashtable)->items, (*hashtable)->size);
     free((*hashtable)->items);
     free(*hashtable);
     *hashtable = NULL;

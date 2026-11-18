@@ -101,7 +101,9 @@ valgrind-translator-test: tests/translator_test/translator_test
 		tests/translator_test/translator_output.ifjcode
 
 
-#Custom script for running translator tests with the interpreter, you can set the path to the interpreter binary using the ICINT variable, e.g.:
+#####################################################
+#Translator tests with interpreter
+#####################################################
 ICINT ?= ./ic26int-linux-x86_64
 
 translator-batch: $(TRANSLATOR_TESTTOCOMPILE)
