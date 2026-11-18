@@ -25,6 +25,7 @@ Symbol* symbol_create(char *name, SymbolType s_type, DataType d_type, bool is_in
     sym->is_initialized = is_init;
     sym->params_amount = 0;
     sym->params = NULL;
+    sym->is_const = false;
 
     return sym;
 }
@@ -114,7 +115,6 @@ bool symtable_insert_var(Symtable *st, char *name, DataType type, bool is_init, 
     sym->is_const = is_const;
     ht_item_t *inserted_item = ht_insert(st->scopes[st->top], name, (void*) sym);
     if (!inserted_item) {
-        if (sym->mangled_name) free(sym->mangled_name);
         symbol_free(sym);
         return false;
     }

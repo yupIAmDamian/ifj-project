@@ -5,13 +5,13 @@ Parsing failed: code=2, token=TOKEN_LPAREN (32), line=7
 
 ================================================================
 [TRANSLATOR] builtins_literals.ifj26
-exit code: 2
-Parsing failed: code=2, token=TOKEN_PLUS (22), line=14
+exit code: 134
+free(): double free detected in tcache 2
 
 ================================================================
 [TRANSLATOR] builtins_nested.ifj26
-exit code: 2
-Parsing failed: code=2, token=TOKEN_LPAREN (32), line=8
+exit code: 3
+Semantic error 3: Undefined function
 
 ================================================================
 [TRANSLATOR] conversions.ifj26
@@ -20,18 +20,18 @@ Semantic error 3: Undefined function
 
 ================================================================
 [TRANSLATOR] error_substr_negative_end.ifj26
-exit code: 2
-Parsing failed: code=2, token=TOKEN_MINUS (23), line=5
+exit code: 3
+Semantic error 3: Undefined variable
 
 ================================================================
 [TRANSLATOR] error_substr_start.ifj26
-exit code: 2
-Parsing failed: code=2, token=TOKEN_MINUS (23), line=5
+exit code: 3
+Semantic error 3: Undefined variable
 
 ================================================================
 [TRANSLATOR] strings_edges.ifj26
 exit code: 2
-Parsing failed: code=2, token=TOKEN_LPAREN (32), line=5
+Parsing failed: code=2, token=TOKEN_LPAREN (32), line=8
 
 ================================================================
 [TRANSLATOR] strings.ifj26
@@ -40,8 +40,8 @@ Semantic error 3: Redefinition of function
 
 ================================================================
 [TRANSLATOR] strings_minimal.ifj26
-exit code: 2
-Parsing failed: code=2, token=TOKEN_LPAREN (32), line=9
+exit code: 134
+free(): double free detected in tcache 2
 
 ================================================================
 [TRANSLATOR] strings_valid.ifj26
