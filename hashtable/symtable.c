@@ -4,9 +4,11 @@
 #include <stdlib.h>
 #include "symtable.h"
 #include "../helper_func.h"
+#include <string.h>
+#include <stdio.h>
 
 //TODO function for checking if name is assigned or no
-Symbol* symbol_create(char *name, SymbolType s_type, DataType d_type, bool is_init) {
+Symbol* symbol_create(char *name, SymbolType s_type, DataType d_type, bool is_init, bool is_const) {
     if (!name) return NULL;
 
     Symbol *sym = malloc(sizeof(Symbol));
@@ -18,11 +20,11 @@ Symbol* symbol_create(char *name, SymbolType s_type, DataType d_type, bool is_in
         return NULL;
     }
 
-
     sym->mangled_name = NULL;
     sym->s_type = s_type;
     sym->d_type = d_type;
     sym->is_initialized = is_init;
+    sym->is_const = is_const;
     sym->params_amount = 0;
     sym->params = NULL;
     sym->is_const = false;
@@ -50,7 +52,7 @@ void symbol_free(Symbol *sym) {
     free(sym);
 }
 
-Symtable* symtable_init(void) {
+Symtable* symtable_init() {
     Symtable *st = malloc(sizeof(Symtable));
     if (!st) return NULL;
     st->top = -1;
@@ -68,6 +70,25 @@ void symtable_dispose(Symtable *st) {
     free(st);
 }
 
+void scope_pop(Symtable *st) {
+    if (st->top < 0) return;
+
+    hashtable_t *table = st->scopes[st->top];
+    if (table != NULL && table->items != NULL) {
+        //free all symbols - dispose of data from hashtable items
+        for (int i = 0; i < table->size; i++) {
+            if ((table->items[i].state == OCCUPIED || table->items[i].state == DELETED) && table->items[i].data != NULL) {
+                symbol_free((Symbol*) table->items[i].data);
+            }
+        }
+        
+        //free the hashtable itself
+        ht_clear(&(st->scopes[st->top]));
+    }
+    st->top--;
+}
+
+
 void scope_push(Symtable *st) {
     if (st->top >= MAX_SCOPES - 1) return;
     st->top++;
@@ -76,23 +97,8 @@ void scope_push(Symtable *st) {
 }
 
 
-//damian pls check if this works correctly
-void scope_pop(Symtable *st) {
-    if (st->top < 0) return;
-
-    hashtable_t *table = st->scopes[st->top];
-    if (table != NULL && table->items != NULL) {
-            for (int i = 0; i < table->size; i++) {
-                if (table->items[i].state == OCCUPIED && table->items[i].data != NULL) {
-                    symbol_free((Symbol*) table->items[i].data);
-                    table->items[i].data = NULL; //this fixes double free I guess
-                }
-            }
-        ht_clear(&(st->scopes[st->top]));
-    }
-    st->top--;
-}
-
+//TODO
+//One false for 3 different situations. symtable_insert_var returns false for redefinition, for a full table (100 items per scope), and for allocation failure. The semantic analyzer needs to distinguish redefinition, which is a program error, from an internal error.
 bool symtable_insert_var(Symtable *st, char *name, DataType type, bool is_init, bool is_const) {
     if (st->top < 0 || !name) return false;
 
@@ -100,7 +106,7 @@ bool symtable_insert_var(Symtable *st, char *name, DataType type, bool is_init, 
         return false;
     }
 
-    Symbol *sym = symbol_create(name, SYMBOL_VAR, type, is_init);
+    Symbol *sym = symbol_create(name, SYMBOL_VAR, type, is_init, is_const);
     if (!sym) return false;
 
     char mangled_buf[256];
@@ -151,7 +157,7 @@ bool symtable_insert_func(Symtable *st, char *name, DataType return_type, Param 
         return false;
     }
 
-    Symbol *sym = symbol_create(name, SYMBOL_FUNC, return_type, true);
+    Symbol *sym = symbol_create(name, SYMBOL_FUNC, return_type, true, false);
     if (!sym) return false;
 
     if (param_count > 0 && params != NULL) {

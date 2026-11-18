@@ -3,6 +3,7 @@
 
 #ifndef HASHTABLE_H
 #define HASHTABLE_H
+#include <stdbool.h> 
 
 typedef enum state_enum {
     EMPTY,
@@ -28,9 +29,12 @@ int probing(hashtable_t* hashtable, char* key, int attempt);
 
 hashtable_t* ht_create(int size);
 ht_item_t* ht_search(hashtable_t* hashtable, char* key);
-//Should we return 1 for success and 0 for failure? or return hashtable?
-hashtable_t* ht_delete(hashtable_t* hashtable, char* key);
+
+
+bool ht_delete(hashtable_t* hashtable, char* key);
 ht_item_t* ht_insert(hashtable_t* hashtable, char* key, void* data);
+
+bool free_keys(ht_item_t* items, int size);
 //frees all allocated hastable memory
 void ht_clear(hashtable_t** hashtable);
 
