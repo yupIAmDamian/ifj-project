@@ -291,7 +291,13 @@ void equation_traversal(ASTNode *node, char *result_var) {
         return;
     }
 
-    if (node->type == AST_NODE_EXPR &&
+    if (node->type == AST_NODE_INT2FLOAT) {
+        equation_traversal(node->left, result_var);
+        printf("INT2FLOATS\n");
+        return;
+    }
+
+    if ((node->type == AST_NODE_EXPR || node->type == AST_NODE_TERM) &&
         node->left == NULL && node->right == NULL) {
         gen_pushs(node);
         return;
@@ -339,28 +345,25 @@ void gen_call(ASTNode *node, char *result_var) {
         gen_strlen(result_var, gen_string_from_node(node->right));
     }
     else if (strcmp(label, "toInt") == 0) {
-        gen_dprint(gen_string_from_node(node->right));
         gen_float2ints();
-        gen_pops(result_var);
     }
     else if (strcmp(label, "toStr") == 0) {
-        gen_pushs(node->right);
-        gen_int2strs();
-        gen_pops(result_var);
+        if (node->right != NULL) {
+            if (node->right->inferred_type == TYPE_INT) {
+                gen_int2strs();
+            } else if (node->right->inferred_type == TYPE_FLOAT) {
+                printf("FLOAT2STRS\n");
+            }
+        }
     }
     else if (strcmp(label, "subStr") == 0) {
         gen_builtin_substr();
-        gen_pops(result_var);
     }
-    //handle this
     else if (strcmp(label, "ord") == 0) {
         gen_builtin_ord();
-        gen_pops(result_var);
     }
     else if (strcmp(label, "chr") == 0) {
-        gen_pushs(node->right);
         gen_int2chars();
-        gen_pops(result_var);
     }
     else {
         printf("CALL %s\n", label);

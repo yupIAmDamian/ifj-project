@@ -4,19 +4,9 @@ exit code: 2
 Parsing failed: code=2, token=TOKEN_LPAREN (32), line=7
 
 ================================================================
-[TRANSLATOR] builtins_literals.ifj26
-exit code: 3
-Semantic error 3: Redefinition of variable
-
-================================================================
 [TRANSLATOR] builtins_nested.ifj26
-exit code: 3
-Semantic error 3: Undefined function
-
-================================================================
-[TRANSLATOR] conversions.ifj26
-exit code: 3
-Semantic error 3: Undefined function
+exit code: 139
+(no message)
 
 ================================================================
 [TRANSLATOR] error_substr_negative_end.ifj26
@@ -34,19 +24,10 @@ exit code: 2
 Parsing failed: code=2, token=TOKEN_LPAREN (32), line=8
 
 ================================================================
-[TRANSLATOR] strings.ifj26
-exit code: 3
-Semantic error 3: Redefinition of function
-
-================================================================
-[TRANSLATOR] strings_minimal.ifj26
-exit code: 3
-Semantic error 3: Redefinition of variable
-
-================================================================
-[TRANSLATOR] strings_valid.ifj26
-exit code: 3
-Semantic error 3: Redefinition of variable
+[INTERPRETER] conversions_output.ifjcode
+exit code: 51
+22.20-24: syntax error, unexpected ID
+Syntax error!
 
 ================================================================
 [INTERPRETER] error_ord_empty_output.ifjcode
@@ -77,4 +58,20 @@ Frame does not exist!
 exit code: 55
 Error at line: 12
 Frame does not exist!
+
+================================================================
+[INTERPRETER] strings_output.ifjcode
+exit code: 51
+104.1: syntax error, unexpected NEWLINE, expecting sLF or sGF or sTF
+Syntax error!
+
+================================================================
+[INTERPRETER] strings_minimal_output.ifjcode
+exit code: 52
+Label already exists!
+
+================================================================
+[INTERPRETER] strings_valid_output.ifjcode
+exit code: 52
+Label already exists!
 
