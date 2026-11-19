@@ -12,24 +12,12 @@ static bool has_unget = false;
 static bool uses_ord = false;
 static bool uses_substr = false;
 
-static bool is_builtin_name(const char *name, const char *builtin) {
-    if (strcmp(name, builtin) == 0) return true;
-
-    size_t name_len = strlen(name);
-    size_t builtin_len = strlen(builtin);
-    
-    if (name_len > builtin_len && name[name_len - builtin_len -1] == '.' && strcmp(name + (name_len - builtin_len), builtin) == 0) {
-        return true;
-    }
-    return false;
-}
-
-static void note_builtin_use(const char *name) {
+static void note_builtin_use(char *name) {
     if (name == NULL) return;
-    if (is_builtin_name(name, "ord")) {
+    if (strcmp(name, "ord")) {
         uses_ord = true;
     }
-    else if (is_builtin_name(name, "subStr")) {
+    else if (strcmp(name, "subStr")) {
         uses_substr = true;
     }
 }
