@@ -3,8 +3,7 @@
 
 #include <stdio.h>
 #include "semantic.h"
-
-void dominik_error(int code, const char *msg); // Temporary prototype until error.h is linked
+#include "error.h"
 
 static DataType current_func_ret_type = TYPE_VOID; // Expected return type of the currently analyzed function
 
@@ -167,20 +166,20 @@ static void check_main_function(ASTNode *root) {
             while (curr != NULL) { params_amount++; curr = curr->next; }
             
             if (params_amount != 0) {
-                dominik_error(5, "'@main' function must not take any parameters");
+                error_exit(ERR_ARGS, 0, "'@main' function must not take any parameters");
             }
             if (func->inferred_type != TYPE_VOID) {
-                dominik_error(6, "'@main' function return type must be void (Unit)");
+                error_exit(ERR_TYPE, 0, "'@main' function return type must be void (Unit)");
             }
         }
         func = func->next;
     }
 
     if (main_count == 0) {
-        dominik_error(3, "Missing mandatory '@main' function");
+        error_exit(ERR_UNDEFINED, 0, "Missing mandatory '@main' function");
     }
     if (main_count > 1) {
-        dominik_error(4, "Multiple '@main' functions detected");
+        error_exit(ERR_REDEFINED, 0, "Multiple '@main' functions detected");
     }
 }
 
@@ -298,7 +297,7 @@ static void check_function(ASTNode *node, Symtable *st) {
     if (func_sym != NULL && func_sym->params != NULL) {
         for (int i = 0; i < func_sym->params_amount; i++) {
             if (!symtable_insert_var(st, func_sym->params[i].name, func_sym->params[i].d_type, true, true)) {
-                dominik_error(4, "Redefinition of function parameter");
+                error_exit(ERR_REDEFINED, 0, "Redefinition of function parameter");
             }
             Symbol *p_sym = symtable_search_current_scope(st, func_sym->params[i].name);
             apply_mangled_name(param_node, p_sym);
@@ -313,10 +312,10 @@ static void check_function(ASTNode *node, Symtable *st) {
     if (infer_return) {
         DataType deduced = deduce_return_type(node->right);
         if (deduced == TYPE_UNKNOWN || deduced == TYPE_BOOL) {
-            dominik_error(6, "Cannot infer valid return type for function");
+            error_exit(ERR_TYPE, 0, "Cannot infer valid return type for function");
         }
         if (current_func_ret_type != TYPE_UNKNOWN && current_func_ret_type != deduced) {
-            dominik_error(6, "Conflicting return types in function");
+            error_exit(ERR_TYPE, 0, "Conflicting return types in function");
         }
         node->inferred_type = deduced;
         if (func_sym != NULL) {
@@ -327,7 +326,7 @@ static void check_function(ASTNode *node, Symtable *st) {
 
     if (current_func_ret_type != TYPE_VOID) {
         if (!check_implicit_return(&node->right, current_func_ret_type)) {
-            dominik_error(6, "Missing return statement or implicit return type mismatch");
+            error_exit(ERR_TYPE, 0, "Missing return statement or implicit return type mismatch");
         }
     }
 
@@ -385,7 +384,7 @@ bool check_semantics(ASTNode *root, Symtable *st) {
 
                 bool success = symtable_insert_func(st, func->val.attribute.string_value, func->inferred_type, extracted_params, params_amount);
                 if (extracted_params) free(extracted_params);
-                if (!success) dominik_error(3, "Redefinition of function");
+                if (!success) error_exit(ERR_REDEFINED, 0, "Redefinition of function");
             }
             func = func->next;
         }
@@ -424,7 +423,7 @@ static DataType check_arithmetic(ASTNode *node, Symtable *st) {
         return TYPE_FLOAT;
     }
 
-    dominik_error(6, "Incompatible types in arithmetic operation");
+    error_exit(ERR_TYPE, 0, "Incompatible types in arithmetic operation");
     return TYPE_UNKNOWN;
 }
 
@@ -453,7 +452,7 @@ static DataType check_comparison(ASTNode *node, Symtable *st) {
         }
     }
 
-    dominik_error(6, "Cannot compare incompatible types");
+    error_exit(ERR_TYPE, 0, "Cannot compare incompatible types");
     return TYPE_UNKNOWN;
 }
 
@@ -470,11 +469,11 @@ static DataType check_func_call(ASTNode *node, Symtable *st) {
     if (strcmp(func_name, "print") == 0 || strcmp(func_name, "toStr") == 0) {
         ASTNode *arg_node = node->right;
         if (arg_node == NULL || arg_node->next != NULL) {
-            dominik_error(5, "Built-in function requires exactly one argument");
+            error_exit(ERR_ARGS, 0, "Built-in function requires exactly one argument");
         }
         DataType arg_type = check_expression(arg_node, st);
         if (arg_type == TYPE_UNKNOWN || arg_type == TYPE_BOOL) {
-            dominik_error(5, "Invalid argument type for built-in function");
+            error_exit(ERR_ARGS, 0, "Invalid argument type for built-in function");
         }
         DataType ret = (strcmp(func_name, "print") == 0) ? TYPE_VOID : TYPE_STRING;
         node->inferred_type = ret;
@@ -483,14 +482,14 @@ static DataType check_func_call(ASTNode *node, Symtable *st) {
 
     Symbol *func_sym = symtable_search(st, func_name);
     if (func_sym == NULL || func_sym->s_type != SYMBOL_FUNC) {
-        dominik_error(3, "Undefined function");
+        error_exit(ERR_UNDEFINED, 0, "Undefined function");
     }
 
     // Evaluate the target function on demand if its return type is not yet inferred
     if (func_sym->d_type == TYPE_UNKNOWN) {
         ASTNode *target_func = find_func_node(func_name);
         if (target_func == NULL || is_in_func_list(visiting_funcs, visiting_funcs_count, target_func)) {
-            dominik_error(6, "Cannot infer return type of recursive function");
+            error_exit(ERR_TYPE, 0, "Cannot infer return type of recursive function");
         }
         check_function(target_func, st);
     }
@@ -501,7 +500,7 @@ static DataType check_func_call(ASTNode *node, Symtable *st) {
 
     while (*arg_ptr != NULL) {
         if (arg_count >= func_sym->params_amount) {
-            dominik_error(5, "Too many arguments for function");
+            error_exit(ERR_ARGS, 0, "Too many arguments for function");
         }
 
         ASTNode *curr_arg = *arg_ptr;
@@ -509,7 +508,7 @@ static DataType check_func_call(ASTNode *node, Symtable *st) {
         DataType param_type = func_sym->params[arg_count].d_type;
 
         if (!convert_if_needed(arg_ptr, arg_type, param_type)) {
-            dominik_error(5, "Parameter type mismatch");
+            error_exit(ERR_ARGS, 0, "Parameter type mismatch");
         }
 
         // Preserve the sibling chain if the argument node was wrapped in an AST_NODE_INT2FLOAT node
@@ -523,7 +522,7 @@ static DataType check_func_call(ASTNode *node, Symtable *st) {
     }
 
     if (arg_count < func_sym->params_amount) {
-        dominik_error(5, "Too few arguments for function");
+        error_exit(ERR_ARGS, 0, "Too few arguments for function");
     }
 
     node->inferred_type = func_sym->d_type;
@@ -552,20 +551,20 @@ static void check_statement(ASTNode *node, Symtable *st) {
             }
 
             if (node->inferred_type == TYPE_UNKNOWN || node->inferred_type == TYPE_BOOL) {
-                dominik_error(6, "Cannot infer variable type or assign void/boolean");
+                error_exit(ERR_TYPE, 0, "Cannot infer variable type or assign void/boolean");
             }
 
             ASTNode *var_node = node->left;
             bool success = symtable_insert_var(st, var_node->val.attribute.string_value, node->inferred_type, true, node->is_const);
             if (!success) {
-                dominik_error(3, "Redefinition of variable");
+                error_exit(ERR_REDEFINED, 0, "Redefinition of variable");
             }
 
             Symbol *sym = symtable_search_current_scope(st, var_node->val.attribute.string_value);
             apply_mangled_name(var_node, sym);
 
             if (!convert_if_needed(&node->right, expr_type, node->inferred_type)) {
-                dominik_error(6, "Cannot assign incompatible type to variable");
+                error_exit(ERR_TYPE, 0, "Cannot assign incompatible type to variable");
             }
             break;
         }
@@ -573,18 +572,18 @@ static void check_statement(ASTNode *node, Symtable *st) {
         case AST_NODE_ASSIGN: {
             Symbol *sym = symtable_search(st, node->left->val.attribute.string_value);
             if (sym == NULL || sym->s_type != SYMBOL_VAR) {
-                dominik_error(3, "Assignment to undefined variable");
+                error_exit(ERR_UNDEFINED, 0, "Assignment to undefined variable");
             }
             // Prevent reassignment to immutable 'val' variables or formal function parameters
             if (sym->is_const) {
-                dominik_error(7, "Assignment to constant (val) variable or parameter");
+                error_exit(ERR_CONST_ASSIGN, 0, "Assignment to constant (val) variable or parameter");
             }
 
             apply_mangled_name(node->left, sym);
 
             DataType expr_type = check_expression(node->right, st);
             if (!convert_if_needed(&node->right, expr_type, sym->d_type)) {
-                dominik_error(6, "Type mismatch in assignment");
+                error_exit(ERR_TYPE, 0, "Type mismatch in assignment");
             }
             break;
         }
@@ -592,7 +591,7 @@ static void check_statement(ASTNode *node, Symtable *st) {
         case AST_NODE_IF: {
             DataType cond_type = check_expression(node->left, st);
             if (cond_type != TYPE_BOOL) {
-                dominik_error(6, "Condition in 'if' must be Boolean");
+                error_exit(ERR_TYPE, 0, "Condition in 'if' must be Boolean");
             }
 
             // Evaluate 'then' and optional 'else' branches in isolated lexical scopes
@@ -611,7 +610,7 @@ static void check_statement(ASTNode *node, Symtable *st) {
         case AST_NODE_WHILE: {
             DataType cond_type = check_expression(node->left, st);
             if (cond_type != TYPE_BOOL) {
-                dominik_error(6, "Condition in 'while' must be Boolean");
+                error_exit(ERR_TYPE, 0, "Condition in 'while' must be Boolean");
             }
 
             scope_push(st);
@@ -627,16 +626,16 @@ static void check_statement(ASTNode *node, Symtable *st) {
             }
 
             if (current_func_ret_type == TYPE_UNKNOWN) {
-                dominik_error(6, "Function containing 'return' must have explicit return type");
+                error_exit(ERR_TYPE, 0, "Function containing 'return' must have explicit return type");
                 current_func_ret_type = return_type;
             }
             else if (current_func_ret_type == TYPE_VOID) {
                 if (return_type == TYPE_UNKNOWN || return_type == TYPE_BOOL) {
-                    dominik_error(6, "Invalid return value");
+                    error_exit(ERR_TYPE, 0, "Invalid return value");
                 }
             }
             else if (!convert_if_needed(&node->left, return_type, current_func_ret_type)) {
-                dominik_error(6, "Return type mismatch");
+                error_exit(ERR_TYPE, 0, "Return type mismatch");
             }
             break;
         }
@@ -689,7 +688,9 @@ static DataType check_expression(ASTNode *node, Symtable *st) {
                 return TYPE_STRING;
             } else if (node->val.type == TOKEN_IDENTIFIER) {
                 Symbol *sym = symtable_search(st, node->val.attribute.string_value);
-                if (sym == NULL || sym->s_type != SYMBOL_VAR) dominik_error(3, "Undefined variable");
+                if (sym == NULL || sym->s_type != SYMBOL_VAR) {
+                    error_exit(ERR_UNDEFINED, 0, "Undefined variable");
+                }
 
                 apply_mangled_name(node, sym);
                 node->inferred_type = sym->d_type;
@@ -712,7 +713,9 @@ static DataType check_expression(ASTNode *node, Symtable *st) {
                     return TYPE_STRING;
                 } else if (node->val.type == TOKEN_IDENTIFIER) {
                     Symbol *sym = symtable_search(st, node->val.attribute.string_value);
-                    if (sym == NULL || sym->s_type != SYMBOL_VAR) dominik_error(3, "Undefined variable");
+                    if (sym == NULL || sym->s_type != SYMBOL_VAR) {
+                        error_exit(ERR_UNDEFINED, 0, "Undefined variable");
+                    }
 
                     apply_mangled_name(node, sym);
                     node->inferred_type = sym->d_type;
@@ -728,7 +731,7 @@ static DataType check_expression(ASTNode *node, Symtable *st) {
                         node->inferred_type = operand_type;
                         return operand_type;
                     }
-                    dominik_error(6, "Unary +/- requires numeric operand");
+                    error_exit(ERR_TYPE, 0, "Unary +/- requires numeric operand");
                 }
             }
 
@@ -748,7 +751,7 @@ static DataType check_expression(ASTNode *node, Symtable *st) {
                     return check_comparison(node, st);
 
                 default:
-                    dominik_error(99, "Unknown operator in expression");
+                    error_exit(ERR_INTERNAL, 0, "Unknown operator in expression");
             }
             break;
         }
