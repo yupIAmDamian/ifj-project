@@ -3,10 +3,13 @@
 
 #include <stdio.h>
 #include "semantic.h"
-void dominik_error(int code, const char *msg); //dočásné riešenie
-static DataType current_func_ret_type = TYPE_VOID;
+
+void dominik_error(int code, const char *msg); // Temporary prototype until error.h is linked
+
+static DataType current_func_ret_type = TYPE_VOID; // Expected return type of the currently analyzed function
 
 static void check_statement(ASTNode *node, Symtable *st);
+
 /**
  * @brief Allocates and initializes an AST conversion node (Int -> Float).
  * @param expr Pointer to the integer expression AST node to be wrapped.
@@ -22,6 +25,7 @@ static ASTNode* wrap_int2float(ASTNode *expr) {
     conv->prev = expr->prev;
     return conv;
 }
+
 /**
  * @brief Validates type compatibility and performs implicit Int-to-Float conversion if needed.
  * @param expr_ptr Address of the pointer to the expression AST node (modified in-place if wrapped).
@@ -147,7 +151,6 @@ static bool check_implicit_return(ASTNode **stmt_list_ptr, DataType expected_ret
 /**
  * @brief Validates the presence, uniqueness, and signature of the mandatory '@main' entry function.
  * @param root Root AST node of the program.
- * @param st Pointer to the symbol table.
  */
 static void check_main_function(ASTNode *root) {
     if (root == NULL || root->type != AST_NODE_PROGRAM) return;
@@ -224,12 +227,21 @@ static DataType deduce_return_type(ASTNode *stmt_list) {
 }
 
 #define MAX_TRACKED_FUNCS 1024
+
+// State arrays for tracking evaluated and currently active functions during on-demand return type inference
 static ASTNode *program_root = NULL;
 static ASTNode *checked_funcs[MAX_TRACKED_FUNCS];
 static int checked_funcs_count = 0;
 static ASTNode *visiting_funcs[MAX_TRACKED_FUNCS];
 static int visiting_funcs_count = 0;
 
+/**
+ * @brief Checks whether a function AST node pointer is present in the given tracking array.
+ * @param list Array of ASTNode pointers to search.
+ * @param count Number of valid elements in the array.
+ * @param target Function AST node pointer to look for.
+ * @return true if target is found in list; false otherwise.
+ */
 static bool is_in_func_list(ASTNode **list, int count, ASTNode *target) {
     for (int i = 0; i < count; i++) {
         if (list[i] == target) return true;
@@ -237,6 +249,11 @@ static bool is_in_func_list(ASTNode **list, int count, ASTNode *target) {
     return false;
 }
 
+/**
+ * @brief Locates a top-level function definition AST node by its identifier name.
+ * @param name Null-terminated identifier name of the function.
+ * @return Pointer to the matching AST_NODE_FUNCTION node, or NULL if not found.
+ */
 static ASTNode* find_func_node(const char *name) {
     if (program_root == NULL || program_root->type != AST_NODE_PROGRAM) return NULL;
     ASTNode *curr = program_root->left;
@@ -276,6 +293,7 @@ static void check_function(ASTNode *node, Symtable *st) {
 
     scope_push(st);
 
+    // Register formal parameters as immutable local variables and mangle their AST nodes
     ASTNode *param_node = node->left;
     if (func_sym != NULL && func_sym->params != NULL) {
         for (int i = 0; i < func_sym->params_amount; i++) {
@@ -468,7 +486,7 @@ static DataType check_func_call(ASTNode *node, Symtable *st) {
         dominik_error(3, "Undefined function");
     }
 
-    //If the function does not have a specific return type defined, evaluate
+    // Evaluate the target function on demand if its return type is not yet inferred
     if (func_sym->d_type == TYPE_UNKNOWN) {
         ASTNode *target_func = find_func_node(func_name);
         if (target_func == NULL || is_in_func_list(visiting_funcs, visiting_funcs_count, target_func)) {
@@ -494,7 +512,7 @@ static DataType check_func_call(ASTNode *node, Symtable *st) {
             dominik_error(5, "Parameter type mismatch");
         }
 
-        //preserve the sibling chain if the argument node was wrapped in an AST_NODE_INT2FLOAT node
+        // Preserve the sibling chain if the argument node was wrapped in an AST_NODE_INT2FLOAT node
         if (*arg_ptr != curr_arg) {
             (*arg_ptr)->next = curr_arg->next;
             curr_arg->next = NULL;
@@ -533,7 +551,6 @@ static void check_statement(ASTNode *node, Symtable *st) {
                 node->inferred_type = expr_type;
             }
 
-                //node->inferred_type == TYPE_VOID || this was deleted
             if (node->inferred_type == TYPE_UNKNOWN || node->inferred_type == TYPE_BOOL) {
                 dominik_error(6, "Cannot infer variable type or assign void/boolean");
             }
@@ -555,7 +572,7 @@ static void check_statement(ASTNode *node, Symtable *st) {
 
         case AST_NODE_ASSIGN: {
             Symbol *sym = symtable_search(st, node->left->val.attribute.string_value);
-            if (sym == NULL|| sym->s_type != SYMBOL_VAR) {
+            if (sym == NULL || sym->s_type != SYMBOL_VAR) {
                 dominik_error(3, "Assignment to undefined variable");
             }
             // Prevent reassignment to immutable 'val' variables or formal function parameters
@@ -623,6 +640,7 @@ static void check_statement(ASTNode *node, Symtable *st) {
             }
             break;
         }
+
         case AST_NODE_CALL: {
             check_expression(node, st);
             break;
@@ -671,7 +689,7 @@ static DataType check_expression(ASTNode *node, Symtable *st) {
                 return TYPE_STRING;
             } else if (node->val.type == TOKEN_IDENTIFIER) {
                 Symbol *sym = symtable_search(st, node->val.attribute.string_value);
-                if (sym == NULL|| sym->s_type != SYMBOL_VAR) dominik_error(3, "Undefined variable");
+                if (sym == NULL || sym->s_type != SYMBOL_VAR) dominik_error(3, "Undefined variable");
 
                 apply_mangled_name(node, sym);
                 node->inferred_type = sym->d_type;
