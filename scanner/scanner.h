@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../error.h"
 
 // token types
 typedef enum {
@@ -62,9 +63,6 @@ typedef enum {
     // support for indentation
     TOKEN_INDENT,        // increase indentation level
     TOKEN_DEDENT,        // decrease indentation level
-    
-    // error token
-    TOKEN_ERROR
 } TokenType;
 
 // structure for a token
@@ -127,10 +125,8 @@ typedef struct {
 } StringKeywordID;
 
 // buffer functions
-bool buffer_init(StringKeywordID *buffer);
-bool buffer_add_char(StringKeywordID *buffer, char character);
+void buffer_init(StringKeywordID *buffer);
+void buffer_add_char(StringKeywordID *buffer, char character);
 void buffer_free(StringKeywordID *buffer);
-Token error_buffer_init();
-Token error_buffer_add_char(StringKeywordID *buffer);
 
 #endif

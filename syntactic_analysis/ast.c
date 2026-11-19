@@ -8,8 +8,7 @@ static ASTNode *all_nodes = NULL;
 ASTNode *create_ast_node(ASTNodeType type, ASTNode *left, ASTNode *right, ASTNode *extra, Token val) {
     ASTNode *node = (ASTNode *)malloc(sizeof(ASTNode));
     if (node == NULL) {
-        fprintf(stderr, "Internal error: Memory allocation failed in create_ast_node.\n");
-        exit(99);
+        error_exit(ERR_INTERNAL, 0, "Memory allocation failed in create_ast_node.");
     }
     node->type = type;
     node->left = left;
@@ -20,6 +19,8 @@ ASTNode *create_ast_node(ASTNodeType type, ASTNode *left, ASTNode *right, ASTNod
     node->prev = NULL;
     node->is_main = false;
     node->is_const = false;
+    node->uses_ord = false;
+    node->uses_substr = false;
     node->alloc_next = all_nodes;
     all_nodes = node;
     node->inferred_type = TYPE_UNKNOWN;

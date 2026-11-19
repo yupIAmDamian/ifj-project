@@ -39,6 +39,8 @@
 *.i*86
 *.x86_64
 *.hex
+*.ifjcode
+*.ifj26
 
 # Debug files
 *.dSYM/
@@ -63,3 +65,4 @@ dkms.conf
 *.so
 *.exe
 *.out
+*.txt

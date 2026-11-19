@@ -14,6 +14,7 @@
 
 #include "gen_func.h"
 #include "codegen_helper.h"
+#include "../helper_func.h"
 
 extern char* current_func_name;
 

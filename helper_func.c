@@ -75,7 +75,15 @@ char *token_type_name(TokenType type) {
         case TOKEN_AT: return "TOKEN_AT";
         case TOKEN_INDENT: return "TOKEN_INDENT";
         case TOKEN_DEDENT: return "TOKEN_DEDENT";
-        case TOKEN_ERROR: return "TOKEN_ERROR";
         default: return "UNKNOWN_TOKEN";
     }
+}
+
+bool check_if_string_is_not_in_array(char *str, char **array, size_t array_size) {
+    for (size_t i = 0; i < array_size; i++) {
+        if (strcmp(str, array[i]) == 0) {
+            return false; // String is found in the array
+        }
+    }
+    return true; // String is not found in the array
 }

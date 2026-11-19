@@ -106,7 +106,13 @@ for name in ${translated[@]+"${translated[@]}"}; do
     "$INTERPRETER" "$code" < "$in_file" 2>&1 | tee "$tmp_out"
     rc=${PIPESTATUS[0]}
 
+    echo "Exit code: $rc  -----------"
+
     if [[ $rc -ne 0 ]]; then
+        if [[ $rc -eq 40 && $name == *substr* ]]; then
+                echo "[expected] $name: runtime error 40 is the intended behavior"
+                continue
+        fi
         n_run_fail=$((n_run_fail + 1))
         add_error "INTERPRETER" "${name}_output.ifjcode" "$rc" "$tmp_out"
         echo "[run FAIL] $name (exit $rc)"

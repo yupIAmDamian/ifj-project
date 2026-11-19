@@ -3,7 +3,7 @@
 
 #include "scanner_tests.h"
 
-void dump_all_tokens() {
+void dump_all_tokens(void) {
     printf("--- PRINTING ALL TOKENS ---\n");
     
     Token token;
@@ -13,7 +13,7 @@ void dump_all_tokens() {
         token = get_next_token();
         token_count++;
 
-        printf("[%03d] %-12s", token_count, token_type_to_string(token.type));
+        printf("[Line %03d] [%03d] %-12s", token.line, token_count, token_type_to_string(token.type));
 
         if (token.type == TOKEN_IDENTIFIER || token.type == TOKEN_STRING) {
             printf(" : %s", token.attribute.string_value);
@@ -25,21 +25,16 @@ void dump_all_tokens() {
         else if (token.type == TOKEN_DOUBLE) {
             printf(" : %f", token.attribute.double_value);
         }
-        
         printf("\n");
-
-        if (token.type == TOKEN_ERROR) {
-            printf("!!! LEX. ERROR, PRINTING STOPPED\n");
-            break;
-        }
 
     } while (token.type != TOKEN_EOF);
 
     printf("--- PRINTING FINISHED --- Token count: %d\n", token_count);
 }
 
-int main() {
+int main(void) {
+    error_register_cleanup(scanner_free);
+    scanner_init();
     dump_all_tokens();
     return 0;
 }
-

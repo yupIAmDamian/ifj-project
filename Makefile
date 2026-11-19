@@ -5,9 +5,9 @@ CC = gcc
 #Compiler flags - check which are really needed and remove the rest
 CFLAGS = -std=c11 -Wall -Wextra -pedantic -g -I . -I codegen -I syntactic_analysis -I scanner -I hashtable
 
-TESTTOCOMPILE = tests/tests.c tests/hashtable_tests/hashtable_tests.c tests/hashtable_tests/symtable_tests.c hashtable/hashtable.c hashtable/symtable.c helper_func.c tests/codegen_tests/codegen_tests.c codegen/codegen.c codegen/gen_func.c codegen/codegen_helper.c syntactic_analysis/ast.c syntactic_analysis/expression.c syntactic_analysis/parser.c scanner/scanner.c
+TESTTOCOMPILE = tests/tests.c tests/hashtable_tests/hashtable_tests.c tests/hashtable_tests/symtable_tests.c hashtable/hashtable.c hashtable/symtable.c helper_func.c tests/codegen_tests/codegen_tests.c codegen/codegen.c codegen/gen_func.c codegen/codegen_helper.c syntactic_analysis/ast.c syntactic_analysis/expression.c syntactic_analysis/parser.c scanner/scanner.c error.c
 
-TRANSLATOR_TESTTOCOMPILE = tests/translator_test/translator_test.c semantic_analysis/semantic.c hashtable/hashtable.c hashtable/symtable.c helper_func.c codegen/codegen.c codegen/gen_func.c codegen/codegen_helper.c syntactic_analysis/ast.c syntactic_analysis/expression.c syntactic_analysis/parser.c scanner/scanner.c
+TRANSLATOR_TESTTOCOMPILE = tests/translator_test/translator_test.c semantic_analysis/semantic.c hashtable/hashtable.c hashtable/symtable.c helper_func.c codegen/codegen.c codegen/gen_func.c codegen/codegen_helper.c syntactic_analysis/ast.c syntactic_analysis/expression.c syntactic_analysis/parser.c scanner/scanner.c error.c
 
 VALGRIND_FLAGS = --leak-check=full --show-leak-kinds=all --track-origins=yes --num-callers=30 --error-exitcode=1
 
@@ -75,7 +75,7 @@ valgrind: tests/tests
 		./tests/tests
 
 SEM_TEST_BIN = tests/semantic_tests/test_sem
-SEM_TEST_SRCS = tests/semantic_tests/test_semantic.c semantic_analysis/semantic.c syntactic_analysis/ast.c hashtable/symtable.c hashtable/hashtable.c helper_func.c
+SEM_TEST_SRCS = tests/semantic_tests/test_semantic.c semantic_analysis/semantic.c syntactic_analysis/ast.c hashtable/symtable.c hashtable/hashtable.c helper_func.c error.c
 
 test-sem:
 	gcc -g -O0 -Wall -Wextra -Isemantic_analysis -Isyntactic_analysis -Ihashtable -I. $(SEM_TEST_SRCS) -o $(SEM_TEST_BIN)

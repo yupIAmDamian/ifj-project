@@ -1,6 +1,82 @@
 .IFJcode26
 JUMP main
 
+LABEL ord
+CREATEFRAME
+PUSHFRAME
+DEFVAR LF@ord$value
+DEFVAR LF@ord$index
+DEFVAR LF@ord$length
+DEFVAR LF@ord$char
+DEFVAR LF@ord$result
+DEFVAR LF@ord$tmp
+DEFVAR LF@ord$invalid
+POPS LF@ord$value
+POPS LF@ord$index
+STRLEN LF@ord$length LF@ord$value
+MOVE LF@ord$invalid bool@false
+LT LF@ord$tmp LF@ord$index int@0
+OR LF@ord$invalid LF@ord$invalid LF@ord$tmp
+GT LF@ord$tmp LF@ord$index LF@ord$length
+OR LF@ord$invalid LF@ord$invalid LF@ord$tmp
+EQ LF@ord$tmp LF@ord$index LF@ord$length
+OR LF@ord$invalid LF@ord$invalid LF@ord$tmp
+JUMPIFEQ $ord$invalid LF@ord$invalid bool@true
+GETCHAR LF@ord$char LF@ord$value LF@ord$index
+STRI2INT LF@ord$result LF@ord$char int@0
+PUSHS LF@ord$result
+POPFRAME
+RETURN
+LABEL $ord$invalid
+PUSHS int@-1
+POPFRAME
+RETURN
+
+LABEL subStr
+CREATEFRAME
+PUSHFRAME
+DEFVAR LF@substr$value
+DEFVAR LF@substr$start
+DEFVAR LF@substr$end
+DEFVAR LF@substr$length
+DEFVAR LF@substr$result
+DEFVAR LF@substr$index
+DEFVAR LF@substr$char
+DEFVAR LF@substr$tmp
+DEFVAR LF@substr$invalid
+POPS LF@substr$value
+POPS LF@substr$start
+POPS LF@substr$end
+STRLEN LF@substr$length LF@substr$value
+MOVE LF@substr$invalid bool@false
+LT LF@substr$tmp LF@substr$start int@0
+OR LF@substr$invalid LF@substr$invalid LF@substr$tmp
+LT LF@substr$tmp LF@substr$end int@0
+OR LF@substr$invalid LF@substr$invalid LF@substr$tmp
+GT LF@substr$tmp LF@substr$start LF@substr$end
+OR LF@substr$invalid LF@substr$invalid LF@substr$tmp
+GT LF@substr$tmp LF@substr$start LF@substr$length
+OR LF@substr$invalid LF@substr$invalid LF@substr$tmp
+EQ LF@substr$tmp LF@substr$start LF@substr$length
+OR LF@substr$invalid LF@substr$invalid LF@substr$tmp
+GT LF@substr$tmp LF@substr$end LF@substr$length
+OR LF@substr$invalid LF@substr$invalid LF@substr$tmp
+JUMPIFEQ $substr$error LF@substr$invalid bool@true
+MOVE LF@substr$result string@
+MOVE LF@substr$index LF@substr$start
+LABEL $substr$loop
+JUMPIFEQ $substr$done LF@substr$index LF@substr$end
+GETCHAR LF@substr$char LF@substr$value LF@substr$index
+CONCAT LF@substr$result LF@substr$result LF@substr$char
+ADD LF@substr$index LF@substr$index int@1
+JUMP $substr$loop
+LABEL $substr$done
+PUSHS LF@substr$result
+POPFRAME
+RETURN
+LABEL $substr$error
+EXIT int@40
+
 LABEL factorialIterative
 CREATEFRAME
 PUSHFRAME
