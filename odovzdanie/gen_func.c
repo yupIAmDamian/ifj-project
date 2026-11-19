@@ -7,7 +7,6 @@
 #include <string.h>
 
 
-
 //function declaration
 void gen_params_declaration(char *var_name){
     gen_defvar();
@@ -187,6 +186,8 @@ void gen_argument(ASTNode *arg_node){
     }
 }
 
+
+
 void gen_data_type(ASTNode *node){
     Token *token = get_token_from_node(node);
     switch (token->type) {
@@ -216,8 +217,8 @@ void gen_concat(char *var, char *symb1, char *symb2){
     printf("CONCAT %s %s %s\n", var, symb1, symb2);
 }
 
-void gen_strlen(char *var){
-    printf("STRLEN %s ", var);
+void gen_strlen(){
+    printf("STRLEN ");
 }
 
 void gen_getchar(char *var, char *symb1, char *symb2){

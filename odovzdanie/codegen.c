@@ -293,8 +293,13 @@ void equation_traversal(ASTNode *node, char *result_var) {
         printf("INT2FLOATS\n");
         return;
     }
-
-    if ((node->type == AST_NODE_EXPR || node->type == AST_NODE_TERM) &&
+    bool concat = false;
+    if(node->left != NULL) {
+        if (node->left->inferred_type == TYPE_STRING) {
+            concat = true;
+        }
+    }
+    if ((node->type == AST_NODE_EXPR || (node->type == AST_NODE_TERM && !concat)) &&
         node->left == NULL && node->right == NULL) {
         gen_pushs(node);
         return;
@@ -305,7 +310,19 @@ void equation_traversal(ASTNode *node, char *result_var) {
 
     switch (node->val.type) {
         case TOKEN_PLUS:
-            gen_adds();
+            if(concat) {
+                printf("CONCAT ");
+                gen_argument(node->left);
+                printf(" ");
+                gen_argument(node->left);
+                printf(" ");
+                gen_argument(node->right);
+                gen_new_line();
+                locked_poping = true;
+            } else {
+                gen_adds();
+            }
+
             break;
         case TOKEN_MINUS:
             if (node->right != NULL) {
@@ -344,7 +361,12 @@ void gen_call(ASTNode *node, char *result_var) {
         gen_read_default(result_var, "float", "float@0x0p+0");
     }
     else if (strcmp(label, "strLength") == 0) {
-        gen_strlen(result_var);
+        gen_strlen();
+        if(strcmp(current_func_name, "main") != 0) {
+            printf("%s$%s ", result_var, current_func_name);
+        } else {
+            printf("%s ", result_var);
+        }
         gen_argument(node->right);
         gen_new_line();
     }
