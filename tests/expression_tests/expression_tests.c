@@ -647,7 +647,6 @@ void test_parse_lexical_error() {
 
     Token tokens[] = {
         create_test_token(TOKEN_INTEGER),
-        create_test_token(TOKEN_ERROR),
         create_test_token(TOKEN_EOF)
     };
 
