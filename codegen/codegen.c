@@ -4,18 +4,9 @@
 
 char* current_func_name = NULL;
 static int label_counter = 0;
+static bool locked_poping = false;
 
-static bool is_read_call(ASTNode *node) {
-    if (node == NULL || node->type != AST_NODE_CALL) {
-        return false;
-    }
-
-    char *label = gen_string_from_node(node);
-    return label != NULL &&
-           (strcmp(label, "readLine") == 0 ||
-            strcmp(label, "readInt") == 0 ||
-            strcmp(label, "readDouble") == 0);
-}
+char *locked_pushing_and_popping[] = {"strLength",  "readLine", "readInt", "readDouble"};
 
 void gen_code(ASTNode *root){
     while(root != NULL){
@@ -29,6 +20,10 @@ void gen_node(ASTNode *node){
     switch(node->type){
         case AST_NODE_PROGRAM:
             create_head();
+            gen_builtin_ord();
+            gen_new_line();
+            gen_builtin_substr();
+            gen_new_line();
             gen_code(node->left);
             break;
         case AST_NODE_FUNCTION: {
@@ -59,7 +54,7 @@ void gen_node(ASTNode *node){
         case AST_NODE_VAR_DECL:
             equation_traversal(node->right, gen_string_from_node(node->left));
 
-            if (!is_read_call(node->right)) {
+            if (!locked_poping) {
                 gen_pops(gen_string_from_node(node->left));
             }
 
@@ -72,8 +67,9 @@ void gen_node(ASTNode *node){
             break;
         case AST_NODE_ASSIGN:
             equation_traversal(node->right, NULL);
-            if (!is_read_call(node->right)) {
-                gen_pops(gen_string_from_node(node->left));
+
+            if (!locked_poping) {
+               gen_pops(gen_string_from_node(node->left));
             }
             break;
         default:
@@ -282,6 +278,7 @@ void decide_condition(ASTNode *condition_node){
 //after that will pop the result from the stack and store it in a variable
 //TODO: check if the logic is correct
 void equation_traversal(ASTNode *node, char *result_var) {
+    locked_poping = false;
     if (node == NULL) {
         return;
     }
@@ -311,7 +308,12 @@ void equation_traversal(ASTNode *node, char *result_var) {
             gen_adds();
             break;
         case TOKEN_MINUS:
-            gen_subs();
+            if (node->right != NULL) {
+                gen_subs();
+            } else {
+                printf("PUSHS int@-1\n");
+                gen_muls();
+            }
             break;
         case TOKEN_MUL:
             gen_muls();
@@ -342,7 +344,9 @@ void gen_call(ASTNode *node, char *result_var) {
         gen_read_default(result_var, "float", "float@0x0p+0");
     }
     else if (strcmp(label, "strLength") == 0) {
-        gen_strlen(result_var, gen_string_from_node(node->right));
+        gen_strlen(result_var);
+        gen_argument(node->right);
+        gen_new_line();
     }
     else if (strcmp(label, "toInt") == 0) {
         gen_float2ints();
@@ -355,12 +359,6 @@ void gen_call(ASTNode *node, char *result_var) {
                 printf("FLOAT2STRS\n");
             }
         }
-    }
-    else if (strcmp(label, "subStr") == 0) {
-        gen_builtin_substr();
-    }
-    else if (strcmp(label, "ord") == 0) {
-        gen_builtin_ord();
     }
     else if (strcmp(label, "chr") == 0) {
         gen_int2chars();
@@ -382,6 +380,8 @@ void gen_fun_call(ASTNode *node, char *result_var){
         return;
     }
 
+    //removing pushing and popping for functions that are locked
+    if(check_if_string_is_not_in_array(label, locked_pushing_and_popping, sizeof(locked_pushing_and_popping) / sizeof(locked_pushing_and_popping[0]))) {
     while(arg_node != NULL){
         if(arg_node->next != NULL) {
             arg_node = arg_node->next;
@@ -398,6 +398,9 @@ void gen_fun_call(ASTNode *node, char *result_var){
         } else {
             break;
         }
+    }
+    }else{
+        locked_poping = true;
     }
 
     gen_call(node, result_var);
