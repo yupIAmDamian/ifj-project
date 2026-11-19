@@ -1,0 +1,39 @@
+.IFJcode26
+JUMP main
+
+LABEL main
+DEFVAR GF@i$2
+DEFVAR GF@total$2
+PUSHS int@0
+POPS GF@i$2
+PUSHS int@0
+POPS GF@total$2
+LABEL $main$while$0$start
+PUSHS GF@i$2
+PUSHS int@4
+LTS
+PUSHS bool@false
+JUMPIFEQS $main$while$0$end
+PUSHS GF@total$2
+PUSHS float@0x1.7333333333333p+1
+FLOAT2INTS
+ADDS
+POPS GF@total$2
+PUSHS GF@i$2
+PUSHS int@1
+ADDS
+POPS GF@i$2
+JUMP $main$while$0$start
+LABEL $main$while$0$end
+PUSHS GF@total$2
+PUSHS int@8
+EQS
+PUSHS bool@false
+JUMPIFEQS $main$if$1$else
+WRITE string@conversion\032in\032loop\032works\010
+JUMP $main$if$1$end
+LABEL $main$if$1$else
+WRITE string@conversion\032in\032loop\032failed\010
+LABEL $main$if$1$end
+EXIT int@0
+

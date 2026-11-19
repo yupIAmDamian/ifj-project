@@ -3,6 +3,8 @@
 
 #include "expression.h"
 
+#define EXPR_SYNTAX_ERROR(msg) error_exit(ERR_SYNTAX, 0, (msg))
+
 void expr_stack_init(PrecStack *stack) {
     stack->top = NULL;
 }
@@ -10,8 +12,7 @@ void expr_stack_init(PrecStack *stack) {
 bool expr_stack_push(PrecStack *stack, StackItemType type, PrecTableIndex index, Token token, ASTNode *ast_node) {
     StackItem *new_item = (StackItem *)malloc(sizeof(StackItem));
     if (new_item == NULL) {
-        fprintf(stderr, "Internal error: Memory allocation failed in expr_stack_push.\n");
-        exit(99);
+        error_exit(ERR_INTERNAL, 0, "Memory allocation failed in expression stack.");
     }
     new_item->type = type;
     new_item->prec_index = index;
@@ -25,8 +26,7 @@ bool expr_stack_push(PrecStack *stack, StackItemType type, PrecTableIndex index,
 bool expr_stack_insert_mark(PrecStack *stack) {
     StackItem *new_item = (StackItem *)malloc(sizeof(StackItem));
     if (new_item == NULL) {
-        fprintf(stderr, "Internal error: Memory allocation failed in expr_stack_insert_mark.\n");
-        exit(99);
+        error_exit(ERR_INTERNAL, 0, "Memory allocation failed in expression stack.");
     }
     new_item->type = SYM_MARK;
     new_item->ast_node = NULL;
@@ -121,17 +121,24 @@ const PrecRelation precedence_table[9][9] = {
     /* PREC_DOLLAR    */ { P_S, P_S, P_S, P_S, P_S, P_S, P_N, P_S, P_N }
 };
 
-ASTNode* parse_expression() {
-    PrecStack stack;
-    expr_stack_init(&stack);
+static PrecStack *active_stack = NULL;
 
+void expr_stack_cleanup(void) {
+    if (active_stack != NULL) {
+        expr_stack_free(active_stack);
+        active_stack = NULL;
+    }
+}
+
+static ASTNode* parse_expression_impl(PrecStack *stack) {
+    
     Token dollar_token;
     dollar_token.type = TOKEN_EOF; 
-    expr_stack_push(&stack, SYM_TERMINAL, PREC_DOLLAR, dollar_token, NULL);
+    expr_stack_push(stack, SYM_TERMINAL, PREC_DOLLAR, dollar_token, NULL);
 
     while (true) {
-        StackItem *top_term = expr_stack_top_terminal(&stack);
-        PrecTableIndex input_idx = get_prec_index(current_token.type, &stack);
+        StackItem *top_term = expr_stack_top_terminal(stack);
+        PrecTableIndex input_idx = get_prec_index(current_token.type, stack);
         PrecRelation relation = precedence_table[top_term->prec_index][input_idx];
 
         if (relation == P_S) {
@@ -141,36 +148,32 @@ ASTNode* parse_expression() {
                 if (next_token.type == TOKEN_LPAREN) {
                     ASTNode *call_node = parse_func_call();
                     if (call_node == NULL) {
-                        expr_stack_free(&stack);
+                        expr_stack_free(stack);
                         return NULL;
                     }
-                    expr_stack_push(&stack, SYM_NONTERM, PREC_OPERAND, dollar_token, call_node);
+                    expr_stack_push(stack, SYM_NONTERM, PREC_OPERAND, dollar_token, call_node);
                     continue;
                 }
             }
 
-            expr_stack_insert_mark(&stack);
-            expr_stack_push(&stack, SYM_TERMINAL, input_idx, current_token, NULL);
+            expr_stack_insert_mark(stack);
+            expr_stack_push(stack, SYM_TERMINAL, input_idx, current_token, NULL);
             current_token = get_token_buffered();
-            if (current_token.type == TOKEN_ERROR) {
-                expr_stack_free(&stack);
-                return NULL; // lexical error
-            }
         }
         else if (relation == P_R) {
             StackItem items[3];
             int count = 0;
 
-            while (stack.top != NULL && stack.top->type != SYM_MARK) {
+            while (stack->top != NULL && stack->top->type != SYM_MARK) {
                 if (count < 3) {
-                    items[count] = *(stack.top);
+                    items[count] = *(stack->top);
                 }
                 count++;
-                expr_stack_pop(&stack);
+                expr_stack_pop(stack);
             }
 
-            if (stack.top != NULL && stack.top->type == SYM_MARK) {
-                expr_stack_pop(&stack);
+            if (stack->top != NULL && stack->top->type == SYM_MARK) {
+                expr_stack_pop(stack);
             }
 
             ASTNode *new_node = NULL;
@@ -181,8 +184,7 @@ ASTNode* parse_expression() {
                     
                     new_node = create_ast_node(AST_NODE_EXPR, NULL, NULL, NULL, items[0].token);
                 } else {
-                    expr_stack_free(&stack);
-                    return NULL; // syntax error
+                    EXPR_SYNTAX_ERROR("Invalid expression");
                 }
             }
 
@@ -198,8 +200,7 @@ ASTNode* parse_expression() {
                     new_node = create_ast_node(AST_NODE_UNIT, NULL, NULL, NULL, items[1].token);
                 }
                 else {
-                    expr_stack_free(&stack);
-                    return NULL; // syntax error
+                    EXPR_SYNTAX_ERROR("Invalid expression");
                 }
             }
 
@@ -217,41 +218,47 @@ ASTNode* parse_expression() {
                     new_node = create_ast_node(AST_NODE_EXPR, items[2].ast_node, items[0].ast_node, NULL, items[1].token);
                 } 
                 else {
-                    expr_stack_free(&stack);
-                    return NULL; // syntax error
+                    EXPR_SYNTAX_ERROR("Invalid expression");
                 }
             } 
 
             else {
-                expr_stack_free(&stack);
-                return NULL; // syntax error  
+                EXPR_SYNTAX_ERROR("Invalid expression"); 
             }
 
             Token dummy_token;
             dummy_token.type = TOKEN_EOF;
-            expr_stack_push(&stack, SYM_NONTERM, PREC_OPERAND, dummy_token, new_node);
+            expr_stack_push(stack, SYM_NONTERM, PREC_OPERAND, dummy_token, new_node);
         }
 
         else if (relation == P_E) {
-            expr_stack_push(&stack, SYM_TERMINAL, input_idx, current_token, NULL);
+            expr_stack_push(stack, SYM_TERMINAL, input_idx, current_token, NULL);
             current_token = get_token_buffered();
-            if (current_token.type == TOKEN_ERROR) {
-                expr_stack_free(&stack);
-                return NULL; // lexical error
-            }
         }
         else if (relation == P_N) {
             if (top_term->prec_index == PREC_DOLLAR &&
                 (input_idx == PREC_DOLLAR || input_idx == PREC_RPAREN) &&
-                stack.top != NULL && stack.top->type == SYM_NONTERM) {
-                ASTNode *final_tree = stack.top->ast_node;
-                expr_stack_free(&stack);
+                stack->top != NULL && stack->top->type == SYM_NONTERM) {
+                ASTNode *final_tree = stack->top->ast_node;
                 return final_tree;
             }
             else {
-                expr_stack_free(&stack);
-                return NULL; // syntax error
+                EXPR_SYNTAX_ERROR("Invalid expression");
             }
         }
     }
+}
+
+ASTNode *parse_expression(void){
+    PrecStack stack;
+    expr_stack_init(&stack);
+
+    PrecStack *prev_stack = active_stack;
+    active_stack = &stack;
+
+    ASTNode *result = parse_expression_impl(&stack);
+
+    expr_stack_free(&stack);
+    active_stack = prev_stack;
+    return result;
 }
