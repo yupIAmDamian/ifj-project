@@ -1,5 +1,7 @@
 ================================================================
-[TRANSLATOR] strings.ifj26
-exit code: 2
-Parsing failed: code=2, token=TOKEN_EOL (1), line=15
+[INTERPRETER] strings_output.ifjcode
+exit code: 54
+Symbol LF@length$2 not found!
+Error at line: 88
+Symbol is undefined!
 
