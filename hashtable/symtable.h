@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include "hashtable.h"
 #include "../helper_func.h"
+#include "../error.h"
 
 #define MAX_SCOPES 100
 
