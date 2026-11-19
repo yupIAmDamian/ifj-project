@@ -216,8 +216,8 @@ void gen_concat(char *var, char *symb1, char *symb2){
     printf("CONCAT %s %s %s\n", var, symb1, symb2);
 }
 
-void gen_strlen(char *var, char *symb){
-    printf("STRLEN %s %s\n", var, symb);
+void gen_strlen(char *var){
+    printf("STRLEN %s ", var);
 }
 
 void gen_getchar(char *var, char *symb1, char *symb2){
@@ -270,44 +270,57 @@ void gen_read(char *var, char *data_type){
 }
 
 
-//TODO make them stack versions
 void gen_builtin_ord() {
-    printf("LABEL $ord\n");
+    gen_label("ord");
+    gen_createframe();
+    gen_pushframe();
     printf("DEFVAR LF@ord$value\n");
     printf("DEFVAR LF@ord$index\n");
     printf("DEFVAR LF@ord$length\n");
     printf("DEFVAR LF@ord$char\n");
     printf("DEFVAR LF@ord$result\n");
+    printf("DEFVAR LF@ord$tmp\n");
     printf("DEFVAR LF@ord$invalid\n");
 
-    printf("POPS LF@ord$index\n");
+    // arguments were pushed value first, index last => index is on top
     printf("POPS LF@ord$value\n");
+    printf("POPS LF@ord$index\n");
 
     printf("STRLEN LF@ord$length LF@ord$value\n");
+    printf("MOVE LF@ord$invalid bool@false\n");
 
     // invalid if index < 0
-    printf("LT LF@ord$invalid LF@ord$index int@0\n");
+    printf("LT LF@ord$tmp LF@ord$index int@0\n");
+    printf("OR LF@ord$invalid LF@ord$invalid LF@ord$tmp\n");
 
-    // invalid if index >= length
-    printf("GT LF@ord$result LF@ord$index LF@ord$length\n");
-    printf("EQ LF@ord$char LF@ord$index LF@ord$length\n");
-    printf("OR LF@ord$result LF@ord$result LF@ord$char\n");
-    printf("OR LF@ord$invalid LF@ord$invalid LF@ord$result\n");
+    // invalid if index > length  (also covers empty string)
+    printf("GT LF@ord$tmp LF@ord$index LF@ord$length\n");
+    printf("OR LF@ord$invalid LF@ord$invalid LF@ord$tmp\n");
+
+    // invalid if index == length
+    printf("EQ LF@ord$tmp LF@ord$index LF@ord$length\n");
+    printf("OR LF@ord$invalid LF@ord$invalid LF@ord$tmp\n");
 
     printf("JUMPIFEQ $ord$invalid LF@ord$invalid bool@true\n");
 
     printf("GETCHAR LF@ord$char LF@ord$value LF@ord$index\n");
     printf("STRI2INT LF@ord$result LF@ord$char int@0\n");
+
+    // push result while the local frame is still accessible
     printf("PUSHS LF@ord$result\n");
-    printf("RETURN\n");
+    gen_popframe();
+    gen_return();
 
     printf("LABEL $ord$invalid\n");
     printf("PUSHS int@-1\n");
-    printf("RETURN\n");
+    gen_popframe();
+    gen_return();
 }
 
 void gen_builtin_substr() {
-    printf("LABEL $subStr\n");
+    gen_label("subStr");
+    gen_createframe();
+    gen_pushframe();
     printf("DEFVAR LF@substr$value\n");
     printf("DEFVAR LF@substr$start\n");
     printf("DEFVAR LF@substr$end\n");
@@ -315,8 +328,10 @@ void gen_builtin_substr() {
     printf("DEFVAR LF@substr$result\n");
     printf("DEFVAR LF@substr$index\n");
     printf("DEFVAR LF@substr$char\n");
+    printf("DEFVAR LF@substr$tmp\n");
     printf("DEFVAR LF@substr$invalid\n");
 
+    // last argument is on top of the stack: end, start, value
     printf("POPS LF@substr$value\n");
     printf("POPS LF@substr$start\n");
     printf("POPS LF@substr$end\n");
@@ -325,25 +340,26 @@ void gen_builtin_substr() {
     printf("MOVE LF@substr$invalid bool@false\n");
 
     // start < 0
-    printf("LT LF@substr$invalid LF@substr$start int@0\n");
+    printf("LT LF@substr$tmp LF@substr$start int@0\n");
+    printf("OR LF@substr$invalid LF@substr$invalid LF@substr$tmp\n");
 
     // end < 0
-    printf("LT LF@substr$char LF@substr$end int@0\n");
-    printf("OR LF@substr$invalid LF@substr$invalid LF@substr$char\n");
+    printf("LT LF@substr$tmp LF@substr$end int@0\n");
+    printf("OR LF@substr$invalid LF@substr$invalid LF@substr$tmp\n");
 
     // start > end
-    printf("GT LF@substr$char LF@substr$start LF@substr$end\n");
-    printf("OR LF@substr$invalid LF@substr$invalid LF@substr$char\n");
+    printf("GT LF@substr$tmp LF@substr$start LF@substr$end\n");
+    printf("OR LF@substr$invalid LF@substr$invalid LF@substr$tmp\n");
 
-    // start >= length
-    printf("GT LF@substr$char LF@substr$start LF@substr$length\n");
-    printf("EQ LF@substr$result LF@substr$start LF@substr$length\n");
-    printf("OR LF@substr$char LF@substr$char LF@substr$result\n");
-    printf("OR LF@substr$invalid LF@substr$invalid LF@substr$char\n");
+    // start >= length  (start > length OR start == length)
+    printf("GT LF@substr$tmp LF@substr$start LF@substr$length\n");
+    printf("OR LF@substr$invalid LF@substr$invalid LF@substr$tmp\n");
+    printf("EQ LF@substr$tmp LF@substr$start LF@substr$length\n");
+    printf("OR LF@substr$invalid LF@substr$invalid LF@substr$tmp\n");
 
     // end > length
-    printf("GT LF@substr$char LF@substr$end LF@substr$length\n");
-    printf("OR LF@substr$invalid LF@substr$invalid LF@substr$char\n");
+    printf("GT LF@substr$tmp LF@substr$end LF@substr$length\n");
+    printf("OR LF@substr$invalid LF@substr$invalid LF@substr$tmp\n");
 
     printf("JUMPIFEQ $substr$error LF@substr$invalid bool@true\n");
 
@@ -359,7 +375,8 @@ void gen_builtin_substr() {
 
     printf("LABEL $substr$done\n");
     printf("PUSHS LF@substr$result\n");
-    printf("RETURN\n");
+    gen_popframe();
+    gen_return();
 
     printf("LABEL $substr$error\n");
     printf("EXIT int@40\n");

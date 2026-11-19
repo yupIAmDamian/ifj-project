@@ -5,10 +5,6 @@ import ifj26.*
     val first: Int = ord(text, 0)
     print(first)
     print("\n")
-    print(ord(text, 2))
-    print("\n")
-    print(ord(text, 3))
-    print("\n")
     val negative: Int = -1
     val outside: Int = ord(text, negative)
     print(outside)
