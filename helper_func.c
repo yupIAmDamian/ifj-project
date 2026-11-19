@@ -75,7 +75,6 @@ char *token_type_name(TokenType type) {
         case TOKEN_AT: return "TOKEN_AT";
         case TOKEN_INDENT: return "TOKEN_INDENT";
         case TOKEN_DEDENT: return "TOKEN_DEDENT";
-        case TOKEN_ERROR: return "TOKEN_ERROR";
         default: return "UNKNOWN_TOKEN";
     }
 }

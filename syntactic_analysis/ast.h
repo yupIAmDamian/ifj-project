@@ -5,6 +5,7 @@
 #define AST_H
 #include "../scanner/scanner.h"
 #include "../hashtable/symtable.h"
+#include "../error.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -42,6 +43,8 @@ typedef struct ASTNode {
     Token val;
     bool is_main;
     bool is_const;
+    bool uses_ord;
+    bool uses_substr;
 } ASTNode;
 
 ASTNode *create_ast_node(ASTNodeType type,ASTNode *left, ASTNode *right, ASTNode *extra, Token val);

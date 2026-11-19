@@ -9,6 +9,31 @@ ASTNode *global_ast_root = NULL;
 static Token unget_buffer;
 static bool has_unget = false;
 
+static bool uses_ord = false;
+static bool uses_substr = false;
+
+static bool is_builtin_name(const char *name, const char *builtin) {
+    if (strcmp(name, builtin) == 0) return true;
+
+    size_t name_len = strlen(name);
+    size_t builtin_len = strlen(builtin);
+    
+    if (name_len > builtin_len && name[name_len - builtin_len -1] == '.' && strcmp(name + (name_len - builtin_len), builtin) == 0) {
+        return true;
+    }
+    return false;
+}
+
+static void note_builtin_use(const char *name) {
+    if (name == NULL) return;
+    if (is_builtin_name(name, "ord")) {
+        uses_ord = true;
+    }
+    else if (is_builtin_name(name, "subStr")) {
+        uses_substr = true;
+    }
+}
+
 void unget_token(Token t) {
     unget_buffer = t;
     has_unget = true;
@@ -31,17 +56,14 @@ bool match(TokenType expected_type) {
 }
 
 int parse() {
+    uses_ord = false;
+    uses_substr = false;
+
     scanner_init();
 
     current_token = get_token_buffered();
-    if (current_token.type == TOKEN_ERROR) {
-        return 1; // lexical error
-    }
     global_ast_root = parse_program();
     if (global_ast_root == NULL) {
-        if (current_token.type == TOKEN_ERROR) {
-            return 1; // lexical error
-        }
         return 2; // syntax error
     }
     return 0; // successful parsing
@@ -58,7 +80,12 @@ ASTNode* parse_program() {
     }
     if (current_token.type == TOKEN_EOF) {
         Token root_token = current_token;
-        return create_ast_node(AST_NODE_PROGRAM, functions_node, NULL, NULL, root_token);
+        ASTNode *root = create_ast_node(AST_NODE_PROGRAM, functions_node, NULL, NULL, root_token);
+        if (root != NULL) {
+            root->uses_ord = uses_ord;
+            root->uses_substr = uses_substr;
+        }
+        return root;
     }
     return NULL;
 }
@@ -385,6 +412,7 @@ bool parse_type_opt(DataType *out) {
 ASTNode* parse_func_call() {
     if (current_token.type != TOKEN_IDENTIFIER) return NULL;
     Token id_token = current_token;
+    note_builtin_use(id_token.attribute.string_value);
     current_token = get_token_buffered();
 
     if (!match(TOKEN_LPAREN)) return NULL;
