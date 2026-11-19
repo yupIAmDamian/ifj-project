@@ -55,15 +55,13 @@ bool check_token_attribute(Token token, ExpectedToken exp) {
     return match;
 }
 
-int main() {
+int main(void) {
+    error_register_cleanup(scanner_free);
     scanner_init();
     // TEST buffer functions
     printf("\n------Buffer tests------\n");
     StringKeywordID buffer;
-    if (!buffer_init(&buffer)) {
-        printf("failed to initialize buffer\n");
-        return 1;
-    }
+    buffer_init(&buffer);
 
     for (int i = 0; i < 4; i++) {
         buffer_add_char(&buffer, 'i');
@@ -211,6 +209,5 @@ int main() {
     } else {
         printf("\n---FAILED!---\n");
     }
-    scanner_free();
     return 0;
 }
