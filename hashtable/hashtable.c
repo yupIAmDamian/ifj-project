@@ -7,7 +7,12 @@
 #include "../helper_func.h"
 #include <string.h>
 
-
+/**
+ * @brief Computes a hash index for a given string key.
+ * @param key Null-terminated string key to hash.
+ * @param size Capacity of the hash table.
+ * @return Computed index in the range [0, size - 1].
+ */
 int hash_function(char* key, int size){
     unsigned long hash = 0;
     int key_length = strlen(key);
@@ -18,6 +23,13 @@ int hash_function(char* key, int size){
     return ((int)hash) % size;
 }
 
+/**
+ * @brief Performs recursive linear probing to find a matching key or an available slot.
+ * @param hashtable Pointer to the hash table.
+ * @param key Null-terminated string key to locate.
+ * @param attempt Current probing offset (starts at 0).
+ * @return Index of the matching or empty slot, or -1 if the table is full.
+ */
 int probing(hashtable_t* hashtable, char* key, int attempt){
     int index = hash_function(key, hashtable->size);
     index = (index + attempt) % hashtable->size;
@@ -33,6 +45,12 @@ int probing(hashtable_t* hashtable, char* key, int attempt){
     return -1;
 }
 
+/**
+ * @brief Searches for an occupied item matching the given key in the hash table.
+ * @param hashtable Pointer to the hash table.
+ * @param key Null-terminated string key to search for.
+ * @return Pointer to the matching hash table item, or NULL if not found.
+ */
 ht_item_t* ht_search(hashtable_t* hashtable, char* key){
     int index = probing(hashtable, key, 0);
     if(index != -1 && hashtable->items[index].state == OCCUPIED && strcmp(hashtable->items[index].key, key) == 0){
@@ -41,14 +59,19 @@ ht_item_t* ht_search(hashtable_t* hashtable, char* key){
     return NULL;
 }
 
+/**
+ * @brief Inserts a new key-value pair into the hash table.
+ * @param hashtable Pointer to the hash table.
+ * @param key Null-terminated string key to insert (duplicated internally).
+ * @param data Generic pointer to the associated payload data.
+ * @return Pointer to the inserted hash table item, or NULL if the table is full, key exists, or allocation fails.
+ */
 ht_item_t* ht_insert(hashtable_t* hashtable, char* key, void* data){
     int index = probing(hashtable, key, 0);
     if(index == -1){
         return NULL;
     }
 
-    //Redefinition of symbol problem
-    //it should return something different to user
     if(hashtable->items[index].state == OCCUPIED && strcmp(hashtable->items[index].key, key) == 0){
         return NULL;
     }
@@ -65,8 +88,12 @@ ht_item_t* ht_insert(hashtable_t* hashtable, char* key, void* data){
     return &hashtable->items[index];
 }
 
-
-//TODO data could be allocated in symtable_insert_var
+/**
+ * @brief Marks an existing item with the given key as deleted (tombstone).
+ * @param hashtable Pointer to the hash table.
+ * @param key Null-terminated string key of the item to delete.
+ * @return true if the item was found and marked deleted, false otherwise.
+ */
 bool ht_delete(hashtable_t* hashtable, char* key){
     ht_item_t* item = ht_search(hashtable, key);
     if(item == NULL) return false;
@@ -77,6 +104,11 @@ bool ht_delete(hashtable_t* hashtable, char* key){
     return true;
 }
 
+/**
+ * @brief Allocates and initializes a new hash table of the given capacity.
+ * @param size Number of slots to allocate in the hash table.
+ * @return Pointer to the newly created hash table, or NULL on allocation failure.
+ */
 hashtable_t* ht_create(int size){
     hashtable_t* hashtable = malloc(sizeof(hashtable_t));
     if(hashtable == NULL){
@@ -95,6 +127,12 @@ hashtable_t* ht_create(int size){
     return hashtable;
 }
 
+/**
+ * @brief Frees all dynamically allocated keys stored in the hash table item array.
+ * @param items Pointer to the array of hash table items.
+ * @param size Number of slots in the item array.
+ * @return true if keys were freed successfully, false if items is NULL.
+ */
 bool free_keys(ht_item_t* items, int size) {
     if (items == NULL) {
         return false;
@@ -109,10 +147,10 @@ bool free_keys(ht_item_t* items, int size) {
     return true;
 }
 
-//frees all allocated hastable memory
-//Big TODO
-//TOTO dat do symtable_dispose
-//Treba uvolnovat kluce a data, lebo sa alokuju v symtable_insert_var a symtable_insert_func
+/**
+ * @brief Frees all memory allocated for the hash table structure, its item array, and its keys.
+ * @param hashtable Double pointer to the hash table to dispose of (set to NULL afterward).
+ */
 void ht_clear(hashtable_t** hashtable){
     if(hashtable == NULL || *hashtable == NULL){
         return;
