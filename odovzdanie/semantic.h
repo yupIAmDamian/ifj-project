@@ -4,6 +4,7 @@
 #ifndef SEMANTIC_H
 #define SEMANTIC_H
 
+#include "error.h"
 #include "ast.h"
 #include "symtable.h"
 #include <stdlib.h>
