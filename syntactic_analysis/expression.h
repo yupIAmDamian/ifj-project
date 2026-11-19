@@ -6,6 +6,7 @@
 #include "../scanner/scanner.h"
 #include "ast.h"
 #include "parser.h"
+#include "../error.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -55,6 +56,7 @@ StackItem *expr_stack_top_terminal(PrecStack *stack);
 void expr_stack_free(PrecStack *stack);
 PrecTableIndex get_prec_index(TokenType token_type, PrecStack *stack);
 
-ASTNode* parse_expression();
+void expr_stack_cleanup(void);
+ASTNode* parse_expression(void);
 
 #endif
