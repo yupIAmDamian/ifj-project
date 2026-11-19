@@ -57,7 +57,7 @@ void gen_read();
 void gen_write(ASTNode *node);
 void gen_read_default(char *var, char* data_type, char *default_val);
 void gen_concat(char *var, char *symb1, char *symb2);
-void gen_strlen(char *var);
+void gen_strlen();
 void gen_getchar(char *var, char *symb1, char *symb2);
 void gen_setchar(char *var, char *symb1, char *symb2);
 void gen_pushs(ASTNode *node);
