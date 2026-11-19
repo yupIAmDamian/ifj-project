@@ -25,7 +25,7 @@ static void indent_stack_init(void) {
     if (indent_stack == NULL) {
         indent_stack = malloc(INIT_MAX_INDENT * sizeof(int));
         if (indent_stack == NULL) {
-            return; // need to call error func
+            error_exit(ERR_INTERNAL, current_line, "failed to allocate memory for indent stack");
         }
         indent_capacity = INIT_MAX_INDENT;
     }
@@ -39,7 +39,7 @@ static void indent_stack_push(int indent_level) {
         int new_capacity = indent_capacity * 2; // doubles the capacity
         int *new_stack = realloc(indent_stack, new_capacity * sizeof(int));
         if (new_stack == NULL) {
-            return; // need to call error func
+            error_exit(ERR_INTERNAL, current_line, "failed to reallocate memory for indent stack");
         }
         indent_stack = new_stack;
         indent_capacity = new_capacity;
@@ -67,37 +67,20 @@ void scanner_init(void) {
     last_token = TOKEN_EOL;
 }
 
-// function for freeing allocated memory at the end of the program (or do i just use indent stack free?)
+// function for freeing allocated memory when exiting the program
 void scanner_free(void) {
     indent_stack_free();
 }
 
 // function for the initialization of the buffer
-bool buffer_init(StringKeywordID *buffer) {
+void buffer_init(StringKeywordID *buffer) {
     buffer->capacity = 16;
     buffer->length = 0;
     buffer->str = malloc(buffer->capacity * sizeof(char));
     if (buffer->str == NULL) {
-        return false; // failed to allocate memory
+        error_exit(ERR_INTERNAL, current_line, "failed to allocate memory for string buffer in scanner");
     }
     buffer->str[0] = '\0';
-    return true;
-}
-
-// function for adding a character to the buffer
-bool buffer_add_char(StringKeywordID *buffer, char character) {
-    if (buffer->length + 1 >= buffer->capacity) {
-        buffer->capacity *= 2; // the capacity doubles if its reached
-        char *new_str = realloc(buffer->str, buffer->capacity * sizeof(char));
-        if (new_str == NULL) {
-            return false; // failed to allocate memory
-        }
-        buffer->str = new_str;
-    }
-    buffer->str[buffer->length] = character; // new character inserted
-    buffer->length++;
-    buffer->str[buffer->length] = '\0';
-    return true;
 }
 
 // function for freeing the allocated buffer memory
@@ -108,19 +91,20 @@ void buffer_free(StringKeywordID *buffer) {
     }
 }
 
-// helper function for checking buffer initialization errors
-Token error_buffer_init(void) {
-    Token token;
-    token.type = TOKEN_ERROR;
-    return token;
-}
-
-// helper function for checking errors when adding a character to the buffer
-Token error_buffer_add_char(StringKeywordID *buffer) {
-    buffer_free(buffer);
-    Token token;
-    token.type = TOKEN_ERROR;
-    return token;
+// function for adding a character to the buffer
+void buffer_add_char(StringKeywordID *buffer, char character) {
+    if (buffer->length + 1 >= buffer->capacity) {
+        buffer->capacity *= 2; // the capacity doubles if its reached
+        char *new_str = realloc(buffer->str, buffer->capacity * sizeof(char));
+        if (new_str == NULL) {
+            buffer_free(buffer);
+            error_exit(ERR_INTERNAL, current_line, "failed to add character to string buffer");
+        }
+        buffer->str = new_str;
+    }
+    buffer->str[buffer->length] = character; // new character inserted
+    buffer->length++;
+    buffer->str[buffer->length] = '\0';
 }
 
 // function to get the next token from the input
@@ -168,7 +152,8 @@ static Token get_next_token_fsm(void)
                     }
                 } else if (character == '\t') {
                     if (!after_comment) {
-                        found_tab = true;} // if the line isnt empty, TAB will result in error
+                        found_tab = true; // if the line isnt empty, TAB will result in error
+                    }
                 } else if (character == '\n') { // line is empty, reset the space counter
                     current_line++;
                     space_count = 0;
@@ -229,32 +214,16 @@ static Token get_next_token_fsm(void)
                 } else if (isspace(character)) { // skip empty space
                     break;
                 } else if (isalpha(character) || character == '_') { // IDs / data types / keywords (can't begin with a number)
-                    if (!buffer_init(&buffer)) { // buffer needs to be initialized
-                        token.type = TOKEN_ERROR;
-                        return token;
-                    }
-                    if (!buffer_add_char(&buffer, character)) {
-                        buffer_free(&buffer);
-                        token.type = TOKEN_ERROR;
-                        return token;
-                    }
+                    buffer_init(&buffer);
+                    buffer_add_char(&buffer, character);
                     state = STATE_ID_OR_KEYWORD;
                 } else if (character == '0') {
-                    if (!buffer_init(&buffer)) {
-                        return error_buffer_init();
-                    }
-                    if (!buffer_add_char(&buffer, character)) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_init(&buffer);
+                    buffer_add_char(&buffer, character);
                     state = STATE_ZERO;
                 } else if (isdigit(character)) { // numbers except 0
-                    if (!buffer_init(&buffer)) {
-                        token.type = TOKEN_ERROR;
-                        return token;
-                    }
-                    if (!buffer_add_char(&buffer, character)) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_init(&buffer);
+                    buffer_add_char(&buffer, character);
                     state = STATE_INTEGER;
                 } else if (character == '"') {
                     state = STATE_STRING;
@@ -299,17 +268,13 @@ static Token get_next_token_fsm(void)
                     token.type = TOKEN_AT;
                     return token;
                 } else {
-                    token.type = TOKEN_ERROR;
-                    return token;
+                    error_exit(ERR_LEX, current_line, "invalid character on input");
                 }
                 break;
 
             case STATE_ID_OR_KEYWORD:
-                if (isalnum(character) || character == '_')
-                {
-                    if (!buffer_add_char(&buffer, character)) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                if (isalnum(character) || character == '_') {
+                    buffer_add_char(&buffer, character);
                 } else {
                     ungetc(character, stdin); // returns the character back into stdin
                     // compares the buffer to all keywords
@@ -368,27 +333,20 @@ static Token get_next_token_fsm(void)
 
             case STATE_INTEGER:
                 if (isdigit(character)) {
-                    if(!buffer_add_char(&buffer, character)) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_add_char(&buffer, character);
                 } else if (character == '_') {
                     state = STATE_INTEGER_UNDERSCORE;
                 } else if (character == '.') {
-                    if (!buffer_add_char(&buffer, character)) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_add_char(&buffer, character);
                     state = STATE_DOUBLE_DOT;
                 } else if (character == 'e' || character == 'E') {
-                    if (!buffer_add_char(&buffer, character)) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_add_char(&buffer, character);
                     state = STATE_DOUBLE_EXP;
                 } else if (character == 'd' || character == 'D') {
                     state = STATE_DOUBLE_SUFFIX;
                 } else if (isalpha(character)) { // no other alphabetical characters are valid here
                     buffer_free(&buffer);
-                    token.type = TOKEN_ERROR;
-                    return token;
+                    error_exit(ERR_LEX, current_line, "invalid character in an integer");
                 } else {
                     ungetc(character, stdin);
                     token.type = TOKEN_INTEGER;
@@ -403,34 +361,26 @@ static Token get_next_token_fsm(void)
                 if (character == '_') {
                     break;
                 } else if (isdigit(character)) {
-                    if (!buffer_add_char(&buffer, character)) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_add_char(&buffer, character);
                     state = STATE_INTEGER;
                 } else { // underscore cant be at the end of the number
                     buffer_free(&buffer);
-                    token.type = TOKEN_ERROR;
-                    return token;
+                    error_exit(ERR_LEX, current_line, "underscore cant be at the end of a integer");
                 }
                 break;
 
             case STATE_ZERO:
                 if (character == '.') {
-                    if (!buffer_add_char(&buffer, character)) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_add_char(&buffer, character);
                     state = STATE_DOUBLE_DOT;
                 } else if (character == 'e' || character == 'E') {
-                    if (!buffer_add_char(&buffer, character)) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_add_char(&buffer, character);
                     state = STATE_DOUBLE_EXP;
                 } else if (character == 'd' || character == 'D') {
                     state = STATE_DOUBLE_SUFFIX;
                 } else if (isalnum(character) || character == '_') { // non-zero int cant begin with the digit '0'
                     buffer_free(&buffer);
-                    token.type = TOKEN_ERROR;
-                    return token;
+                    error_exit(ERR_LEX, current_line, "non-zero literal cant begin with the digit 0");
                 } else {
                     ungetc(character, stdin);
                     token.type = TOKEN_INTEGER;
@@ -442,12 +392,9 @@ static Token get_next_token_fsm(void)
 
             case STATE_DOT: // differentiates between a regular dot and a double starting with a dot
                 if (isdigit(character)) {
-                    if (!buffer_init(&buffer)) {
-                        return error_buffer_init();
-                    }
-                    if (!buffer_add_char(&buffer, '.') || !buffer_add_char(&buffer, character)) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_init(&buffer);
+                    buffer_add_char(&buffer, '.');
+                    buffer_add_char(&buffer, character);
                     state = STATE_DOUBLE_FRACTION;
                 } else {
                     ungetc(character, stdin);
@@ -458,35 +405,27 @@ static Token get_next_token_fsm(void)
 
             case STATE_DOUBLE_DOT:
                 if (isdigit(character)) { // dot must be followed by a digit
-                    if (!buffer_add_char(&buffer, character)) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_add_char(&buffer, character);
                     state = STATE_DOUBLE_FRACTION;
                 } else {
                     buffer_free(&buffer);
-                    token.type = TOKEN_ERROR; 
-                    return token;
+                    error_exit(ERR_LEX, current_line, "dot inside of a number must be followed by at least 1 digit");
                 }
                 break;
 
             case STATE_DOUBLE_FRACTION:
                 if (isdigit(character)) {
-                    if (!buffer_add_char(&buffer, character)) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_add_char(&buffer, character);
                 } else if (character == '_') {
                     state = STATE_DOUBLE_FRACTION_UNDERSCORE;
                 } else if (character == 'e' || character == 'E') {
-                    if (!buffer_add_char(&buffer, character)) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_add_char(&buffer, character);
                     state = STATE_DOUBLE_EXP;
                 } else if (character == 'd' || character == 'D') {
                     state = STATE_DOUBLE_SUFFIX;
                 } else if (isalpha(character)) { // no other alphabetical characters are valid here
                     buffer_free(&buffer);
-                    token.type = TOKEN_ERROR;
-                    return token;
+                    error_exit(ERR_LEX, current_line, "invalid character in a double");
                 } else {
                     ungetc(character, stdin);
                     token.type = TOKEN_DOUBLE;
@@ -500,61 +439,47 @@ static Token get_next_token_fsm(void)
                 if (character == '_') {
                     break;
                 } else if (isdigit(character)) {
-                    if (!buffer_add_char(&buffer, character)) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_add_char(&buffer, character);
                     state = STATE_DOUBLE_FRACTION;
                 } else { // underscore cant be at the end of a fraction
                     buffer_free(&buffer);
-                    token.type = TOKEN_ERROR;
-                    return token;
+                    error_exit(ERR_LEX, current_line, "underscore cant be at the end of a fraction");
                 }
                 break;
 
             case STATE_DOUBLE_EXP: // at least one digit must follow the e/E character
                 if (character == '+' || character == '-') {
-                    if (!buffer_add_char(&buffer, character)) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_add_char(&buffer, character);
                     state = STATE_DOUBLE_EXP_SIGN;
                 } else if (isdigit(character)) {
-                    if (!buffer_add_char(&buffer, character)) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_add_char(&buffer, character);
                     state = STATE_DOUBLE_EXP_DIGITS;
                 } else {
                     buffer_free(&buffer);
-                    token.type = TOKEN_ERROR;
-                    return token;
+                    error_exit(ERR_LEX, current_line, "invalid exponent in double");
                 }
                 break;
 
             case STATE_DOUBLE_EXP_SIGN: // at least one digit must follow the +/- sign in the exponent
                 if (isdigit(character)) {
-                    if (!buffer_add_char(&buffer, character)) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_add_char(&buffer, character);
                     state = STATE_DOUBLE_EXP_DIGITS;
                 } else {
                     buffer_free(&buffer);
-                    token.type = TOKEN_ERROR;
-                    return token;
+                    error_exit(ERR_LEX, current_line, "invalid exponent in double");
                 }
                 break;
 
             case STATE_DOUBLE_EXP_DIGITS:
                 if (isdigit(character)) {
-                    if (!buffer_add_char(&buffer, character)) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_add_char(&buffer, character);
                 } else if (character == '_') {
                     state = STATE_DOUBLE_EXP_DIGITS_UNDERSCORE;
                 } else if (character == 'd' || character == 'D') {
                     state = STATE_DOUBLE_SUFFIX;
                 } else if (isalpha(character)) { // no other suffixes supported
                     buffer_free(&buffer);
-                    token.type = TOKEN_ERROR;
-                    return token;
+                    error_exit(ERR_LEX, current_line, "invalid exponent in double");
                 } else {
                     ungetc(character, stdin);
                     token.type = TOKEN_DOUBLE;
@@ -568,22 +493,18 @@ static Token get_next_token_fsm(void)
                 if (character == '_') {
                     break;
                 } else if (isdigit(character)) {
-                    if (!buffer_add_char(&buffer, character)) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_add_char(&buffer, character);
                     state = STATE_DOUBLE_EXP_DIGITS;
                 } else { // underscore cant be at the end of the exponent
                     buffer_free(&buffer);
-                    token.type = TOKEN_ERROR;
-                    return token;
+                    error_exit(ERR_LEX, current_line, "underscore cant be at the end of an exponent");
                 }
                 break;
 
             case STATE_DOUBLE_SUFFIX:
                 if (isalnum(character) || character == '_') { // suffix must be the end of the number
                     buffer_free(&buffer);
-                    token.type = TOKEN_ERROR;
-                    return token;
+                    error_exit(ERR_LEX, current_line, "number cant continue after a suffix");
                 }
                 ungetc(character, stdin);
                 token.type = TOKEN_DOUBLE;
@@ -592,9 +513,7 @@ static Token get_next_token_fsm(void)
                 return token;
 
             case STATE_STRING: // one quot. mark detected
-                if (!buffer_init(&buffer)) {
-                    return error_buffer_init();
-                }
+                buffer_init(&buffer);
                 if (character == '"') {
                     state = STATE_STRING_QUOTE2;
                 } else {
@@ -623,40 +542,26 @@ static Token get_next_token_fsm(void)
                     state = STATE_STRING_SINGLE_ESCAPE;
                 } else if (character == '\n' || character == EOF){ // string doesnt have the ending quot. mark
                     buffer_free(&buffer);
-                    token.type = TOKEN_ERROR;
-                    return token;
+                    error_exit(ERR_LEX, current_line, "unterminated string");
                 } else {
-                    if (!buffer_add_char(&buffer, character)) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_add_char(&buffer, character);
                 }
                 break;
 
             case STATE_STRING_SINGLE_ESCAPE:
                 if (character == '\\') {
-                    if (!buffer_add_char(&buffer, '\\')) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_add_char(&buffer, '\\');
                 } else if (character == '"') {
-                    if (!buffer_add_char(&buffer, '"')) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_add_char(&buffer, '"');
                 } else if (character == 'n') {
-                    if (!buffer_add_char(&buffer, '\n')) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_add_char(&buffer, '\n');
                 } else if (character == 'r') {
-                    if (!buffer_add_char(&buffer, '\r')) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_add_char(&buffer, '\r');
                 } else if (character == 't') {
-                    if (!buffer_add_char(&buffer, '\t')) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_add_char(&buffer, '\t');
                 } else { // no other escape sequences are valid
                     buffer_free(&buffer);
-                    token.type = TOKEN_ERROR;
-                    return token;
+                    error_exit(ERR_LEX, current_line, "invalid escape sequence in string");
                 }
                 state = STATE_STRING_SINGLE;
                 break;
@@ -666,15 +571,12 @@ static Token get_next_token_fsm(void)
                     state = STATE_STRING_MULTI_END1;
                 } else if (character == EOF) { // string doesnt have the ending quot. marks
                     buffer_free(&buffer);
-                    token.type = TOKEN_ERROR;
-                    return token;
+                    error_exit(ERR_LEX, current_line, "unterminated multiline string");
                 } else {
                     if (character == '\n') {
                         current_line++; 
                     }
-                    if (!buffer_add_char(&buffer, character)) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_add_char(&buffer, character);
                 }
                 break;
 
@@ -682,9 +584,7 @@ static Token get_next_token_fsm(void)
                 if (character == '"') {
                     state = STATE_STRING_MULTI_END2;
                 } else { // adds quot. mark to buffer and goes back to the main multiline string state
-                    if (!buffer_add_char(&buffer, '"')) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_add_char(&buffer, '"');
                     ungetc(character, stdin);
                     state = STATE_STRING_MULTI;
                 }
@@ -696,9 +596,8 @@ static Token get_next_token_fsm(void)
                     token.attribute.string_value = buffer.str;
                     return token;
                 } else { // adds 2 quot. marks to buffer and goes back to the main multiline string state
-                    if (!buffer_add_char(&buffer, '"') || !buffer_add_char(&buffer, '"')) {
-                        return error_buffer_add_char(&buffer);
-                    }
+                    buffer_add_char(&buffer, '"');
+                    buffer_add_char(&buffer, '"');
                     ungetc(character, stdin);
                     state = STATE_STRING_MULTI;
                 }
@@ -735,9 +634,7 @@ static Token get_next_token_fsm(void)
                 if (character == '=') {
                     token.type = TOKEN_NOT_EQ;
                 } else {
-                    ungetc(character, stdin);
-                    token.type = TOKEN_ERROR;
-                    return token;
+                    error_exit(ERR_LEX, current_line, "invalid combination of characters on input");
                 }
                 return token;
 
@@ -770,8 +667,7 @@ static Token get_next_token_fsm(void)
                     comment_had_newline = true;
                     current_line++;
                 } else if (character == EOF) { // block comment isnt closed with "*/"
-                    token.type = TOKEN_ERROR; 
-                    return token;
+                    error_exit(ERR_LEX, current_line, "unterminated block comment");
                 }
                 break;
 
@@ -786,8 +682,7 @@ static Token get_next_token_fsm(void)
                     comment_had_newline = true;
                     state = STATE_COMMENT_BLOCK;
                 } else if (character == EOF) { // block comment isnt closed with "*/"
-                    token.type = TOKEN_ERROR;
-                    return token;
+                    error_exit(ERR_LEX, current_line, "unterminated block comment");
                 } else {
                     state = STATE_COMMENT_BLOCK;
                 }
@@ -817,8 +712,7 @@ static Token get_next_token_fsm(void)
                     comment_had_newline = true;
                     state = STATE_COMMENT_BLOCK;
                 } else if (character == EOF) { // block comment isnt closed with "*/"
-                    token.type = TOKEN_ERROR;
-                    return token;
+                    error_exit(ERR_LEX, current_line, "unterminated block comment");
                 } else {
                     state = STATE_COMMENT_BLOCK;
                 }
@@ -833,16 +727,14 @@ static Token get_next_token_fsm(void)
                     line_start = true;
                     return token;
                 } else {
-                    token.type = TOKEN_ERROR;
-                    return token;
+                    error_exit(ERR_LEX, current_line, "line cant continue after a multiline block comment");
                 }
         }
 
         // indent/dedent processing
         if (process_indent_dedent) {
             if (found_tab) {
-                token.type = TOKEN_ERROR;
-                return token;
+                error_exit(ERR_LEX, current_line, "tab found at the start of a non-empty line");
             }
             line_start = false;
             int current_indent = indent_stack[indent_top];
@@ -857,8 +749,7 @@ static Token get_next_token_fsm(void)
                 }
                 // space count needs to match a previous indentation level, otherwise error
                 if (indent_stack[indent_top] != space_count) {
-                        token.type = TOKEN_ERROR;
-                        return token;
+                        error_exit(ERR_LEX, current_line, "invalid indent structure");
                 }
                 pending_dedents--;
                 token.type = TOKEN_DEDENT;
