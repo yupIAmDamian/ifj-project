@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include "semantic.h"
-#include "error.h"
+#include "../error.h"
 
 static DataType current_func_ret_type = TYPE_VOID; // Expected return type of the currently analyzed function
 
