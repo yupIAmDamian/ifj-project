@@ -1,112 +1,122 @@
 # Compiler of IFJ26 imperative language
-# Author: Damian Frantisek Girasek (xgirasd00)
+# Authors: Damian Frantisek Girasek (xgirasd00), Dominik Madaj (xmadajd00)
 
 CC = gcc
+
+INCLUDES = -I . -I codegen -I syntactic_analysis -I semantic_analysis -I scanner -I hashtable
 #Compiler flags - check which are really needed and remove the rest
-CFLAGS = -std=c11 -Wall -Wextra -pedantic -g -I . -I codegen -I syntactic_analysis -I scanner -I hashtable
+CFLAGS   = -std=c11 -Wall -Wextra -pedantic -g $(INCLUDES)
 
-TESTTOCOMPILE = tests/tests.c tests/hashtable_tests/hashtable_tests.c tests/hashtable_tests/symtable_tests.c hashtable/hashtable.c hashtable/symtable.c helper_func.c tests/codegen_tests/codegen_tests.c codegen/codegen.c codegen/gen_func.c codegen/codegen_helper.c syntactic_analysis/ast.c syntactic_analysis/expression.c syntactic_analysis/parser.c scanner/scanner.c error.c
+TARGET = main
 
-TRANSLATOR_TESTTOCOMPILE = tests/translator_test/translator_test.c semantic_analysis/semantic.c hashtable/hashtable.c hashtable/symtable.c helper_func.c codegen/codegen.c codegen/gen_func.c codegen/codegen_helper.c syntactic_analysis/ast.c syntactic_analysis/expression.c syntactic_analysis/parser.c scanner/scanner.c error.c
+# all .c files for the project
+SRCS = \
+	scanner/scanner.c \
+	syntactic_analysis/ast.c \
+	syntactic_analysis/expression.c \
+	syntactic_analysis/parser.c \
+	semantic_analysis/semantic.c \
+	codegen/codegen.c \
+	codegen/gen_func.c \
+	codegen/codegen_helper.c \
+	hashtable/hashtable.c \
+	hashtable/symtable.c \
+	helper_func.c \
+	error.c
 
-VALGRIND_FLAGS = --leak-check=full --show-leak-kinds=all --track-origins=yes --num-callers=30 --error-exitcode=1
-
-.PHONY: all build check build-check clean tests clean-tests translator-test valgrind
+.PHONY: all build check build-check format clean
 
 all: build
 
-build: main.c
-	$(CC) $(CFLAGS) main.c -o main
+build:
+	$(CC) $(CFLAGS) main.c $(SRCS) -o $(TARGET)
 
-check: main.c
-	valgrind  $(CC) $(CFLAGS) -fsyntax-only main.c
 
-build-check: main.c
-	$(CC) $(CFLAGS) -fsyntax-only main.c
+check:
+	cppcheck --enable=warning,style --error-exitcode=1 --quiet $(INCLUDES) main.c $(SRCS)
+
+build-check: check build
+
+
+# do wee need this
+# format:
+# 	clang-format -i $$(git ls-files '*.c' '*.h')
 
 clean:
-	rm -f main
+	rm -f $(TARGET) $(UNIT_TESTS)
 
 #####################################################
 # Tests
 #####################################################
-#Hashtable tests
-#####################################################
-hashtable-tests: tests/hashtable_tests/hashtable_tests.c hashtable/hashtable.c helper_func.c
-	$(CC) $(CFLAGS) -g -O0 tests/hashtable_tests/hashtable_tests.c hashtable/hashtable.c helper_func.c \
-		-o tests/hashtable_tests/hashtable_tests
-	./tests/hashtable_tests/hashtable_tests
+# each test = individual program
 
-valgrind-hashtable-tests: tests/hashtable_tests/hashtable_tests.c hashtable/hashtable.c helper_func.c
-	valgrind $(VALGRIND_FLAGS) \
-			./tests/hashtable_tests/hashtable_tests
+HASHTABLE_T  = tests/hashtable_tests/hashtable_tests
+SYMTABLE_T   = tests/hashtable_tests/symtable_tests
+SCANNER_T    = tests/scanner_tests/scanner_tests
+SCANNER_PR_T = tests/scanner_tests/scanner_output_print_test
+AST_T        = tests/ast_tests/ast_tests
+EXPRESSION_T = tests/expression_tests/expression_tests
+PARSER_T     = tests/parser_tests/parser_tests
+SEMANTIC_T   = tests/semantic_tests/test_semantic
+CODEGEN_T    = tests/codegen_tests/codegen_tests
+TRANSLATOR_T = tests/translator_test/translator_test
 
-clean-hashtable-tests: tests/hashtable_tests/hashtable_tests
-	rm -f tests/hashtable_tests/hashtable_tests
+UNIT_TESTS = $(HASHTABLE_T) $(SYMTABLE_T) $(SCANNER_T) $(SCANNER_PR_T) \
+             $(AST_T) $(EXPRESSION_T) $(PARSER_T) $(SEMANTIC_T) $(CODEGEN_T) $(TRANSLATOR_T)
 
-#####################################################
-#Symtable tests
-#####################################################
-symtable-tests: tests/hashtable_tests/symtable_tests.c hashtable/symtable.c hashtable/hashtable.c helper_func.c
-	$(CC) $(CFLAGS) -g -O0 tests/hashtable_tests/symtable_tests.c hashtable/symtable.c hashtable/hashtable.c helper_func.c \
-		-o tests/hashtable_tests/symtable_tests
-	./tests/hashtable_tests/symtable_tests
-
-valgrind-symtable-tests: tests/hashtable_tests/symtable_tests.c hashtable/symtable.c hashtable/hashtable.c helper_func.c
-	valgrind $(VALGRIND_FLAGS) \
-			./tests/hashtable_tests/symtable_tests
-
-clean-symtable-tests: tests/hashtable_tests/symtable_tests
-	rm -f tests/hashtable_tests/symtable_tests
+$(UNIT_TESTS): %: %.c $(SRCS)
+	$(CC) $(CFLAGS) -O0 $< $(SRCS) -o $@
 
 
-#Symtable tests
+# --- Run tests ---
+# for valgrind: make test-xxxxx RUN="valgrind --..."
+RUN ?=
+VALGRIND = valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --num-callers=30 --error-exitcode=1
 
-tests: $(TESTTOCOMPILE)
-	$(CC) $(CFLAGS) -g -O0 $(TESTTOCOMPILE) \
-		-o tests/tests
-	./tests/tests
+.PHONY: test-hashtable test-symtable test-scanner test-scanner-print test-ast \
+        test-expression test-parser test-semantic test-codegen test-translator \
+        test-all valgrind translator-batch
 
-clean-tests: tests/tests
-	rm -f tests/tests
+test-hashtable: $(HASHTABLE_T)
+	$(RUN) ./$(HASHTABLE_T)
 
-valgrind: tests/tests
-	valgrind $(VALGRIND_FLAGS) \
-		./tests/tests
+test-symtable: $(SYMTABLE_T)
+	$(RUN) ./$(SYMTABLE_T)
 
-SEM_TEST_BIN = tests/semantic_tests/test_sem
-SEM_TEST_SRCS = tests/semantic_tests/test_semantic.c semantic_analysis/semantic.c syntactic_analysis/ast.c hashtable/symtable.c hashtable/hashtable.c helper_func.c error.c
+test-scanner: $(SCANNER_T)
+	$(RUN) ./$(SCANNER_T) < tests/scanner_tests/test_input.ifj26
 
-test-sem:
-	gcc -g -O0 -Wall -Wextra -Isemantic_analysis -Isyntactic_analysis -Ihashtable -I. $(SEM_TEST_SRCS) -o $(SEM_TEST_BIN)
-#tests for singular input file where we can test only one file from bunch
-translator-test: $(TRANSLATOR_TESTTOCOMPILE)
-	$(CC) $(CFLAGS) -g -O0 $(TRANSLATOR_TESTTOCOMPILE) \
-		-o tests/translator_test/translator_test
-	./tests/translator_test/translator_test \
+test-scanner-print: $(SCANNER_PR_T)
+	$(RUN) ./$(SCANNER_PR_T) < tests/scanner_tests/test_input.ifj26
+
+test-ast: $(AST_T)
+	$(RUN) ./$(AST_T)
+
+test-expression: $(EXPRESSION_T)
+	$(RUN) ./$(EXPRESSION_T)
+
+test-parser: $(PARSER_T)
+	$(RUN) ./$(PARSER_T)
+
+test-semantic: $(SEMANTIC_T)
+	$(RUN) ./$(SEMANTIC_T)
+
+test-codegen: $(CODEGEN_T)
+	$(RUN) ./$(CODEGEN_T)
+
+test-translator: $(TRANSLATOR_T)
+	$(RUN) ./$(TRANSLATOR_T) \
 		tests/translator_test/translator_input.ifj26 \
 		tests/translator_test/translator_output.ifjcode
 
-clean-translator-test: tests/translator_test/translator_test
-	rm -f tests/translator_test/translator_test
+test-all: test-hashtable test-symtable test-scanner test-ast test-expression \
+          test-parser test-semantic test-codegen test-translator
 
-valgrind-translator-test: tests/translator_test/translator_test
-	valgrind --leak-check=full \
-		--show-leak-kinds=all \
-		--track-origins=yes \
-		--num-callers=30 \
-		--error-exitcode=1 \
-		./tests/translator_test/translator_test \
-		tests/translator_test/translator_input.ifj26 \
-		tests/translator_test/translator_output.ifjcode
+# all tests + valgrind
+valgrind:
+	$(MAKE) test-all RUN="$(VALGRIND)"
 
-
-#####################################################
-#Translator tests with interpreter
-#####################################################
 ICINT ?= ./ic26int-linux-x86_64
 
-translator-batch: $(TRANSLATOR_TESTTOCOMPILE)
-	$(CC) $(CFLAGS) -g -O0 $(TRANSLATOR_TESTTOCOMPILE) \
-		-o tests/translator_test/translator_test
+translator-batch: $(TRANSLATOR_T)
 	INTERPRETER=$(ICINT) bash tests/translator_test/translator_test.sh
