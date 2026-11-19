@@ -1,7 +1,0 @@
-================================================================
-[INTERPRETER] strings_output.ifjcode
-exit code: 54
-Symbol LF@length$2 not found!
-Error at line: 88
-Symbol is undefined!
-
