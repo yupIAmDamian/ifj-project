@@ -1,24 +1,4 @@
 ================================================================
-[TRANSLATOR] builtins_control_flow.ifj26
-exit code: 2
-Parsing failed: code=2, token=TOKEN_LPAREN (32), line=7
-
-================================================================
-[TRANSLATOR] error_substr_negative_end.ifj26
-exit code: 3
-Semantic error 3: Undefined variable
-
-================================================================
-[TRANSLATOR] error_substr_start.ifj26
-exit code: 3
-Semantic error 3: Undefined variable
-
-================================================================
-[TRANSLATOR] strings_edges.ifj26
-exit code: 2
-Parsing failed: code=2, token=TOKEN_LPAREN (32), line=8
-
-================================================================
 [INTERPRETER] builtins_nested_output.ifjcode
 exit code: 55
 Error at line: 33
@@ -43,6 +23,12 @@ Error at line: 13
 Frame does not exist!
 
 ================================================================
+[INTERPRETER] error_substr_negative_end_output.ifjcode
+exit code: 56
+Error at line: 11
+Operand stack is empty
+
+================================================================
 [INTERPRETER] error_substr_order_output.ifjcode
 exit code: 55
 Error at line: 13
@@ -55,10 +41,22 @@ Error at line: 13
 Frame does not exist!
 
 ================================================================
+[INTERPRETER] error_substr_start_output.ifjcode
+exit code: 56
+Error at line: 11
+Operand stack is empty
+
+================================================================
 [INTERPRETER] ord_out_of_range_output.ifjcode
 exit code: 55
 Error at line: 12
 Frame does not exist!
+
+================================================================
+[INTERPRETER] strings_edges_output.ifjcode
+exit code: 51
+39.7-14: syntax error, unexpected ID
+Syntax error!
 
 ================================================================
 [INTERPRETER] strings_output.ifjcode
