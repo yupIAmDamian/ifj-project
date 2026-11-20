@@ -18,13 +18,6 @@ char* str_duplicate(char *str) {
     return copy;
 }
 
-
-//TODO: this was just part time solution, we should implement a better error handling mechanism
-void dominik_error(int code, const char *message) {
-    fprintf(stderr, "Semantic error %d: %s\n", code, message);
-    exit(code);
-}
-
 FILE *open_file(char *filename, char *mode) {
     FILE *file = fopen(filename, mode);
     if (file == NULL) {
