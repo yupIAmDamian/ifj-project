@@ -3,7 +3,6 @@
 
 #include "helper_func.h"
 
-//This function is used to duplicate a string. 
 char* str_duplicate(char *str) {
     if (str == NULL) {
         return NULL;
@@ -75,8 +74,8 @@ char *token_type_name(TokenType type) {
 bool check_if_string_is_not_in_array(char *str, char **array, size_t array_size) {
     for (size_t i = 0; i < array_size; i++) {
         if (strcmp(str, array[i]) == 0) {
-            return false; // String is found in the array
+            return false;
         }
     }
-    return true; // String is not found in the array
+    return true;
 }
