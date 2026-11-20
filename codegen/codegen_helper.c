@@ -1,7 +1,8 @@
 // Compiler of IFJ26 imperative language
 // Author: Damian Frantisek Girasek (xgirasd00)
-
 #include "codegen_helper.h"
+
+extern char *current_func_name; 
 
 Token* get_token_from_node(ASTNode *node) {
     return &(node->val);
@@ -26,8 +27,6 @@ void gen_escaped_string(char *value) {
         }
     }
 }
-
-extern char *current_func_name; 
 
 char *create_label(int number, char* label_name, char* label_type) {
     int len = snprintf(NULL, 0, "$%s$%s$%d$%s", current_func_name, label_name, number, label_type) + 1;

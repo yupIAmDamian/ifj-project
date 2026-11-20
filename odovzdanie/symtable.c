@@ -3,7 +3,6 @@
 
 #include <stdlib.h>
 #include "symtable.h"
-#include "../helper_func.h"
 #include <string.h>
 #include <stdio.h>
 

@@ -317,6 +317,7 @@ void gen_builtin_ord() {
     printf("PUSHS int@-1\n");
     gen_popframe();
     gen_return();
+    gen_new_line();
 }
 
 void gen_builtin_substr() {
@@ -382,4 +383,5 @@ void gen_builtin_substr() {
 
     printf("LABEL $substr$error\n");
     printf("EXIT int@40\n");
+    gen_new_line();
 }

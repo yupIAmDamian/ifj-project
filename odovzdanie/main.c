@@ -13,14 +13,14 @@
 #include "main.h"
 #include "./error.h"
 
-#include "./scanner/scanner.h"
-#include "./syntactic_analysis/ast.h"
-#include "./syntactic_analysis/expression.h"
+#include "./scanner.h"
+#include "./ast.h"
+#include "./expression.h"
 
-#include "./codegen/codegen.h"
-#include "./hashtable/symtable.h"
-#include "./semantic_analysis/semantic.h"
-#include "./syntactic_analysis/parser.h"
+#include "./codegen.h"
+#include "./symtable.h"
+#include "./semantic.h"
+#include "./parser.h"
 #include "./helper_func.h"
 
 extern ASTNode *global_ast_root;
