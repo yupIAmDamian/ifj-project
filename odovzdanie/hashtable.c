@@ -4,7 +4,7 @@
 #include "stdio.h"
 #include "hashtable.h"
 #include "stdlib.h"
-#include "../helper_func.h"
+#include "./helper_func.h"
 #include <string.h>
 
 /**
