@@ -7,21 +7,39 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+extern char *current_func_name;
+
+/**
+ * @brief Allocates and initializes an AST conversion node (Int -> Float).
+ * @param expr Pointer to the integer expression AST node to be wrapped.
+ * @return Pointer to the newly created AST_NODE_INT2FLOAT node, or NULL if expr is NULL.
+ */
 Token* get_token_from_node(ASTNode *node);
 
+/**
+ * @brief Allocates and initializes an AST conversion node (Int -> Float).
+ * @param expr Pointer to the integer expression AST node to be wrapped.
+ * @return Pointer to the newly created AST_NODE_INT2FLOAT node, or NULL if expr is NULL.
+ */
 char* gen_string_from_node(ASTNode *node);
 
+/**
+ * @brief Allocates and initializes an AST conversion node (Int -> Float).
+ * @param expr Pointer to the integer expression AST node to be wrapped.
+ * @return Pointer to the newly created AST_NODE_INT2FLOAT node, or NULL if expr is NULL.
+ */
 void gen_escaped_string(char *value);
 
 
-extern char *current_func_name;
 
-/** 
- * Creates a label for an else clause in the generated code.
- * @param number The number of the else clause.
- * @return A pointer to the created label, or NULL if allocation fails.
+/**
+ * @brief creates new label according to type of control statement.
+ * @param int Pointer to the integer expression AST node to be wrapped.
+ * @param char* Pointer to the name of control statement type .
+ * @param char* Pointer to the integer expression AST node to be wrapped.
+ * @return Pointer to the newly created char.
+ * @note pointer to newly created string should be freed. 
  */
-//Needs to be freed
 char *create_label(int number, char* label_name, char* label_type);
 
 #endif

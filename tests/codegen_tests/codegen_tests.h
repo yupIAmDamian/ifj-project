@@ -7,6 +7,6 @@
 #include "../../codegen/codegen.h"
 #include "../../syntactic_analysis/ast.h"
 
-void codegen_tests(void);
+int main();
 
 #endif

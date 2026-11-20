@@ -14,12 +14,12 @@ static bool uses_substr = false;
 
 static void note_builtin_use(char *name) {
     if (name == NULL) return;
-    if (strcmp(name, "ord")) {
+    if (strcmp(name, "ord") == 0) {
         uses_ord = true;
     }
-    else if (strcmp(name, "subStr")) {
+    else if (strcmp(name, "subStr") == 0) {
         uses_substr = true;
-    }
+    }    
 }
 
 void unget_token(Token t) {
@@ -70,8 +70,9 @@ ASTNode* parse_program() {
         Token root_token = current_token;
         ASTNode *root = create_ast_node(AST_NODE_PROGRAM, functions_node, NULL, NULL, root_token);
         if (root != NULL) {
-            root->uses_ord = uses_ord;
             root->uses_substr = uses_substr;
+
+            root->uses_ord = uses_ord;
         }
         return root;
     }

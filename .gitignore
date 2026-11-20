@@ -41,6 +41,7 @@
 *.hex
 *.ifjcode
 *.ifj26
+/IFJCODE26TEST/*
 
 # Debug files
 *.dSYM/

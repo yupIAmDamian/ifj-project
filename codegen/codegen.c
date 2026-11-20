@@ -20,10 +20,14 @@ void gen_node(ASTNode *node){
     switch(node->type){
         case AST_NODE_PROGRAM:
             create_head();
-            gen_builtin_ord();
-            gen_new_line();
-            gen_builtin_substr();
-            gen_new_line();
+            if(node->uses_ord == true) {
+                gen_builtin_ord();
+            }
+
+            if(node->uses_substr == true) {
+                gen_builtin_substr();
+            }
+
             gen_code(node->left);
             break;
         case AST_NODE_FUNCTION: {

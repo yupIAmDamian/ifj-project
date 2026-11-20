@@ -249,7 +249,8 @@ static ASTNode *create_factorial_tree(void) {
                            make_token(TOKEN_EOF, 36));
 }
 
-void codegen_tests(void) {
+int main(void) {
     ASTNode *root = create_factorial_tree();
     gen_code(root);
+    return 0;
 }
