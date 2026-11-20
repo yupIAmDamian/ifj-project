@@ -1,6 +1,5 @@
 // Compiler of IFJ26 imperative language
 // Author: Damian Frantisek Girasek (xgirasd00)
-
 #include <stddef.h>
 #include <stdio.h>
 #include "../../hashtable/hashtable.h"
@@ -100,8 +99,6 @@ int main() {
     delete_test(hashtable, "key1");
 
     cleanup(&hashtable);
-
-
 
     return 0;
 }
