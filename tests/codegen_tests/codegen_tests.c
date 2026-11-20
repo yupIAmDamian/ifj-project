@@ -3,72 +3,72 @@
 
 #include "codegen_tests.h"
 
-static Token make_token(TokenType type, int line) {
+Token make_token(TokenType type, int line) {
     Token result = {0};
     result.type = type;
     result.line = line;
     return result;
 }
 
-static Token identifier_token(const char *name, int line) {
+Token identifier_token(const char *name, int line) {
     Token result = make_token(TOKEN_IDENTIFIER, line);
     result.attribute.string_value = (char *)name;
     return result;
 }
 
-static Token integer_token(int value, int line) {
+Token integer_token(int value, int line) {
     Token result = make_token(TOKEN_INTEGER, line);
     result.attribute.integer_value = value;
     return result;
 }
 
-static Token string_token(const char *value, int line) {
+Token string_token(const char *value, int line) {
     Token result = make_token(TOKEN_STRING, line);
     result.attribute.string_value = (char *)value;
     return result;
 }
 
-static ASTNode *expression_value(Token token) {
+ASTNode *expression_value(Token token) {
     return create_ast_node(AST_NODE_EXPR, NULL, NULL, NULL, token);
 }
 
-static ASTNode *identifier_expression(const char *name, int line) {
+ASTNode *identifier_expression(const char *name, int line) {
     return expression_value(identifier_token(name, line));
 }
 
-static ASTNode *integer_expression(int value, int line) {
+ASTNode *integer_expression(int value, int line) {
     return expression_value(integer_token(value, line));
 }
 
-static ASTNode *term(Token token) {
+ASTNode *term(Token token) {
     return create_ast_node(AST_NODE_TERM, NULL, NULL, NULL, token);
 }
 
-static ASTNode *term_identifier(const char *name, int line) {
+ASTNode *term_identifier(const char *name, int line) {
     return term(identifier_token(name, line));
 }
 
-static ASTNode *term_string(const char *value, int line) {
+ASTNode *term_string(const char *value, int line) {
     return term(string_token(value, line));
 }
 
-static ASTNode *binary_expression(TokenType operator_type,
+ASTNode *binary_expression(TokenType operator_type,
                                   ASTNode *left, ASTNode *right, int line) {
     return create_ast_node(AST_NODE_EXPR, left, right, NULL,
                            make_token(operator_type, line));
 }
 
-static ASTNode *call(const char *name, ASTNode *arguments, int line) {
+ASTNode *call(const char *name, ASTNode *arguments, int line) {
     return create_ast_node(AST_NODE_CALL, NULL, arguments, NULL,
                            identifier_token(name, line));
 }
 
-static ASTNode *variable(const char *name, int line) {
+ASTNode *variable(const char *name, int line) {
     return create_ast_node(AST_NODE_VAR, NULL, NULL, NULL,
                            identifier_token(name, line));
 }
 
-static ASTNode *declaration(const char *name, ASTNode *initializer,
+ASTNode *declaration(const char *name, ASTNode *initializer,
                             bool is_const, int line) {
     ASTNode *var_node = variable(name, line);
     ASTNode *node = create_ast_node(AST_NODE_VAR_DECL, var_node, initializer,
@@ -78,17 +78,17 @@ static ASTNode *declaration(const char *name, ASTNode *initializer,
     return node;
 }
 
-static ASTNode *assignment(const char *name, ASTNode *value, int line) {
+ASTNode *assignment(const char *name, ASTNode *value, int line) {
     return create_ast_node(AST_NODE_ASSIGN, variable(name, line), value,
                            NULL, identifier_token(name, line));
 }
 
-static ASTNode *return_statement(ASTNode *value, int line) {
+ASTNode *return_statement(ASTNode *value, int line) {
     return create_ast_node(AST_NODE_RETURN, value, NULL, NULL,
                            make_token(TOKEN_RETURN, line));
 }
 
-static void append_node(ASTNode **first, ASTNode **last, ASTNode *node) {
+void append_node(ASTNode **first, ASTNode **last, ASTNode *node) {
     if (*first == NULL) {
         *first = node;
     } else {
@@ -98,23 +98,23 @@ static void append_node(ASTNode **first, ASTNode **last, ASTNode *node) {
     *last = node;
 }
 
-static ASTNode *parameter(const char *name, int line) {
+ASTNode *parameter(const char *name, int line) {
     return create_ast_node(AST_NODE_PARAM, NULL, NULL, NULL,
                            identifier_token(name, line));
 }
 
-static ASTNode *if_node(ASTNode *condition, ASTNode *then_body,
+ASTNode *if_node(ASTNode *condition, ASTNode *then_body,
                         ASTNode *else_body, int line) {
     return create_ast_node(AST_NODE_IF, condition, then_body, else_body,
                            make_token(TOKEN_IF, line));
 }
 
-static ASTNode *while_node(ASTNode *condition, ASTNode *body, int line) {
+ASTNode *while_node(ASTNode *condition, ASTNode *body, int line) {
     return create_ast_node(AST_NODE_WHILE, condition, body, NULL,
                            make_token(TOKEN_WHILE, line));
 }
 
-static ASTNode *function(const char *name, ASTNode *parameters,
+ASTNode *function(const char *name, ASTNode *parameters,
                          ASTNode *body, bool is_main, int line) {
     ASTNode *node = create_ast_node(AST_NODE_FUNCTION, parameters, body, NULL,
                                     identifier_token(name, line));
@@ -122,8 +122,8 @@ static ASTNode *function(const char *name, ASTNode *parameters,
     return node;
 }
 
-static ASTNode *create_factorial_tree(void) {
-    // --- Funkcia factorialIterative (všetky premenné a parametre sú v LF) ---
+ASTNode *create_factorial_tree(void) {
+    // --- Function factorialIterative (all variables and parameters are in LF) ---
     ASTNode *iterative_body = NULL;
     ASTNode *iterative_last = NULL;
 
@@ -160,7 +160,7 @@ static ASTNode *create_factorial_tree(void) {
     ASTNode *iterative_function = function(
         "factorialIterative", parameter("LF@n", 3), iterative_body, false, 3);
 
-    // --- Funkcia factorialRecursive (všetky premenné a parametre sú v LF) ---
+    // --- Func factorialRecursive (All variables and parameters are in LF) ---
     ASTNode *recursive_then = return_statement(integer_expression(1, 13), 13);
     ASTNode *recursive_else = NULL;
     ASTNode *recursive_else_last = NULL;
@@ -190,7 +190,7 @@ static ASTNode *create_factorial_tree(void) {
     ASTNode *recursive_function = function(
         "factorialRecursive", parameter("LF@n", 11), recursive_body, false, 11);
 
-    // --- Funkcia @main factorialExample (lokálny rámec LF vytvorený pri vstupe do main) ---
+    // --- Function @main factorialExample (local frame LF created upon entering main) ---
     ASTNode *main_body = NULL;
     ASTNode *main_last = NULL;
     append_node(&main_body, &main_last,
