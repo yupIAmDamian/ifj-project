@@ -1,6 +1,5 @@
 // Compiler of IFJ26 imperative language
 // Author: Damian Frantisek Girasek (xgirasd00)
-
 #include "codegen_helper.h"
 
 extern char *current_func_name; 
