@@ -10,13 +10,13 @@ Každý člen tímu si zobral na starosti jednu ucelenú časť projektu:
             \midrule
             Damián František Girašek  & Generátor finálneho kódu \\
             Daniel Jurkovič  &  Sémanticka analýza\\
-            Dominik Madaj & Syntaktická analýza  \\
-            Michal Kopček & Lexikálna analýza \\
+            Dominik Madaj & Lexikálna analýza \\
+            Michal Kopček & Syntaktická analýza\\
         \bottomrule
     \end{tabular}
 \end{table}
 
-Okrem vyššie spomínaných komplexných častí, do ktorých iný členovia viac-menej nezasahovali. Členovia pracovali na moduloch, ktoré umožňovali lepšiu kvalitu kódu nasledovne:
+Okrem vyššie spomínaných komplexných častí, do ktorých iní členovia viac-menej nezasahovali. Členovia pracovali na moduloch, ktoré umožňovali lepšiu kvalitu kódu nasledovne:
 - Dominik Madaj - error
 - Daniel Jurkovič - symtable 
 - Damián František Girašek  - hashtable, helper_func, translator_test
@@ -24,7 +24,13 @@ Okrem vyššie spomínaných komplexných častí, do ktorých iný členovia vi
 \section{Organizácia práce v tíme a vývojový process}
 Na komunikáciu sme prevažne využívali Discord server, na ktorom sme mali raz týždenne 30 minútové meetingy, kde sme zistili aktuálny stav projektu a naplánovali sme si ciele na ďalší týždeň. 
 Ako platformu na verziovanie sme využili Github, kde sme každý pracovali vo svojej vlastnej vetve, ktorú sme neskôr mergli. Pri Pull requestoch sme mali kruh kontroly t.j.:
-% Tu bude obrázok kontroly%
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/xgirasd00_images/CW.png}
+    \caption{Obrázok ilustrujúci proces kontroly kódu}
+    \label{fig:nazov_obrazka}
+\end{figure}
 
 Pri code review sme mali 2 hlavné ciele. Kontrolovať logickosť kódu a dodržiavať princípy KISS a DRY. Vzhľadom na to, že pre väčšinu tímu to bola prvá skúsenosť s hodnotením cudzieho kódu nie vždy sa podarilo odhaliť chyby a nedokonalosti. No na druhej strane bolo vidieť zlepšenie pri hdonotení code review. 
 
