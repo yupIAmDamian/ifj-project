@@ -40,7 +40,15 @@ typedef enum {
     TOKEN_INTEGER,
     TOKEN_DOUBLE,
     TOKEN_STRING,
-    
+
+    // boolthen extension
+    TOKEN_TYPE_BOOLEAN,
+    TOKEN_TRUE,
+    TOKEN_FALSE,
+    TOKEN_AND,
+    TOKEN_OR,
+    TOKEN_NOT,
+
     // operators and special characters
     TOKEN_ASSIGN,        // =
     TOKEN_PLUS,          // +
