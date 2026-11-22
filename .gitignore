@@ -42,6 +42,7 @@
 *.ifjcode
 *.ifj26
 /IFJCODE26TEST/*
+*.aux
 
 # Debug files
 *.dSYM/
