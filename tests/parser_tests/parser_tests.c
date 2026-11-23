@@ -14,6 +14,64 @@ extern ASTNode *global_ast_root;
         }                                      \
     } while (0)
 
+static const char *node_name(ASTNodeType t) {
+    switch (t) {
+        case AST_NODE_PROGRAM:   return "PROGRAM";
+        case AST_NODE_FUNCTION:  return "FUNCTION";
+        case AST_NODE_VAR_DECL:  return "VAR_DECL";
+        case AST_NODE_IF:        return "IF";
+        case AST_NODE_WHILE:     return "WHILE";
+        case AST_NODE_RETURN:    return "RETURN";
+        case AST_NODE_EXPR:      return "EXPR";
+        case AST_NODE_PARAM:     return "PARAM";
+        case AST_NODE_VAR:       return "VAR";
+        case AST_NODE_TERM:      return "TERM";
+        case AST_NODE_ASSIGN:    return "ASSIGN";
+        case AST_NODE_CALL:      return "CALL";
+        case AST_NODE_UNIT:      return "UNIT";
+        default:                 return "OTHER";
+    }
+}
+
+static void print_token(const Token *t) {
+    switch (t->type) {
+        case TOKEN_PLUS:       printf("+");  break;
+        case TOKEN_MINUS:      printf("-");  break;
+        case TOKEN_MUL:        printf("*");  break;
+        case TOKEN_DIV:        printf("/");  break;
+        case TOKEN_LESS:       printf("<");  break;
+        case TOKEN_LESS_EQ:    printf("<="); break;
+        case TOKEN_GREATER:    printf(">");  break;
+        case TOKEN_GREATER_EQ: printf(">="); break;
+        case TOKEN_EQ:         printf("=="); break;
+        case TOKEN_NOT_EQ:     printf("!="); break;
+        case TOKEN_IDENTIFIER:
+            printf("%s", t->attribute.string_value ? t->attribute.string_value : "(none)");
+            break;
+        case TOKEN_INTEGER:    printf("%d", t->attribute.integer_value); break;
+        case TOKEN_DOUBLE:     printf("%g", t->attribute.double_value);  break;
+        case TOKEN_STRING:
+            printf("\"%s\"", t->attribute.string_value ? t->attribute.string_value : "");
+            break;
+        default:               printf("tok#%d", (int)t->type); break;
+    }
+}
+
+static void dump_list(const ASTNode *n, int depth, const char *role) {
+    bool first = true;
+    for (; n != NULL; n = n->next) {
+        for (int i = 0; i < depth; i++) printf("  ");
+        printf("%s: %s ", first ? role : "next", node_name(n->type));
+        print_token(&n->val);
+        printf("\n");
+
+        dump_list(n->left,  depth + 1, "L");
+        dump_list(n->right, depth + 1, "R");
+        dump_list(n->extra, depth + 1, "X");
+        first = false;
+    }
+}
+
 int main(int argc, char *argv[]) {
 
     int failures = 0;
@@ -21,8 +79,9 @@ int main(int argc, char *argv[]) {
     printf("--- Spustam testy pre parser.c ---\n");
 
     if (argc < 3 || argc > 5) {
-        printf("Pouzitie: ./test_parser <subor.ifj> <ocakavany_vysledok> [is_main]\n");
-        printf("Ocakavany vysledok: 0 = uspech, 1 = lexical error, 2 = syntax error\n");
+        printf("Pouzitie: ./test_parser <subor.ifj> <ocakavany_vysledok> [is_main] [is_const]\n");
+        printf("Ocakavany vysledok: 0 = uspech, 2 = syntax error\n");
+        printf("Vypis stromu: DUMP_AST=1 ./test_parser ...\n");
         return 1;
     }
 
@@ -41,7 +100,8 @@ int main(int argc, char *argv[]) {
 
     int expected_main = -1;
 
-    if (argc == 4) {
+    /* was `argc == 4`, which skipped is_main whenever is_const was given too */
+    if (argc >= 4) {
         expected_main = (int)strtol(argv[3], &endptr, 10);
 
         if (*endptr != '\0' || (expected_main != 0 && expected_main != 1)) {
@@ -149,6 +209,11 @@ int main(int argc, char *argv[]) {
             printf("[CHYBA] Funkcia neobsahuje ziadny prikaz na otestovanie is_const\n");
             failures++;
         }
+    }
+
+    if (result == 0 && getenv("DUMP_AST") != NULL) {
+        printf("\n--- AST ---\n");
+        dump_list(global_ast_root, 0, "ROOT");
     }
 
     parser_cleanup();
