@@ -52,6 +52,12 @@ const char* token_type_to_string(TokenType type) {
         case TOKEN_INDENT: return "TOKEN_INDENT";
         case TOKEN_DEDENT: return "TOKEN_DEDENT";
         case TOKEN_UNDERSCORE: return "TOKEN_UNDERSCORE";
+        case TOKEN_TYPE_BOOLEAN: return "TOKEN_TYPE_BOOLEAN";
+        case TOKEN_TRUE: return "TOKEN_TRUE";
+        case TOKEN_FALSE: return "TOKEN_FALSE";
+        case TOKEN_AND: return "TOKEN_AND";
+        case TOKEN_OR: return "TOKEN_OR";
+        case TOKEN_NOT: return "TOKEN_NOT";
         default: return "UNKNOWN TOKEN";
     }
 }

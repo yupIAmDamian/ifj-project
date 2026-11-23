@@ -267,6 +267,11 @@ static Token get_next_token_fsm(void)
                 } else if (character == '@') {
                     token.type = TOKEN_AT;
                     return token;
+                // boolthen extension
+                } else if (character == '&') {
+                    state = STATE_AMPERSAND;
+                } else if (character == '|') {
+                    state = STATE_PIPE;
                 } else {
                     error_exit(ERR_LEX, current_line, "invalid character on input");
                 }
@@ -322,6 +327,16 @@ static Token get_next_token_fsm(void)
                         buffer_free(&buffer);
                     } else if (strcmp(buffer.str, "_") == 0) {
                         token.type = TOKEN_UNDERSCORE;
+                        buffer_free(&buffer);
+                    // boolthen extension
+                    } else if (strcmp(buffer.str, "Boolean") == 0) {
+                        token.type = TOKEN_TYPE_BOOLEAN;
+                        buffer_free(&buffer);
+                    } else if (strcmp(buffer.str, "true") == 0) {
+                        token.type = TOKEN_TRUE;
+                        buffer_free(&buffer);
+                    } else if (strcmp(buffer.str, "false") == 0) {
+                        token.type = TOKEN_FALSE;
                         buffer_free(&buffer);
                     } else { // no keyword matched, its an ID
                         token.type = TOKEN_IDENTIFIER;
@@ -630,11 +645,12 @@ static Token get_next_token_fsm(void)
                 }
                 return token;
 
-            case STATE_EXC_MARK: // detects '!='
+            case STATE_EXC_MARK: // differentiates between '!' and '!='
                 if (character == '=') {
                     token.type = TOKEN_NOT_EQ;
                 } else {
-                    error_exit(ERR_LEX, current_line, "invalid combination of characters on input");
+                    ungetc(character, stdin);
+                    token.type = TOKEN_NOT;
                 }
                 return token;
 
@@ -728,6 +744,22 @@ static Token get_next_token_fsm(void)
                     return token;
                 } else {
                     error_exit(ERR_LEX, current_line, "line cant continue after a multiline block comment");
+                }
+
+            case STATE_AMPERSAND:
+                if (character == '&') {
+                    token.type = TOKEN_AND; 
+                    return token;
+                } else {
+                    error_exit(ERR_LEX, current_line, "invalid input - single &");
+                }
+
+            case STATE_PIPE:
+                if (character == '|') {
+                    token.type = TOKEN_OR; 
+                    return token;
+                } else {
+                    error_exit(ERR_LEX, current_line, "invalid input - single |");
                 }
         }
 
