@@ -364,6 +364,9 @@ void gen_call(ASTNode *node, char *result_var) {
     else if (strcmp(label, "readDouble") == 0) {
         gen_read_default(result_var, "float", "float@0x0p+0");
     }
+    else if (strcmp(label, "readBoolean") == 0) {
+        gen_read_default(result_var, "bool", "bool@false");
+    }
     else if (strcmp(label, "strLength") == 0) {
         gen_strlen();
         if(strcmp(current_func_name, "main") != 0) {

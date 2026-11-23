@@ -203,6 +203,12 @@ void gen_data_type(ASTNode *node){
             printf("string@");
             gen_escaped_string(token->attribute.string_value);
             break;
+        case TOKEN_TRUE:
+            printf("bool@true");
+            break;
+        case TOKEN_FALSE:
+            printf("bool@false");
+            break;
         default:
             break;
     }
