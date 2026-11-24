@@ -181,6 +181,7 @@ ASTNode* parse_params_opt() {
     ASTNode *last_param = first_param;
 
     while (match(TOKEN_COMMA)) {
+        if (current_token.type == TOKEN_RPAREN) break;
         ASTNode *next_param = parse_param();
         if (next_param == NULL) {
             return NULL; // syntax error
@@ -218,10 +219,11 @@ bool parse_return_type_opt(DataType *out) {
 bool parse_type(DataType *out) {
     DataType t;
     switch (current_token.type) {
-        case TOKEN_TYPE_INT:    t = TYPE_INT;    break;
-        case TOKEN_TYPE_DOUBLE: t = TYPE_FLOAT;  break;
-        case TOKEN_TYPE_STRING: t = TYPE_STRING; break;
-        case TOKEN_TYPE_UNIT:   t = TYPE_VOID;   break;
+        case TOKEN_TYPE_INT:     t = TYPE_INT;    break;
+        case TOKEN_TYPE_DOUBLE:  t = TYPE_FLOAT;  break;
+        case TOKEN_TYPE_STRING:  t = TYPE_STRING; break;
+        case TOKEN_TYPE_UNIT:    t = TYPE_VOID;   break;
+        case TOKEN_TYPE_BOOLEAN: t = TYPE_BOOL;   break;
         default: return false;
     }
     current_token = get_token_buffered();
@@ -306,31 +308,7 @@ ASTNode* parse_statement() {
         return create_ast_node(AST_NODE_WHILE, cond_node, body_node, NULL, while_token);
     }
     else if (current_token.type == TOKEN_IF) {
-        Token if_token = current_token;
-        current_token = get_token_buffered();
-
-        ASTNode *cond_node = parse_expression();
-        if (cond_node == NULL) {
-            return NULL;
-        }
-        if (!match(TOKEN_THEN)) return NULL;
-        if (!match(TOKEN_EOL)) return NULL;
-        if (!match(TOKEN_INDENT)) return NULL;
-        
-        ASTNode *then_node = parse_statements();
-        if (then_node == NULL) return NULL;
-        
-        if (!match(TOKEN_DEDENT)) return NULL;
-        if (!match(TOKEN_ELSE)) return NULL;
-        if (!match(TOKEN_EOL)) return NULL;
-        if (!match(TOKEN_INDENT)) return NULL;
-        
-        ASTNode *else_node = parse_statements();
-        if (else_node == NULL) return NULL;
-        
-        if (!match(TOKEN_DEDENT)) return NULL;
-        
-        return create_ast_node(AST_NODE_IF, cond_node, then_node, else_node, if_token);
+        return parse_if_statement();
     }
     else if (current_token.type == TOKEN_VAL || current_token.type == TOKEN_VAR) {
         bool is_const = (current_token.type == TOKEN_VAL);
@@ -390,6 +368,42 @@ ASTNode* parse_statement() {
     }
 }
 
+ASTNode *parse_if_statement() {
+    Token if_token = current_token;
+    current_token = get_token_buffered();
+
+    ASTNode *cond_node = parse_expression();
+    if (cond_node == NULL) {
+        return NULL;
+    }
+    if (!match(TOKEN_THEN)) return NULL;
+    if (!match(TOKEN_EOL)) return NULL;
+    if (!match(TOKEN_INDENT)) return NULL;
+        
+    ASTNode *then_node = parse_statements();
+    if (then_node == NULL) {
+        return NULL;
+    }    
+    if (!match(TOKEN_DEDENT)) return NULL;
+
+    ASTNode *else_node = NULL;
+    if (match(TOKEN_ELSE)) {
+        if (current_token.type == TOKEN_IF) {
+            else_node = parse_if_statement();
+            if (else_node == NULL) return NULL;
+        }
+        else {
+            if (!match(TOKEN_EOL)) return NULL;
+            if (!match(TOKEN_INDENT)) return NULL;
+
+            else_node = parse_statements();
+            if (else_node == NULL) return NULL;
+            if (!match(TOKEN_DEDENT)) return NULL;
+        }
+    }        
+    return create_ast_node(AST_NODE_IF, cond_node, then_node, else_node, if_token);
+}
+
 bool parse_type_opt(DataType *out) {
     *out = TYPE_UNKNOWN;
     if (match(TOKEN_COLON)) {
@@ -437,6 +451,7 @@ ASTNode* parse_args_opt() {
 
     ASTNode *last_arg = first_arg;
     while (match(TOKEN_COMMA)) {
+        if (current_token.type == TOKEN_RPAREN) break;
         ASTNode *next_arg = parse_expression();
         if (next_arg == NULL) return NULL;
 
@@ -447,6 +462,7 @@ ASTNode* parse_args_opt() {
     return first_arg;
 }
 
+// can be removed after adding FUNEXP
 ASTNode* parse_term() {
     if (current_token.type == TOKEN_IDENTIFIER || current_token.type == TOKEN_INTEGER || 
         current_token.type == TOKEN_DOUBLE || current_token.type == TOKEN_STRING) {

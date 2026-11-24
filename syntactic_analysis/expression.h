@@ -12,18 +12,17 @@
 #include <stdbool.h>
 
 typedef enum {
-    PREC_UNARY,     // unary +, -
+    PREC_UNARY,     // unary +, -, !
     PREC_MUL_DIV,   // *, /
     PREC_ADD_SUB,   // binary +, -
     PREC_REL,       // <, <=, >, >=
     PREC_EQ_NOT_EQ, // ==, !=
+    PREC_AND,       // &&
+    PREC_OR,        // ||
     PREC_LPAREN,    // (
     PREC_RPAREN,    // )
     PREC_OPERAND,   // id, int, double, string
     PREC_DOLLAR,    // $ 
-    PREC_AND,       // &&
-    PREC_OR,        // ||
-    PREC_NOT        // !
 } PrecTableIndex;
 
 typedef enum {

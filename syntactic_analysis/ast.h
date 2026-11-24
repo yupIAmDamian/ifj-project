@@ -31,7 +31,9 @@ typedef enum {
     AST_NODE_UNIT,          // unit node
     AST_NODE_AND,           // &&
     AST_NODE_OR,            // ||
-    AST_NODE_NOT            // ! 
+    AST_NODE_NOT,           // !
+    AST_NODE_TRUE,          // node true
+    AST_NODE_FALSE          // node false
 } ASTNodeType;
 
 typedef struct ASTNode {

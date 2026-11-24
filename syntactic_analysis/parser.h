@@ -120,6 +120,12 @@ ASTNode* parse_statements();
 ASTNode* parse_statement(); 
 
 /**
+ * @brief Parses an if statement, including optional 'else if' chains and optional 'else' block.
+ * @return Pointer to the created AST_NODE_IF node, or NULL on syntax error.
+ */
+ASTNode* parse_if_statement();
+
+/**
  * @brief Parses an optional variable type annotation (': Type').
  * @param out Output pointer storing the parsed DataType, or TYPE_UNKNOWN if omitted.
  * @return true if valid or omitted, false on syntax error.
