@@ -164,7 +164,7 @@ void gen_if(ASTNode *node){
     char *end_label = create_label(label_number, "if", "end");
 
     decide_condition(condition_node);
-
+    printf("PUSHS bool@false\n");
     gen_jumpifeqs(else_label);
 
     gen_code(then_body);
@@ -222,7 +222,7 @@ void gen_while(ASTNode *node){
 
     gen_label(start_label);
     decide_condition(condition_node);
-
+    printf("PUSHS bool@false\n");
     gen_jumpifeqs(end_label);
 
     gen_code(body_node);
@@ -235,45 +235,75 @@ void gen_while(ASTNode *node){
     free(end_label);
 }
 
-//TODO
-/*
-check if my logic is correct
-i will push every variable onto the stack and then on top there will be the result of the condition
-*/
+ void gen_operand(ASTNode *node) {
+    if (node == NULL) return ;
+    if (node->type == AST_NODE_VAR || node->type == AST_NODE_TERM)
+        gen_pushs(node);
+    else
+        decide_condition(node);
+}
+
 void decide_condition(ASTNode *condition_node){
-    Token *condition = get_token_from_node(condition_node); 
+    if (condition_node == NULL)
+        return;
 
-    ASTNode *op1 = condition_node->left;
-    gen_pushs(op1);
+    if (condition_node->type == AST_NODE_CALL) {
+        gen_fun_call(condition_node, NULL);
+        return;
+    }
 
-    ASTNode *op2 = condition_node->right;
-    gen_pushs(op2);
+    if (condition_node->type == AST_NODE_VAR || condition_node->type == AST_NODE_TERM) {
+        gen_pushs(condition_node);
+        return;
+    }
 
-    switch(condition->type){
-        case TOKEN_LESS_EQ:
-        case TOKEN_GREATER:
-            gen_GTs();
-            break;
-        case TOKEN_GREATER_EQ:
-        case TOKEN_LESS:
-            gen_LTs();
-            break;
-        case TOKEN_EQ:
-            gen_EQs();
-            break;
-        case TOKEN_NOT_EQ:
-            gen_EQs();
-            gen_NOTs();
-            break;
+    Token *condition = get_token_from_node(condition_node);
+    if (condition == NULL)
+        return;
+
+
+    switch (condition->type) {
+        case TOKEN_PLUS:
+        case TOKEN_MINUS:
+        case TOKEN_MUL:
+        case TOKEN_DIV:
+            equation_traversal(condition_node, NULL);  
+            return;
+        case TOKEN_TRUE:
+            printf("PUSHS bool@true\n");
+            return;
+        case TOKEN_FALSE:
+            printf("PUSHS bool@false\n");
+            return;
         default:
+            if (condition->type == TOKEN_IDENTIFIER || condition->type == TOKEN_INTEGER ||
+                condition->type == TOKEN_DOUBLE || condition->type == TOKEN_STRING) {
+                gen_pushs(condition_node);
+            }
             break;
 
     }
 
-    if(condition->type == TOKEN_LESS_EQ || condition->type == TOKEN_GREATER_EQ) {
-        printf("PUSHS bool@true\n");
-    }else{
-        printf("PUSHS bool@false\n");
+    ASTNode *op1 = condition_node->left;
+    ASTNode *op2 = condition_node->right;
+
+    if (op1 != NULL)
+        gen_operand(op1);
+    if (op2 != NULL)
+        gen_operand(op2);
+
+    switch (condition->type) {
+        case TOKEN_LESS_EQ:  gen_GTs(); gen_NOTs(); break;
+        case TOKEN_GREATER:  gen_GTs(); break;
+        case TOKEN_GREATER_EQ: gen_LTs(); gen_NOTs(); break;
+        case TOKEN_LESS:     gen_LTs(); break;
+        case TOKEN_EQ:       gen_EQs(); break;
+        case TOKEN_NOT_EQ:   gen_EQs(); gen_NOTs(); break;
+        case TOKEN_AND:      gen_ANDs(); break;
+        case TOKEN_OR:       gen_ORs(); break;
+        case TOKEN_NOT:      gen_NOTs(); break;
+        default:
+            break;
     }
 }
 
