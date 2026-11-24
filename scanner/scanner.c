@@ -267,6 +267,11 @@ static Token get_next_token_fsm(void)
                 } else if (character == '@') {
                     token.type = TOKEN_AT;
                     return token;
+                // boolthen extension
+                } else if (character == '&') {
+                    state = STATE_AMPERSAND;
+                } else if (character == '|') {
+                    state = STATE_PIPE;
                 } else {
                     error_exit(ERR_LEX, current_line, "invalid character on input");
                 }
@@ -280,53 +285,47 @@ static Token get_next_token_fsm(void)
                     // compares the buffer to all keywords
                     if (strcmp(buffer.str, "def") == 0) {
                         token.type = TOKEN_DEF;
-                        buffer_free(&buffer);
                     } else if (strcmp(buffer.str, "do") == 0) {
                         token.type = TOKEN_DO;
-                        buffer_free(&buffer);
                     } else if (strcmp(buffer.str, "Double") == 0) {
                         token.type = TOKEN_TYPE_DOUBLE;
-                        buffer_free(&buffer);
                     } else if (strcmp(buffer.str, "else") == 0) {
                         token.type = TOKEN_ELSE;
-                        buffer_free(&buffer);
                     } else if (strcmp(buffer.str, "if") == 0) {
                         token.type = TOKEN_IF;
-                        buffer_free(&buffer);
                     } else if (strcmp(buffer.str, "import") == 0) {
                         token.type = TOKEN_IMPORT;
-                        buffer_free(&buffer);
                     } else if (strcmp(buffer.str, "Int") == 0) {
                         token.type = TOKEN_TYPE_INT;
-                        buffer_free(&buffer);
                     } else if (strcmp(buffer.str, "return") == 0) {
                         token.type = TOKEN_RETURN;
-                        buffer_free(&buffer);
                     } else if (strcmp(buffer.str, "String") == 0) {
                         token.type = TOKEN_TYPE_STRING;
-                        buffer_free(&buffer);
                     } else if (strcmp(buffer.str, "then") == 0) {
                         token.type = TOKEN_THEN;
-                        buffer_free(&buffer);
                     } else if (strcmp(buffer.str, "Unit") == 0) {
                         token.type = TOKEN_TYPE_UNIT;
-                        buffer_free(&buffer);
                     } else if (strcmp(buffer.str, "val") == 0) {
                         token.type = TOKEN_VAL;
-                        buffer_free(&buffer);
                     } else if (strcmp(buffer.str, "var") == 0) {
                         token.type = TOKEN_VAR;
-                        buffer_free(&buffer);
                     } else if (strcmp(buffer.str, "while") == 0) {
                         token.type = TOKEN_WHILE;
-                        buffer_free(&buffer);
                     } else if (strcmp(buffer.str, "_") == 0) {
                         token.type = TOKEN_UNDERSCORE;
-                        buffer_free(&buffer);
+                    // boolthen extension
+                    } else if (strcmp(buffer.str, "Boolean") == 0) {
+                        token.type = TOKEN_TYPE_BOOLEAN;
+                    } else if (strcmp(buffer.str, "true") == 0) {
+                        token.type = TOKEN_TRUE;
+                    } else if (strcmp(buffer.str, "false") == 0) {
+                        token.type = TOKEN_FALSE;
                     } else { // no keyword matched, its an ID
                         token.type = TOKEN_IDENTIFIER;
                         token.attribute.string_value = buffer.str;
+                        return token;
                     }
+                    buffer_free(&buffer);
                     return token;
                 }
                 break;
@@ -630,11 +629,12 @@ static Token get_next_token_fsm(void)
                 }
                 return token;
 
-            case STATE_EXC_MARK: // detects '!='
+            case STATE_EXC_MARK: // differentiates between '!' and '!='
                 if (character == '=') {
                     token.type = TOKEN_NOT_EQ;
                 } else {
-                    error_exit(ERR_LEX, current_line, "invalid combination of characters on input");
+                    ungetc(character, stdin);
+                    token.type = TOKEN_NOT;
                 }
                 return token;
 
@@ -728,6 +728,22 @@ static Token get_next_token_fsm(void)
                     return token;
                 } else {
                     error_exit(ERR_LEX, current_line, "line cant continue after a multiline block comment");
+                }
+
+            case STATE_AMPERSAND:
+                if (character == '&') {
+                    token.type = TOKEN_AND; 
+                    return token;
+                } else {
+                    error_exit(ERR_LEX, current_line, "invalid input - single &");
+                }
+
+            case STATE_PIPE:
+                if (character == '|') {
+                    token.type = TOKEN_OR; 
+                    return token;
+                } else {
+                    error_exit(ERR_LEX, current_line, "invalid input - single |");
                 }
         }
 

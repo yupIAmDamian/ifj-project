@@ -75,6 +75,7 @@ Symtable* symtable_init() {
     st->top = -1;
     st->block_counter=0;
     st->in_main=false;
+    st->current_func =NULL;
     scope_push(st);
     return st;
 }
@@ -145,13 +146,14 @@ bool symtable_insert_var(Symtable *st, char *name, DataType type, bool is_init, 
     Symbol *sym = symbol_create(name, SYMBOL_VAR, type, is_init, is_const);
     if (!sym) return false;
 
-    char mangled_buf[256];
+    char mangled_buf[512];
+    const char *fn = (st->current_func != NULL) ? st->current_func : "global";
+
     if (st->in_main) {
-        snprintf(mangled_buf, sizeof(mangled_buf), "GF@%s$%d", name, st->block_counter);
-    } 
-    else {
-        snprintf(mangled_buf, sizeof(mangled_buf), "LF@%s$%d", name, st->block_counter);
-    }
+        snprintf(mangled_buf, sizeof(mangled_buf), "GF@%s$%s$%d", fn, name, st->block_counter);
+    } else {
+        snprintf(mangled_buf, sizeof(mangled_buf), "LF@%s$%s$%d", fn, name, st->block_counter);
+}
 
     sym->mangled_name = str_duplicate(mangled_buf);
     sym->is_const = is_const;

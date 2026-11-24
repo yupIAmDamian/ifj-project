@@ -11,7 +11,9 @@
 #include <string.h>
 #include "../error.h"
 
-// token types
+/**
+ * @brief Lexical token types.
+ */
 typedef enum {
     TOKEN_EOF,           // end of file (EOF)
     TOKEN_EOL,           // end of line (LF)
@@ -73,7 +75,9 @@ typedef enum {
     TOKEN_DEDENT,        // decrease indentation level
 } TokenType;
 
-// structure for a token
+/**
+ * @brief Represents a single lexical token with its type, attribute, and source line.
+ */
 typedef struct {
     TokenType type;
     union {
@@ -84,7 +88,9 @@ typedef struct {
     int line; // line where the token is located (used for error messages)
 } Token;
 
-// states of the scanner FSM
+/**
+ * @brief Internal states of the scanner finite state machine.
+ */
 typedef enum {
     STATE_INDENT_DEDENT,
     STATE_INDENT_DEDENT_SLASH,
@@ -119,22 +125,53 @@ typedef enum {
     STATE_COMMENT_BLOCK,
     STATE_COMMENT_BLOCK_END,
     STATE_COMMENT_BLOCK_NESTED,
+    // boolthen extension
+    STATE_AMPERSAND,
+    STATE_PIPE,
 } State;
 
-Token get_next_token(void);
-
-void scanner_init(void);
-void scanner_free(void);
-// structure for dynamic string buffer
+/**
+ * @brief Dynamic string buffer for accumulating identifiers, keywords, and literals.
+ */
 typedef struct {
     char *str;
     int length;
     int capacity;
 } StringKeywordID;
 
-// buffer functions
+/**
+ * @brief Reads and returns the next lexical token from standard input.
+ * @return Next Token structure (returns TOKEN_EOF at the end of input).
+ */
+Token get_next_token(void);
+
+/**
+ * @brief Initializes the scanner state and allocates the indentation stack.
+ */
+void scanner_init(void);
+
+/**
+ * @brief Frees all internal resources allocated by the scanner.
+ */
+void scanner_free(void);
+
+/**
+ * @brief Initializes a dynamic string buffer with default capacity.
+ * @param buffer Pointer to the StringKeywordID structure to initialize.
+ */
 void buffer_init(StringKeywordID *buffer);
+
+/**
+ * @brief Appends a single character to the buffer, resizing it if necessary.
+ * @param buffer Pointer to the target StringKeywordID buffer.
+ * @param character Character to append.
+ */
 void buffer_add_char(StringKeywordID *buffer, char character);
+
+/**
+ * @brief Frees the internal memory of the dynamic string buffer.
+ * @param buffer Pointer to the StringKeywordID buffer to free.
+ */
 void buffer_free(StringKeywordID *buffer);
 
 #endif
