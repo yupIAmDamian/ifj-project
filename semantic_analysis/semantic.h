@@ -5,7 +5,7 @@
 #define SEMANTIC_H
 
 #include "ast.h"
-#include "symtable.h"
+#include "../hashtable/symtable.h"
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>

@@ -21,6 +21,9 @@ typedef enum {
     PREC_RPAREN,    // )
     PREC_OPERAND,   // id, int, double, string
     PREC_DOLLAR,    // $ 
+    PREC_AND,       // &&
+    PREC_OR,        // ||
+    PREC_NOT        // !
 } PrecTableIndex;
 
 typedef enum {

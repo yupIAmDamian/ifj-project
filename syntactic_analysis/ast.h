@@ -28,7 +28,10 @@ typedef enum {
     AST_NODE_ASSIGN,        // assignment node
     AST_NODE_CALL,          // function call node
     AST_NODE_INT2FLOAT,     // integer to float conversion node
-    AST_NODE_UNIT           // unit node
+    AST_NODE_UNIT,          // unit node
+    AST_NODE_AND,           // &&
+    AST_NODE_OR,            // ||
+    AST_NODE_NOT            // ! 
 } ASTNodeType;
 
 typedef struct ASTNode {

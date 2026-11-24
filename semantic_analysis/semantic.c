@@ -290,6 +290,9 @@ static void check_function(ASTNode *node, Symtable *st) {
     bool prev_in_main = st->in_main;
     st->in_main = node->is_main;
 
+    const char *prev_func = st->current_func;
+    st->current_func = node->val.attribute.string_value;
+
     scope_push(st);
 
     // Register formal parameters as immutable local variables and mangle their AST nodes
@@ -331,7 +334,7 @@ static void check_function(ASTNode *node, Symtable *st) {
     }
 
     scope_pop(st);
-
+    st->current_func = prev_func;
     st->in_main = prev_in_main;
     current_func_ret_type = prev_ret_type;
 
