@@ -1,7 +1,7 @@
 // Compiler of IFJ26 imperative language
 // Author: Dominik Madaj (xmadajd00)
 
-#include "scanner_tests.h"
+#include "../../helper_func.h"
 
 // structure for expected tokens
 typedef struct {
@@ -138,6 +138,31 @@ int main(void) {
         {.type =TOKEN_IDENTIFIER, .expected_str = "n"},
         {.type =TOKEN_EOL},
         {.type =TOKEN_DEDENT},
+        // boolean test
+        {.type =TOKEN_TYPE_BOOLEAN},
+        {.type =TOKEN_IDENTIFIER, .expected_str = "boolext"},
+        {.type =TOKEN_ASSIGN},
+        {.type =TOKEN_TRUE},
+        {.type =TOKEN_EOL},
+        {.type =TOKEN_TYPE_BOOLEAN},
+        {.type =TOKEN_IDENTIFIER, .expected_str = "boolfalse"},
+        {.type =TOKEN_ASSIGN},
+        {.type =TOKEN_FALSE},
+        {.type =TOKEN_EOL},
+        {.type =TOKEN_IF},
+        {.type =TOKEN_IDENTIFIER, .expected_str = "a"},
+        {.type =TOKEN_AND},
+        {.type =TOKEN_IDENTIFIER, .expected_str = "b"},
+        {.type =TOKEN_OR},
+        {.type =TOKEN_NOT},
+        {.type =TOKEN_IDENTIFIER, .expected_str = "c"},
+        {.type =TOKEN_EOL},
+        {.type =TOKEN_INDENT},
+        {.type =TOKEN_RETURN},
+        {.type =TOKEN_IDENTIFIER, .expected_str = "result"},
+        {.type =TOKEN_EOL},
+        {.type =TOKEN_DEDENT},
+        // end of boolean test
         {.type =TOKEN_IF},
         {.type =TOKEN_IDENTIFIER, .expected_str = "abcd"},
         {.type =TOKEN_LPAREN},
@@ -181,17 +206,17 @@ int main(void) {
     do {
         token = get_next_token();
         if (current_index >= expected_count) {
-            printf("UNEXPECTED TOKEN:  %s\n", token_type_to_string(token.type));
+            printf("UNEXPECTED TOKEN:  %s\n", token_type_name(token.type));
             test_passed = 0;
             break;
         }
 
         ExpectedToken exp = expected[current_index];
-        printf("Token %d: %-25s ", current_index + 1, token_type_to_string(token.type));
+        printf("Token %d: %-25s ", current_index + 1, token_type_name(token.type));
 
         //check token type
         if (token.type != exp.type) {
-            printf("\n  EXPECTED: %s\n", token_type_to_string(exp.type));
+            printf("\n  EXPECTED: %s\n", token_type_name(exp.type));
             test_passed = 0;
         } 
         else { // check token attributes
