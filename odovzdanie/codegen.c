@@ -139,7 +139,7 @@ void gen_fun_def_vars_recursive(ASTNode *node){
 
     if (node->type == AST_NODE_VAR_DECL) {
         gen_defvar();
-        gen_var(gen_string_from_node(node->left));
+        printf("%s", gen_string_from_node(node->left));
         gen_new_line();
     }
 

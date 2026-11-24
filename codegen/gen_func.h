@@ -13,8 +13,6 @@ extern char *current_func_name;
 
 void gen_params_declaration(char *var_name);
 
-void gen_var(char* var_name);
-
 void create_head();
 
 void gen_new_line();

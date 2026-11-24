@@ -143,7 +143,7 @@ void gen_fun_def_vars_recursive(ASTNode *node){
 
     if (node->type == AST_NODE_VAR_DECL) {
         gen_defvar();
-        gen_var(gen_string_from_node(node->left));
+        printf("%s", gen_string_from_node(node->left));
         gen_new_line();
     }
 
@@ -365,15 +365,11 @@ void gen_call(ASTNode *node, char *result_var) {
         gen_read_default(result_var, "float", "float@0x0p+0");
     }
     else if (strcmp(label, "readBoolean") == 0) {
-        gen_read_default(result_var, "bool", "bool@false");
+        gen_read_default(result_var, "float", "float@0x0p+0");
     }
     else if (strcmp(label, "strLength") == 0) {
         gen_strlen();
-        if(strcmp(current_func_name, "main") != 0) {
-            printf("%s$%s ", result_var, current_func_name);
-        } else {
-            printf("%s ", result_var);
-        }
+        printf("%s ", result_var);
         gen_argument(node->right);
         gen_new_line();
     }
