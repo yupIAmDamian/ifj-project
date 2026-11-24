@@ -1,7 +1,7 @@
 // Compiler of IFJ26 imperative language
 // Author: Dominik Madaj (xmadajd00)
 
-#include "scanner_tests.h"
+#include "../../helper_func.h"
 
 // structure for expected tokens
 typedef struct {
@@ -206,17 +206,17 @@ int main(void) {
     do {
         token = get_next_token();
         if (current_index >= expected_count) {
-            printf("UNEXPECTED TOKEN:  %s\n", token_type_to_string(token.type));
+            printf("UNEXPECTED TOKEN:  %s\n", token_type_name(token.type));
             test_passed = 0;
             break;
         }
 
         ExpectedToken exp = expected[current_index];
-        printf("Token %d: %-25s ", current_index + 1, token_type_to_string(token.type));
+        printf("Token %d: %-25s ", current_index + 1, token_type_name(token.type));
 
         //check token type
         if (token.type != exp.type) {
-            printf("\n  EXPECTED: %s\n", token_type_to_string(exp.type));
+            printf("\n  EXPECTED: %s\n", token_type_name(exp.type));
             test_passed = 0;
         } 
         else { // check token attributes

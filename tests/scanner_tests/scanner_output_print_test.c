@@ -1,7 +1,7 @@
 // Compiler of IFJ26 imperative language
 // Author: Dominik Madaj (xmadajd00)
 
-#include "scanner_tests.h"
+#include "../../helper_func.h"
 
 void dump_all_tokens(void) {
     printf("--- PRINTING ALL TOKENS ---\n");
@@ -13,7 +13,7 @@ void dump_all_tokens(void) {
         token = get_next_token();
         token_count++;
 
-        printf("[Line %03d] [%03d] %-12s", token.line, token_count, token_type_to_string(token.type));
+        printf("[Line %03d] [%03d] %-12s", token.line, token_count, token_type_name(token.type));
 
         if (token.type == TOKEN_IDENTIFIER || token.type == TOKEN_STRING) {
             printf(" : %s", token.attribute.string_value);
