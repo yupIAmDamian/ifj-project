@@ -11,18 +11,8 @@
 //function declaration
 void gen_params_declaration(char *var_name){
     gen_defvar();
-    gen_var(var_name);
+    printf("%s", var_name);
     gen_new_line();
-}
-
-//variable generation
-void gen_var(char* var_name){
-    //TODO check if There is GL in name of the var if there is dont add the function name to it
-    if(strncmp(var_name, "GF@", 3) == 0 ) {
-        printf("%s", var_name);
-        return;
-    }
-    printf("%s$%s", var_name, current_func_name);
 }
 
 //rest code
@@ -63,7 +53,7 @@ void gen_pushframe(){
 void gen_pops(char *var){
     printf("POPS ");
     if(var != NULL){
-        gen_var(var);
+        printf("%s", var);
     }
     gen_new_line();
 }
@@ -181,7 +171,7 @@ void gen_pushs(ASTNode *node){
 void gen_argument(ASTNode *arg_node){
     Token *token = get_token_from_node(arg_node);
     if (token->type == TOKEN_IDENTIFIER) {
-        gen_var(gen_string_from_node(arg_node));
+        printf("%s", gen_string_from_node(arg_node));
     } else {
         gen_data_type(arg_node);
     }
@@ -202,6 +192,12 @@ void gen_data_type(ASTNode *node){
         case TOKEN_STRING:
             printf("string@");
             gen_escaped_string(token->attribute.string_value);
+            break;
+        case TOKEN_TRUE:
+            printf("bool@true");
+            break;
+        case TOKEN_FALSE:
+            printf("bool@false");
             break;
         default:
             break;
@@ -267,7 +263,7 @@ void gen_read_default(char *var, char* data_type, char *default_val) {
 //variable name + data type
 void gen_read(char *var, char *data_type){
     printf("READ ");
-    gen_var(var);
+    printf("%s", var);
     printf(" %s\n", data_type);
 }
 
