@@ -31,7 +31,9 @@ typedef enum {
     AST_NODE_UNIT,          // unit node
     AST_NODE_AND,           // &&
     AST_NODE_OR,            // ||
-    AST_NODE_NOT            // ! 
+    AST_NODE_NOT,           // !
+    AST_NODE_TRUE,          // node true
+    AST_NODE_FALSE          // node false
 } ASTNodeType;
 
 typedef struct ASTNode {
@@ -50,8 +52,20 @@ typedef struct ASTNode {
     bool uses_substr;
 } ASTNode;
 
+/**
+ * @brief Allocates and initializes a new AST node and registers it in the intrusive allocation list.
+ * @param type Type of the AST node (ASTNodeType).
+ * @param left Pointer to the left child AST node (or NULL).
+ * @param right Pointer to the right child AST node (or NULL).
+ * @param extra Pointer to an auxiliary child AST node, such as an else branch (or NULL).
+ * @param val Lexical token associated with the node.
+ * @return Pointer to the newly allocated ASTNode (exits with ERR_INTERNAL on allocation failure).
+ */
 ASTNode *create_ast_node(ASTNodeType type,ASTNode *left, ASTNode *right, ASTNode *extra, Token val);
 
+/**
+ * @brief Frees all allocated AST nodes and their owned string attributes via the intrusive allocation list.
+ */
 void ast_cleanup(void);
 
 #endif
