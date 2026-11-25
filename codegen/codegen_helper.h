@@ -12,6 +12,13 @@
  */
 extern char *current_func_name;
 
+/*
+ * @brief Global counter for generating unique labels.
+ * @note This counter is incremented each time a new label is created.
+ */
+extern int label_counter;
+
+
 /**
  * @brief Retrieves a pointer to the Token stored inside an AST node.
  * @param node Pointer to the AST node.
@@ -40,5 +47,30 @@ void gen_escaped_string(char *value);
  * @return Pointer to the newly allocated label string, or NULL if formatting or allocation fails.
  */
 char *create_label(int number, char* label_name, char* label_type);
+
+/*
+ * @brief Checks if the current function is the main function.
+ * @return True if the current function is "main", false otherwise.
+*/
+bool in_main();
+
+/**
+ * @brief Generates a fresh unique ID.
+ * @return A unique integer ID.
+ */
+int fresh_id();
+
+/**
+ * @brief Returns the name of a scratch variable based on the current function.
+ * @return A string representing the scratch variable.
+ */
+char *scratch();
+
+/*
+ * @brief Checks if a code block always returns a value.
+ * @param node The root of the code block to check.
+ * @return True if the code block always returns a value, false otherwise.
+*/
+bool always_returns(ASTNode *node);
 
 #endif
