@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include "../scanner/scanner.h"
 
 /**
  * @brief Entry point for semantic analysis; registers built-in and user-defined functions

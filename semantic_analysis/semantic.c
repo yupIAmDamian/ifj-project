@@ -81,6 +81,7 @@ static void register_builtin_functions(Symtable *st) {
     symtable_insert_func(st, "readLine", TYPE_STRING, NULL, 0);
     symtable_insert_func(st, "readInt", TYPE_INT, NULL, 0);
     symtable_insert_func(st, "readDouble", TYPE_FLOAT, NULL, 0);
+    symtable_insert_func(st, "readBoolean", TYPE_BOOL, NULL, 0);
     
     // Variadic/polymorphic 'Any' parameter types are handled separately in check_func_call
     symtable_insert_func(st, "print", TYPE_VOID, NULL, 1);
@@ -314,7 +315,7 @@ static void check_function(ASTNode *node, Symtable *st) {
 
     if (infer_return) {
         DataType deduced = deduce_return_type(node->right);
-        if (deduced == TYPE_UNKNOWN || deduced == TYPE_BOOL) {
+        if (deduced == TYPE_UNKNOWN) {
             error_exit(ERR_TYPE, 0, "Cannot infer valid return type for function");
         }
         if (current_func_ret_type != TYPE_UNKNOWN && current_func_ret_type != deduced) {
@@ -449,7 +450,7 @@ static DataType check_comparison(ASTNode *node, Symtable *st) {
             node->inferred_type = TYPE_BOOL;
             return TYPE_BOOL;
         }
-        if (is_equality && left_type == TYPE_VOID) {
+        if (is_equality && (left_type == TYPE_VOID || left_type == TYPE_BOOL)) {
             node->inferred_type = TYPE_BOOL;
             return TYPE_BOOL;
         }
@@ -458,6 +459,25 @@ static DataType check_comparison(ASTNode *node, Symtable *st) {
     error_exit(ERR_TYPE, 0, "Cannot compare incompatible types");
     return TYPE_UNKNOWN;
 }
+
+/**
+ * @brief Evaluates binary logical operations (&&, ||).
+ * @param node Logical expression AST node.
+ * @param st Pointer to the symbol table.
+ * @return TYPE_BOOL if both operands are Boolean; triggers semantic error 6 otherwise.
+ */
+static DataType check_logical(ASTNode *node, Symtable *st) {
+    DataType left_type = check_expression(node->left, st);
+    DataType right_type = check_expression(node->right, st);
+
+    if (left_type == TYPE_BOOL && right_type == TYPE_BOOL) {
+        node->inferred_type = TYPE_BOOL;
+        return TYPE_BOOL;
+    }
+
+    error_exit(ERR_TYPE, 0, "Logical operators && and || require Boolean operands");
+    return TYPE_UNKNOWN;
+} 
 
 /**
  * @brief Validates function calls, argument counts, and argument types (including built-ins).
@@ -475,7 +495,7 @@ static DataType check_func_call(ASTNode *node, Symtable *st) {
             error_exit(ERR_ARGS, 0, "Built-in function requires exactly one argument");
         }
         DataType arg_type = check_expression(arg_node, st);
-        if (arg_type == TYPE_UNKNOWN || arg_type == TYPE_BOOL) {
+        if (arg_type == TYPE_UNKNOWN) {
             error_exit(ERR_ARGS, 0, "Invalid argument type for built-in function");
         }
         DataType ret = (strcmp(func_name, "print") == 0) ? TYPE_VOID : TYPE_STRING;
@@ -553,7 +573,7 @@ static void check_statement(ASTNode *node, Symtable *st) {
                 node->inferred_type = expr_type;
             }
 
-            if (node->inferred_type == TYPE_UNKNOWN || node->inferred_type == TYPE_BOOL) {
+            if (node->inferred_type == TYPE_UNKNOWN) {
                 error_exit(ERR_TYPE, 0, "Cannot infer variable type or assign void/boolean");
             }
 
@@ -633,7 +653,7 @@ static void check_statement(ASTNode *node, Symtable *st) {
                 current_func_ret_type = return_type;
             }
             else if (current_func_ret_type == TYPE_VOID) {
-                if (return_type == TYPE_UNKNOWN || return_type == TYPE_BOOL) {
+                if (return_type != TYPE_VOID) {
                     error_exit(ERR_TYPE, 0, "Invalid return value");
                 }
             }
@@ -689,6 +709,9 @@ static DataType check_expression(ASTNode *node, Symtable *st) {
             } else if (node->val.type == TOKEN_STRING) {
                 node->inferred_type = TYPE_STRING;
                 return TYPE_STRING;
+            } else if (node->val.type == TOKEN_TRUE || node->val.type == TOKEN_FALSE) {
+                node->inferred_type = TYPE_BOOL;
+                return TYPE_BOOL;
             } else if (node->val.type == TOKEN_IDENTIFIER) {
                 Symbol *sym = symtable_search(st, node->val.attribute.string_value);
                 if (sym == NULL || sym->s_type != SYMBOL_VAR) {
@@ -714,6 +737,9 @@ static DataType check_expression(ASTNode *node, Symtable *st) {
                 } else if (node->val.type == TOKEN_STRING) {
                     node->inferred_type = TYPE_STRING;
                     return TYPE_STRING;
+                } else if (node->val.type == TOKEN_TRUE || node->val.type == TOKEN_FALSE) {
+                    node->inferred_type = TYPE_BOOL;
+                    return TYPE_BOOL;
                 } else if (node->val.type == TOKEN_IDENTIFIER) {
                     Symbol *sym = symtable_search(st, node->val.attribute.string_value);
                     if (sym == NULL || sym->s_type != SYMBOL_VAR) {
@@ -736,6 +762,16 @@ static DataType check_expression(ASTNode *node, Symtable *st) {
                     }
                     error_exit(ERR_TYPE, 0, "Unary +/- requires numeric operand");
                 }
+
+            // Hanndle unary logic not 
+            if (node->val.type == TOKEN_NOT) {
+                    DataType operand_type = check_expression(node->left, st);
+                    if (operand_type == TYPE_BOOL) {
+                        node->inferred_type = TYPE_BOOL;
+                        return TYPE_BOOL;
+                    }
+                    error_exit(ERR_TYPE, 0, "Unary '!' requires Boolean operand");
+                }
             }
 
             switch (node->val.type) {
@@ -752,6 +788,10 @@ static DataType check_expression(ASTNode *node, Symtable *st) {
                 case TOKEN_EQ:
                 case TOKEN_NOT_EQ:
                     return check_comparison(node, st);
+
+                case TOKEN_AND:
+                case TOKEN_OR:
+                    return check_logical(node, st);
 
                 default:
                     error_exit(ERR_INTERNAL, 0, "Unknown operator in expression");
