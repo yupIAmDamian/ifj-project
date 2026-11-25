@@ -111,6 +111,7 @@ void buffer_add_char(StringKeywordID *buffer, char character) {
 static Token get_next_token_fsm(void)
 {
     Token token;
+    token.newline_before = false;
     State state = STATE_START; // initial state of the FSM
 
     if (pending_dedents > 0) { // processing of pending dedents
@@ -202,6 +203,7 @@ static Token get_next_token_fsm(void)
                 } else if (character == '\n') { // end of line
                     current_line++;
                     if (paren_count > 0) { // EOL isnt returned inside parentheses
+                        token.newline_before = true;
                         break;
                     } else {
                         token.type = TOKEN_EOL;
@@ -343,9 +345,6 @@ static Token get_next_token_fsm(void)
                     state = STATE_DOUBLE_EXP;
                 } else if (character == 'd' || character == 'D') {
                     state = STATE_DOUBLE_SUFFIX;
-                } else if (isalpha(character)) { // no other alphabetical characters are valid here
-                    buffer_free(&buffer);
-                    error_exit(ERR_LEX, current_line, "invalid character in an integer");
                 } else {
                     ungetc(character, stdin);
                     token.type = TOKEN_INTEGER;
@@ -422,9 +421,6 @@ static Token get_next_token_fsm(void)
                     state = STATE_DOUBLE_EXP;
                 } else if (character == 'd' || character == 'D') {
                     state = STATE_DOUBLE_SUFFIX;
-                } else if (isalpha(character)) { // no other alphabetical characters are valid here
-                    buffer_free(&buffer);
-                    error_exit(ERR_LEX, current_line, "invalid character in a double");
                 } else {
                     ungetc(character, stdin);
                     token.type = TOKEN_DOUBLE;
@@ -476,9 +472,6 @@ static Token get_next_token_fsm(void)
                     state = STATE_DOUBLE_EXP_DIGITS_UNDERSCORE;
                 } else if (character == 'd' || character == 'D') {
                     state = STATE_DOUBLE_SUFFIX;
-                } else if (isalpha(character)) { // no other suffixes supported
-                    buffer_free(&buffer);
-                    error_exit(ERR_LEX, current_line, "invalid exponent in double");
                 } else {
                     ungetc(character, stdin);
                     token.type = TOKEN_DOUBLE;
