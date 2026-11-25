@@ -1,0 +1,29 @@
+// Test: BOOLTHEN - short-circuit evaluation of && and ||, left to right
+// Expected stdout:
+// false
+// true
+// Cfalse
+// Dtrue
+// Efalse
+import ifj26.*
+
+def noisy(tag: String, v: Boolean): Boolean =
+  print(tag)
+  return v
+
+@main def main(): Unit =
+  val a = false && noisy("A", true)
+  print(toStr(a))
+  print("\n")
+  val b = true || noisy("B", false)
+  print(toStr(b))
+  print("\n")
+  val c = true && noisy("C", false)
+  print(toStr(c))
+  print("\n")
+  val d = false || noisy("D", true)
+  print(toStr(d))
+  print("\n")
+  val e = noisy("E", false) && noisy("F", true)
+  print(toStr(e))
+  print("\n")

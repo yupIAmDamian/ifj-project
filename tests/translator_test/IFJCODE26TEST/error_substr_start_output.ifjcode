@@ -1,37 +1,6 @@
 .IFJcode26
 JUMP main
 
-LABEL ord
-CREATEFRAME
-PUSHFRAME
-DEFVAR LF@ord$value
-DEFVAR LF@ord$index
-DEFVAR LF@ord$length
-DEFVAR LF@ord$char
-DEFVAR LF@ord$result
-DEFVAR LF@ord$tmp
-DEFVAR LF@ord$invalid
-POPS LF@ord$value
-POPS LF@ord$index
-STRLEN LF@ord$length LF@ord$value
-MOVE LF@ord$invalid bool@false
-LT LF@ord$tmp LF@ord$index int@0
-OR LF@ord$invalid LF@ord$invalid LF@ord$tmp
-GT LF@ord$tmp LF@ord$index LF@ord$length
-OR LF@ord$invalid LF@ord$invalid LF@ord$tmp
-EQ LF@ord$tmp LF@ord$index LF@ord$length
-OR LF@ord$invalid LF@ord$invalid LF@ord$tmp
-JUMPIFEQ $ord$invalid LF@ord$invalid bool@true
-GETCHAR LF@ord$char LF@ord$value LF@ord$index
-STRI2INT LF@ord$result LF@ord$char int@0
-PUSHS LF@ord$result
-POPFRAME
-RETURN
-LABEL $ord$invalid
-PUSHS int@-1
-POPFRAME
-RETURN
-
 LABEL subStr
 CREATEFRAME
 PUSHFRAME
@@ -78,20 +47,20 @@ LABEL $substr$error
 EXIT int@40
 
 LABEL main
-DEFVAR GF@text$2
-DEFVAR GF@negative$2
-DEFVAR GF@invalid$2
+DEFVAR GF@run$text$2
+DEFVAR GF@run$negative$2
+DEFVAR GF@run$invalid$2
 PUSHS string@abc
-POPS GF@text$2
+POPS GF@run$text$2
 PUSHS int@1
 PUSHS int@-1
 MULS
-POPS GF@negative$2
-PUSHS GF@negative$2
+POPS GF@run$negative$2
+PUSHS GF@run$negative$2
 PUSHS int@0
-PUSHS GF@text$2
+PUSHS GF@run$text$2
 CALL subStr
-POPS GF@invalid$2
-WRITE GF@invalid$2
+POPS GF@run$invalid$2
+WRITE GF@run$invalid$2
 EXIT int@0
 

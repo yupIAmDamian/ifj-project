@@ -1,0 +1,26 @@
+// Test: FUNEXP - left-to-right evaluation of arguments and operands
+// Expected stdout:
+// 1 2 3 
+// 7
+// 4 5 |
+// 45
+import ifj26.*
+
+def trace(x: Int): Int =
+  print(toStr(x))
+  print(" ")
+  return x
+
+def pair(a: Int, b: Int): Int =
+  print("|")
+  return a * 10 + b
+
+@main def main(): Unit =
+  val s = trace(1) + trace(2) * trace(3)
+  print("\n")
+  print(toStr(s))
+  print("\n")
+  val p = pair(trace(4), trace(5))
+  print("\n")
+  print(toStr(p))
+  print("\n")

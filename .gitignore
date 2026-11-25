@@ -40,7 +40,6 @@
 *.x86_64
 *.hex
 *.ifjcode
-*.ifj26
 /IFJCODE26TEST/*
 *.aux
 

@@ -78,38 +78,38 @@ LABEL $substr$error
 EXIT int@40
 
 LABEL main
-DEFVAR GF@empty$2
-DEFVAR GF@one$2
-DEFVAR GF@emptyPart$2
-DEFVAR GF@lastPart$2
-DEFVAR GF@lastCode$2
-DEFVAR GF@emptyLength$2
+DEFVAR GF@run$empty$2
+DEFVAR GF@run$one$2
+DEFVAR GF@run$emptyPart$2
+DEFVAR GF@run$lastPart$2
+DEFVAR GF@run$lastCode$2
+DEFVAR GF@run$emptyLength$2
 PUSHS string@
-POPS GF@empty$2
+POPS GF@run$empty$2
 PUSHS string@a
-POPS GF@one$2
+POPS GF@run$one$2
 PUSHS int@0
 PUSHS int@0
-PUSHS GF@one$2
+PUSHS GF@run$one$2
 CALL subStr
-POPS GF@emptyPart$2
+POPS GF@run$emptyPart$2
 PUSHS int@1
 PUSHS int@0
-PUSHS GF@one$2
+PUSHS GF@run$one$2
 CALL subStr
-POPS GF@lastPart$2
+POPS GF@run$lastPart$2
 PUSHS int@0
-PUSHS GF@one$2
+PUSHS GF@run$one$2
 CALL ord
-POPS GF@lastCode$2
-STRLEN GF@emptyLength$2 GF@empty$2
-WRITE GF@emptyLength$2
+POPS GF@run$lastCode$2
+STRLEN GF@run$emptyLength$2 GF@run$empty$2
+WRITE GF@run$emptyLength$2
 WRITE string@\010
-WRITE GF@emptyPart$2
+WRITE GF@run$emptyPart$2
 WRITE string@\010
-WRITE GF@lastPart$2
+WRITE GF@run$lastPart$2
 WRITE string@\010
-WRITE GF@lastCode$2
+WRITE GF@run$lastCode$2
 WRITE string@\010
 EXIT int@0
 
