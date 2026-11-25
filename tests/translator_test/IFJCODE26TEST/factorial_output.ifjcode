@@ -4,6 +4,7 @@ JUMP main
 LABEL factorialIterative
 CREATEFRAME
 PUSHFRAME
+DEFVAR LF@$tmp
 DEFVAR LF@factorialIterative$n$2
 DEFVAR LF@factorialIterative$result$2
 DEFVAR LF@factorialIterative$i$2
@@ -36,6 +37,7 @@ RETURN
 LABEL factorialRecursive
 CREATEFRAME
 PUSHFRAME
+DEFVAR LF@$tmp
 DEFVAR LF@factorialRecursive$n$4
 DEFVAR LF@factorialRecursive$previous$6
 DEFVAR LF@factorialRecursive$smaller$6
@@ -69,41 +71,58 @@ POPFRAME
 RETURN
 
 LABEL main
+DEFVAR GF@$tmp
 DEFVAR GF@factorialExample$n$7
 DEFVAR GF@factorialExample$iterative$11
 DEFVAR GF@factorialExample$recursive$11
-READ GF@factorialExample$n$7 int
-JUMPIFNEQ $read$ok$0 GF@factorialExample$n$7 nil@nil
-MOVE GF@factorialExample$n$7 int@0
-LABEL $read$ok$0
+READ GF@$tmp int
+JUMPIFNEQ $read$ok$2 GF@$tmp nil@nil
+MOVE GF@$tmp int@0
+LABEL $read$ok$2
+PUSHS GF@$tmp
+POPS GF@factorialExample$n$7
 PUSHS GF@factorialExample$n$7
 PUSHS int@0
 LTS
 PUSHS bool@false
-JUMPIFEQS $main$if$2$else
-WRITE string@Use\032an\032integer\032from\0320\032to\03212.\010
-JUMP $main$if$2$end
-LABEL $main$if$2$else
+JUMPIFEQS $main$if$3$else
+PUSHS string@Use\032an\032integer\032from\0320\032to\03212.\010
+POPS GF@$tmp
+WRITE GF@$tmp
+JUMP $main$if$3$end
+LABEL $main$if$3$else
 PUSHS GF@factorialExample$n$7
 PUSHS int@12
 GTS
 PUSHS bool@false
-JUMPIFEQS $main$if$3$else
-WRITE string@Use\032an\032integer\032from\0320\032to\03212.\010
-JUMP $main$if$3$end
-LABEL $main$if$3$else
+JUMPIFEQS $main$if$4$else
+PUSHS string@Use\032an\032integer\032from\0320\032to\03212.\010
+POPS GF@$tmp
+WRITE GF@$tmp
+JUMP $main$if$4$end
+LABEL $main$if$4$else
 PUSHS GF@factorialExample$n$7
 CALL factorialIterative
 POPS GF@factorialExample$iterative$11
 PUSHS GF@factorialExample$n$7
 CALL factorialRecursive
 POPS GF@factorialExample$recursive$11
-WRITE string@iterative:\032
-WRITE GF@factorialExample$iterative$11
-WRITE string@\010recursive:\032
-WRITE GF@factorialExample$recursive$11
-WRITE string@\010
+PUSHS string@iterative:\032
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS GF@factorialExample$iterative$11
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS string@\010recursive:\032
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS GF@factorialExample$recursive$11
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS string@\010
+POPS GF@$tmp
+WRITE GF@$tmp
+LABEL $main$if$4$end
 LABEL $main$if$3$end
-LABEL $main$if$2$end
 EXIT int@0
 

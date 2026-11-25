@@ -67,6 +67,7 @@ add_error() {
 n_total=0
 n_tr_fail=0
 n_run_fail=0
+n_expected=0  
 translated=()
 
 # ---------------------------------------------------------------- phase 1: translate
@@ -77,8 +78,28 @@ for src in "$SRC_DIR"/*.ifj26; do
     out="$OUT_DIR/${name}_output.ifjcode"
     n_total=$((n_total + 1))
 
+    # Negative tests (neg_*) must fail translation with the code in their header.
+    expected_tr=""
+    if [[ $name == neg_* ]]; then
+        expected_tr="$(sed -n 's/.*exit code \([0-9][0-9]*\).*/\1/p' "$src" | head -n 1)"
+    fi
+
     "$TRANSLATOR" "$src" "$out" 2> "$tmp_err"
     rc=$?
+
+    if [[ -n "$expected_tr" ]]; then
+        rm -f "$out"
+        if [[ $rc -eq $expected_tr ]]; then
+            n_expected=$((n_expected + 1))
+            echo "[expected] $name: translator exit $rc as intended"
+        else
+            n_tr_fail=$((n_tr_fail + 1))
+            echo "expected translator exit code $expected_tr, got $rc" >> "$tmp_err"
+            add_error "TRANSLATOR" "$name.ifj26" "$rc" "$tmp_err"
+            echo "[translate FAIL] $name (expected $expected_tr, got $rc)"
+        fi
+        continue
+    fi
 
     if [[ $rc -ne 0 ]]; then
         n_tr_fail=$((n_tr_fail + 1))
@@ -125,6 +146,7 @@ echo "== Summary =="
 echo "Programs:             $n_total"
 echo "Translator errors:    $n_tr_fail"
 echo "Interpreter errors:   $n_run_fail"
+echo "Expected failures:    $n_expected"
 echo "Outputs folder:       $OUT_DIR"
 echo "Errors file:          $ERR_FILE"
 

@@ -78,11 +78,6 @@ char *token_type_name(TokenType type) {
     }
 }
 
-bool check_if_string_is_not_in_array(char *str, char **array, size_t array_size) {
-    for (size_t i = 0; i < array_size; i++) {
-        if (strcmp(str, array[i]) == 0) {
-            return false;
-        }
-    }
-    return true;
+bool matching_string(char *label, char *string) {
+    return strcmp(label, string) == 0;
 }

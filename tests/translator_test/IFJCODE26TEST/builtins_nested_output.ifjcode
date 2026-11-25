@@ -33,13 +33,12 @@ POPFRAME
 RETURN
 
 LABEL main
+DEFVAR GF@$tmp
 DEFVAR GF@run$integerText$2
 DEFVAR GF@run$doubleText$2
 DEFVAR GF@run$stringText$2
 DEFVAR GF@run$converted$2
-DEFVAR GF@run$numText$2
 DEFVAR GF@run$size$2
-DEFVAR GF@run$code$2
 DEFVAR GF@run$character$2
 PUSHS int@123
 INT2STRS
@@ -54,26 +53,50 @@ FLOAT2INTS
 POPS GF@run$converted$2
 PUSHS int@12345
 INT2STRS
-POPS GF@run$numText$2
-STRLEN GF@run$size$2 GF@run$numText$2
+POPS GF@$tmp
+STRLEN GF@$tmp GF@$tmp
+PUSHS GF@$tmp
+POPS GF@run$size$2
 PUSHS int@1
 PUSHS string@xyz
 CALL ord
-POPS GF@run$code$2
-PUSHS GF@run$code$2
 INT2CHARS
 POPS GF@run$character$2
-WRITE GF@run$integerText$2
-WRITE string@\010
-WRITE GF@run$doubleText$2
-WRITE string@\010
-WRITE GF@run$stringText$2
-WRITE string@\010
-WRITE GF@run$converted$2
-WRITE string@\010
-WRITE GF@run$size$2
-WRITE string@\010
-WRITE GF@run$character$2
-WRITE string@\010
+PUSHS GF@run$integerText$2
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS string@\010
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS GF@run$doubleText$2
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS string@\010
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS GF@run$stringText$2
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS string@\010
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS GF@run$converted$2
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS string@\010
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS GF@run$size$2
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS string@\010
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS GF@run$character$2
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS string@\010
+POPS GF@$tmp
+WRITE GF@$tmp
 EXIT int@0
 

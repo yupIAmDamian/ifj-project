@@ -8,18 +8,15 @@
 
 
 
-//function declaration
+void create_head(){
+    printf(".IFJcode26\n");
+    printf("JUMP main\n\n");
+}
+
 void gen_params_declaration(char *var_name){
     gen_defvar();
     printf("%s", var_name);
     gen_new_line();
-}
-
-//rest code
-//Should it be $main or main?
-void create_head(){
-    printf(".IFJcode26\n");
-    printf("JUMP main\n\n");
 }
 
 void gen_new_line(){
@@ -134,6 +131,31 @@ void gen_int2strs(){
     printf("INT2STRS\n");
 }
 
+void gen_tostr(ASTNode *arg) {
+    switch (arg->inferred_type) {
+        case TYPE_INT:
+            printf("INT2STRS\n");
+            break;
+        case TYPE_FLOAT:
+            printf("FLOAT2STRS\n");
+            break;
+        case TYPE_BOOL: {
+            int id = fresh_id();
+            printf("POPS %s\n", scratch());
+            printf("JUMPIFEQ $bool$true$%d %s bool@true\n", id, scratch());
+            printf("PUSHS string@false\n");
+            printf("JUMP $bool$end$%d\n", id);
+            printf("LABEL $bool$true$%d\n", id);
+            printf("PUSHS string@true\n");
+            printf("LABEL $bool$end$%d\n", id);
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+
 void gen_types(){
     printf("TYPES\n");
 }
@@ -142,6 +164,16 @@ void gen_isints(){
     printf("ISINTS\n");
 }
 
+
+/* Reads a value into the scratch variable. EOF or bad input gives nil, which becomes the default. */
+void gen_read_builtin(char *type, char *default_value) {
+    int id = fresh_id();
+    printf("READ %s %s\n", scratch(), type);
+    printf("JUMPIFNEQ $read$ok$%d %s nil@nil\n", id, scratch());
+    printf("MOVE %s %s\n", scratch(), default_value);
+    printf("LABEL $read$ok$%d\n", id);
+    printf("PUSHS %s\n", scratch());
+}
 
 /*
 Functions where something needs to be passed as an argument, like a label or a variable name
@@ -250,23 +282,31 @@ void gen_exit(){
     printf("EXIT ");
 }
 
-static int next_read_label_id = 0;
+void gen_call(ASTNode *node) {
+    char *label = gen_string_from_node(node);
 
-void gen_read_default(char *var, char* data_type, char *default_val) {
-    int id = next_read_label_id++;
-    gen_read(var, data_type);
-    printf("JUMPIFNEQ $read$ok$%d %s nil@nil\n", id, var);
-    printf("MOVE %s %s\n", var, default_val);
-    printf("LABEL $read$ok$%d\n", id);
+    if (matching_string(label, "readInt")){
+        gen_read_builtin("int", "int@0");
+    }else if (matching_string(label, "readDouble")) {
+        gen_read_builtin("float", "float@0x0p+0");
+    }else if (matching_string(label, "readLine")){
+        gen_read_builtin("string", "string@");
+    }  else if (matching_string(label, "readBoolean")) {
+        gen_read_builtin("bool", "bool@false");
+    }else if (matching_string(label, "strLength")) {
+        printf("POPS %s\n", scratch());
+        printf("STRLEN %s %s\n", scratch(), scratch());
+        printf("PUSHS %s\n", scratch());
+    }else if (matching_string(label, "toStr")){
+        gen_tostr(node->right);
+    }else if (matching_string(label, "toInt")){
+        printf("FLOAT2INTS\n");
+    }else if (matching_string(label, "chr")) {
+        printf("INT2CHARS\n");
+    }else{
+        printf("CALL %s\n", label); 
+    }
 }
-
-//variable name + data type
-void gen_read(char *var, char *data_type){
-    printf("READ ");
-    printf("%s", var);
-    printf(" %s\n", data_type);
-}
-
 
 void gen_builtin_ord() {
     gen_label("ord");
