@@ -1,0 +1,51 @@
+================================================================
+[TRANSLATOR] neg_boolthen_type.ifj26
+exit code: 6
+Error 6: type error - Logical operators && and || require Boolean operands
+
+================================================================
+[TRANSLATOR] neg_funexp_argcount.ifj26
+exit code: 5
+Error 5: wrong number or type of arguments - Too few arguments for function
+
+================================================================
+[TRANSLATOR] neg_funexp_undefined_fn.ifj26
+exit code: 3
+Error 3: undefined function, variable or type - Undefined function
+
+================================================================
+[INTERPRETER] boolthen_01_operators_output.ifjcode
+exit code: 51
+44.7-11: syntax error, unexpected ID
+Syntax error!
+
+================================================================
+[INTERPRETER] boolthen_02_short_circuit_output.ifjcode
+exit code: 51
+30.7-11: syntax error, unexpected ID
+Syntax error!
+
+================================================================
+[INTERPRETER] boolthen_03_control_flow_output.ifjcode
+exit code: 51
+46.7-14: syntax error, unexpected ID
+Syntax error!
+
+================================================================
+[INTERPRETER] funexp_01_basic_output.ifjcode
+exit code: 51
+77.1: syntax error, unexpected NEWLINE
+Syntax error!
+
+================================================================
+[INTERPRETER] funexp_02_eval_order_output.ifjcode
+exit code: 51
+9.7-11: syntax error, unexpected ID
+Syntax error!
+
+================================================================
+[INTERPRETER] funexp_03_recursion_output.ifjcode
+exit code: 51
+20.1: syntax error, unexpected NEWLINE
+Syntax error!
+

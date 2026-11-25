@@ -32,73 +32,28 @@ PUSHS int@-1
 POPFRAME
 RETURN
 
-LABEL subStr
-CREATEFRAME
-PUSHFRAME
-DEFVAR LF@substr$value
-DEFVAR LF@substr$start
-DEFVAR LF@substr$end
-DEFVAR LF@substr$length
-DEFVAR LF@substr$result
-DEFVAR LF@substr$index
-DEFVAR LF@substr$char
-DEFVAR LF@substr$tmp
-DEFVAR LF@substr$invalid
-POPS LF@substr$value
-POPS LF@substr$start
-POPS LF@substr$end
-STRLEN LF@substr$length LF@substr$value
-MOVE LF@substr$invalid bool@false
-LT LF@substr$tmp LF@substr$start int@0
-OR LF@substr$invalid LF@substr$invalid LF@substr$tmp
-LT LF@substr$tmp LF@substr$end int@0
-OR LF@substr$invalid LF@substr$invalid LF@substr$tmp
-GT LF@substr$tmp LF@substr$start LF@substr$end
-OR LF@substr$invalid LF@substr$invalid LF@substr$tmp
-GT LF@substr$tmp LF@substr$start LF@substr$length
-OR LF@substr$invalid LF@substr$invalid LF@substr$tmp
-EQ LF@substr$tmp LF@substr$start LF@substr$length
-OR LF@substr$invalid LF@substr$invalid LF@substr$tmp
-GT LF@substr$tmp LF@substr$end LF@substr$length
-OR LF@substr$invalid LF@substr$invalid LF@substr$tmp
-JUMPIFEQ $substr$error LF@substr$invalid bool@true
-MOVE LF@substr$result string@
-MOVE LF@substr$index LF@substr$start
-LABEL $substr$loop
-JUMPIFEQ $substr$done LF@substr$index LF@substr$end
-GETCHAR LF@substr$char LF@substr$value LF@substr$index
-CONCAT LF@substr$result LF@substr$result LF@substr$char
-ADD LF@substr$index LF@substr$index int@1
-JUMP $substr$loop
-LABEL $substr$done
-PUSHS LF@substr$result
-POPFRAME
-RETURN
-LABEL $substr$error
-EXIT int@40
-
 LABEL main
-DEFVAR GF@text$2
-DEFVAR GF@first$2
-DEFVAR GF@negative$2
-DEFVAR GF@outside$2
+DEFVAR GF@run$text$2
+DEFVAR GF@run$first$2
+DEFVAR GF@run$negative$2
+DEFVAR GF@run$outside$2
 PUSHS string@abc
-POPS GF@text$2
+POPS GF@run$text$2
 PUSHS int@0
-PUSHS GF@text$2
+PUSHS GF@run$text$2
 CALL ord
-POPS GF@first$2
-WRITE GF@first$2
+POPS GF@run$first$2
+WRITE GF@run$first$2
 WRITE string@\010
 PUSHS int@1
 PUSHS int@-1
 MULS
-POPS GF@negative$2
-PUSHS GF@negative$2
-PUSHS GF@text$2
+POPS GF@run$negative$2
+PUSHS GF@run$negative$2
+PUSHS GF@run$text$2
 CALL ord
-POPS GF@outside$2
-WRITE GF@outside$2
+POPS GF@run$outside$2
+WRITE GF@run$outside$2
 WRITE string@\010
 EXIT int@0
 
