@@ -78,6 +78,7 @@ LABEL $substr$error
 EXIT int@40
 
 LABEL main
+DEFVAR GF@$tmp
 DEFVAR GF@run$text$2
 DEFVAR GF@run$first$2
 DEFVAR GF@run$middle$2
@@ -108,15 +109,35 @@ POPS GF@run$code$2
 PUSHS int@65
 INT2CHARS
 POPS GF@run$letter$2
-WRITE GF@run$first$2
-WRITE string@\010
-WRITE GF@run$middle$2
-WRITE string@\010
-WRITE GF@run$whole$2
-WRITE string@\010
-WRITE GF@run$code$2
-WRITE string@\010
-WRITE GF@run$letter$2
-WRITE string@\010
+PUSHS GF@run$first$2
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS string@\010
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS GF@run$middle$2
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS string@\010
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS GF@run$whole$2
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS string@\010
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS GF@run$code$2
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS string@\010
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS GF@run$letter$2
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS string@\010
+POPS GF@$tmp
+WRITE GF@$tmp
 EXIT int@0
 

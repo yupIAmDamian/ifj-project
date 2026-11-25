@@ -1,0 +1,8 @@
+import ifj26.*
+
+@main def main(): Unit =
+    var variable_name = 5
+    val var_bool = true
+    
+    var bool_eq = variable_name * 5 >= 4 && !(5<4) || var_bool
+    print(toStr(bool_eq))
