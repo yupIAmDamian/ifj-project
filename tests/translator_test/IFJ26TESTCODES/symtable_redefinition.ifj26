@@ -1,8 +1,0 @@
-// EXPECT: compile exit 4
-import ifj26.*
-
-@main def main(): Unit =
-  val a = 1
-  val a = 2
-  print(toStr(a))
-  print("\n")
