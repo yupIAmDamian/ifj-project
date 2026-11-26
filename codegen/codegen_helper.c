@@ -40,7 +40,7 @@ char *create_label(int number, char* label_name, char* label_type) {
 
 
 bool in_main() {
-    return strcmp(current_func_name, "main") == 0;
+    return matching_string(current_func_name, "main") == 0;
 }
 
 int fresh_id() {

@@ -16,6 +16,13 @@ Modul s pomocnými funkciami pre generovanie kódu.
 \section{helper_func.c/.h}
 Modul s pomocnými funkciami, ktoré sa používajú v rôznych častiach projektu.
 
+%Daniel%
+\section{symtable.c/ .h}
+Tabuľka symbolov ako zásobník hashovacích tabuliek, ktorý ukladá informácie o deklarovaných premenných a funkciách, spravuje rozsahy ich platnosti. Pri ukladaní premenných vytvára ich unikátne manglované názvy (GF, LF).
+
+\section{semantic.c/ .h}
+Rekurzívne prechádza strom AST, pomocou tabuľky symbolov overuje deklarácie, kompatibilitu operácií, pravidlá volaní... Dopĺňa do stromu uzly pre implicitné konverzie a dopĺňa odvodené dátové typy.
+
 
 
 \newpage
