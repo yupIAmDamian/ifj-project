@@ -10,6 +10,16 @@
 extern ASTNode *global_ast_root;
 extern Token current_token;
 
+// symtable
+static Symtable *st = NULL;
+
+// function for freeing the symtable, registered in atexit
+static void symtable_cleanup(void) {
+    symtable_dispose(st);
+    st = NULL;
+}
+
+
 int redirect_streams(char *input_file,  char *output_file) {
     if (freopen(input_file, "r", stdin) == NULL) {
         fprintf(stderr, "Cannot open input file: %s\n", input_file);
@@ -25,6 +35,11 @@ int redirect_streams(char *input_file,  char *output_file) {
 }
 
 int translator_test(char *input_file,char *output_file) {
+    error_register_cleanup(symtable_cleanup); // danko
+    error_register_cleanup(ast_cleanup); // misko
+    error_register_cleanup(expr_stack_cleanup); // miskov stack free wrapnuty, odkomentuj ked bude
+    error_register_cleanup(scanner_free); // dominik
+
     if (redirect_streams(input_file, output_file) != 0) {
         return 1;
     }

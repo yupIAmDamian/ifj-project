@@ -3,16 +3,28 @@
 
 #include "codegen_tests.h"
 
+
+void free_ast(ASTNode *node) {
+    if (node == NULL) {
+        return;
+    }
+
+    free_ast(node->left);
+    free_ast(node->right);
+    free_ast(node->extra);
+    free_ast(node->next);
+
+    if (node->val.type == TOKEN_IDENTIFIER || node->val.type == TOKEN_STRING) {
+        free(node->val.attribute.string_value);
+    }
+
+    free(node);
+}
+
 Token make_token(TokenType type, int line) {
     Token result = {0};
     result.type = type;
     result.line = line;
-    return result;
-}
-
-Token identifier_token(char *name, int line) {
-    Token result = make_token(TOKEN_IDENTIFIER, line);
-    result.attribute.string_value = (char *)name;
     return result;
 }
 
@@ -22,9 +34,15 @@ Token integer_token(int value, int line) {
     return result;
 }
 
+Token identifier_token(char *name, int line) {
+    Token result = make_token(TOKEN_IDENTIFIER, line);
+    result.attribute.string_value = str_duplicate(name);
+    return result;
+}
+
 Token string_token(char *value, int line) {
     Token result = make_token(TOKEN_STRING, line);
-    result.attribute.string_value = (char *)value;
+    result.attribute.string_value = str_duplicate(value);
     return result;
 }
 
@@ -252,5 +270,7 @@ ASTNode *create_factorial_tree(void) {
 int main(void) {
     ASTNode *root = create_factorial_tree();
     gen_code(root);
+    free_ast(root);
+
     return 0;
 }
