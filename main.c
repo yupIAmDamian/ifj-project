@@ -19,9 +19,9 @@
 
 #include "./codegen/codegen.h"
 #include "./hashtable/symtable.h"
+#include "./helper_func.h"
 #include "./semantic_analysis/semantic.h"
 #include "./syntactic_analysis/parser.h"
-#include "./helper_func.h"
 
 extern ASTNode *global_ast_root;
 extern Token current_token;
@@ -31,50 +31,47 @@ static Symtable *st = NULL;
 
 // function for freeing the symtable, registered in atexit
 static void symtable_cleanup(void) {
-    symtable_dispose(st);
-    st = NULL;
+  symtable_dispose(st);
+  st = NULL;
 }
 
-
 int main() {
-    // registers all cleanup functions
-    error_register_cleanup(symtable_cleanup); // danko
-    error_register_cleanup(ast_cleanup); // misko
-    error_register_cleanup(expr_stack_cleanup); // miskov stack free wrapnuty, odkomentuj ked bude
-    error_register_cleanup(scanner_free); // dominik
+  // registers all cleanup functions
+  error_register_cleanup(symtable_cleanup); // danko
+  error_register_cleanup(ast_cleanup);      // misko
+  error_register_cleanup(
+      expr_stack_cleanup); // miskov stack free wrapnuty, odkomentuj ked bude
+  error_register_cleanup(scanner_free); // dominik
 
-    scanner_init();
+  scanner_init();
 
-    // HLAVNA CAST PROGRAMU
-    int parse_result = parse();
-    if (parse_result != 0) {
-        fprintf(stderr,
-                "Parsing failed: code=%d, token=%s (%d), line=%d\n",
-                parse_result,
-                token_type_name(current_token.type),
-                current_token.type,
-                current_token.line);
-        return parse_result;
-    }
+  // HLAVNA CAST PROGRAMU
+  int parse_result = parse();
+  if (parse_result != 0) {
+    fprintf(stderr, "Parsing failed: code=%d, token=%s (%d), line=%d\n",
+            parse_result, token_type_name(current_token.type),
+            current_token.type, current_token.line);
+    return parse_result;
+  }
 
-    if (global_ast_root->left != NULL && global_ast_root->left->is_main) {
-        global_ast_root->left->inferred_type = TYPE_VOID;
-    }
+  if (global_ast_root->left != NULL && global_ast_root->left->is_main) {
+    global_ast_root->left->inferred_type = TYPE_VOID;
+  }
 
-    Symtable *symtable = symtable_init();
-    if (symtable == NULL) {
-        fprintf(stderr, "Could not initialize symbol table\n");
-        return 99;
-    }
+  Symtable *symtable = symtable_init();
+  if (symtable == NULL) {
+    fprintf(stderr, "Could not initialize symbol table\n");
+    return 99;
+  }
 
-    if (!check_semantics(global_ast_root, symtable)) {
-        symtable_dispose(symtable);
-        fprintf(stderr, "Semantic analysis failed\n");
-        return 1;
-    }
-
-    gen_code(global_ast_root);
+  if (!check_semantics(global_ast_root, symtable)) {
     symtable_dispose(symtable);
+    fprintf(stderr, "Semantic analysis failed\n");
+    return 1;
+  }
 
-    return 0;
+  gen_code(global_ast_root);
+  symtable_dispose(symtable);
+
+  return 0;
 }
