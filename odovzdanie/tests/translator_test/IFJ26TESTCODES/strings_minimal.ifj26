@@ -1,0 +1,17 @@
+import ifj26.*
+
+@main def run(): Unit =
+    val empty: String = ""
+    val one: String = "a"
+    val emptyPart: String = subStr(one, 0, 0)
+    val lastPart: String = subStr(one, 0, 1)
+    val lastCode: Int = ord(one, 0)
+    val emptyLength: Int = strLength(empty)
+    print(emptyLength)
+    print("\n")
+    print(emptyPart)
+    print("\n")
+    print(lastPart)
+    print("\n")
+    print(lastCode)
+    print("\n")

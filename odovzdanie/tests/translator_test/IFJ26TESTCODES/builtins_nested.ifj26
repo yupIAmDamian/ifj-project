@@ -1,0 +1,21 @@
+import ifj26.*
+
+@main def run(): Unit =
+    val integerText: String = toStr(123)
+    val doubleText: String = toStr(4.5)
+    val stringText: String = toStr("abc")
+    val converted: Int = toInt(9.99)
+    val size: Int = strLength(toStr(12345))
+    val character: String = chr(ord("xyz", 1))
+    print(integerText)
+    print("\n")
+    print(doubleText)
+    print("\n")
+    print(stringText)
+    print("\n")
+    print(converted)
+    print("\n")
+    print(size)
+    print("\n")
+    print(character)
+    print("\n")

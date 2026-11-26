@@ -1,0 +1,9 @@
+// Expected: compiler error, exit code 5 
+import ifj26.*
+
+def add(a: Int, b: Int): Int = a + b
+
+@main def main(): Unit =
+  val x = 1 + add(1)
+  print(toStr(x))
+  print("\n")

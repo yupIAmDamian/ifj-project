@@ -1,0 +1,11 @@
+import ifj26.*
+
+@main def run(): Unit =
+    val line: String = readLine()
+    val number: Int = readInt()
+    val real: Double = readDouble()
+    print(line)
+    print(number)
+    print("\n")
+    print(real)
+    print("\n")

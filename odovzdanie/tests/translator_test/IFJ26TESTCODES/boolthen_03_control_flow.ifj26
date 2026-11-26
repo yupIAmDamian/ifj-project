@@ -1,0 +1,30 @@
+import ifj26.*
+
+def classify(x: Int): String =
+  if x < 0 then
+    return "negative"
+  else if x == 0 then
+    return "zero"
+  return "positive"
+
+@main def main(): Unit =
+  val neg = 0 - 7
+  print(classify(neg))
+  print("\n")
+  print(classify(0))
+  print("\n")
+  print(classify(3))
+  print("\n")
+  var i = 0
+  var found = false
+  while i < 10 && !found do
+    if i * i > 20 then
+      found = true
+    else
+      i = i + 1
+  print(toStr(i))
+  print("\n")
+  val flag: Boolean = i >= 5 && !(i > 10)
+  if flag then
+    print("flag set")
+  print("\n")

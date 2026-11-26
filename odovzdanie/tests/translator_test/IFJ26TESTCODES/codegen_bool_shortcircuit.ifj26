@@ -1,0 +1,9 @@
+import ifj26.*
+
+@main def main(): Unit =
+  val a = 0
+  if a != 0 && 10 / a > 1 then
+    print("big")
+  else
+    print("small")
+  print("\n")
