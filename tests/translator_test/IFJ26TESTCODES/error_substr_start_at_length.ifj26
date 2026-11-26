@@ -1,3 +1,4 @@
+// EXPECT: exit code 40
 import ifj26.*
 
 @main def run(): Unit =
