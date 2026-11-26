@@ -86,20 +86,23 @@ ASTNode *term_identifier(char *name, int line);
 ASTNode *term_string(char *value, int line);
 
 /**
- * @brief Creates a binary operation expression AST node with left and right operand subtrees.
+ * @brief Creates a binary operation expression AST node with left and right
+ * operand subtrees.
  * @param operator_type TokenType representing the binary operator.
  * @param left Pointer to the left operand AST node.
  * @param right Pointer to the right operand AST node.
  * @param line Source code line number.
  * @return Pointer to the newly created binary AST_NODE_EXPR node.
  */
-ASTNode *binary_expression(TokenType operator_type,
-                                  ASTNode *left, ASTNode *right, int line);
+ASTNode *binary_expression(TokenType operator_type, ASTNode *left,
+                           ASTNode *right, int line);
 
 /**
- * @brief Creates a function call AST node with the given function name and argument list.
+ * @brief Creates a function call AST node with the given function name and
+ * argument list.
  * @param name Name of the function being called.
- * @param arguments Pointer to the head of the linked list of argument AST nodes.
+ * @param arguments Pointer to the head of the linked list of argument AST
+ * nodes.
  * @param line Source code line number.
  * @return Pointer to the newly created AST_NODE_CALL node.
  */
@@ -114,20 +117,23 @@ ASTNode *call(char *name, ASTNode *arguments, int line);
 ASTNode *variable(char *name, int line);
 
 /**
- * @brief Creates a variable or constant declaration AST node with an initializer expression.
+ * @brief Creates a variable or constant declaration AST node with an
+ * initializer expression.
  * @param name Variable identifier name.
- * @param initializer Pointer to the AST node representing the initial value expression.
- * @param is_const Flag indicating whether the declaration is immutable (val) or mutable (var).
+ * @param initializer Pointer to the AST node representing the initial value
+ * expression.
+ * @param is_const Flag indicating whether the declaration is immutable (val) or
+ * mutable (var).
  * @param line Source code line number.
  * @return Pointer to the newly created AST_NODE_VAR_DECL node.
  */
-ASTNode *declaration(char *name, ASTNode *initializer,
-                            bool is_const, int line);
+ASTNode *declaration(char *name, ASTNode *initializer, bool is_const, int line);
 
 /**
  * @brief Creates a variable assignment AST node.
  * @param name Variable identifier name.
- * @param value Pointer to the AST node representing the assigned value expression.
+ * @param value Pointer to the AST node representing the assigned value
+ * expression.
  * @param line Source code line number.
  * @return Pointer to the newly created AST_NODE_ASSIGN node.
  */
@@ -135,14 +141,16 @@ ASTNode *assignment(char *name, ASTNode *value, int line);
 
 /**
  * @brief Creates a return statement AST node.
- * @param value Pointer to the return value expression AST node, or NULL for void returns.
+ * @param value Pointer to the return value expression AST node, or NULL for
+ * void returns.
  * @param line Source code line number.
  * @return Pointer to the newly created AST_NODE_RETURN node.
  */
 ASTNode *return_statement(ASTNode *value, int line);
 
 /**
- * @brief Appends an AST node to the end of a doubly-linked list of sibling nodes.
+ * @brief Appends an AST node to the end of a doubly-linked list of sibling
+ * nodes.
  * @param first Double pointer to the head of the AST node list.
  * @param last Double pointer to the tail of the AST node list.
  * @param node Pointer to the AST node to append.
@@ -160,13 +168,15 @@ ASTNode *parameter(char *name, int line);
 /**
  * @brief Creates a conditional if-else statement AST node.
  * @param condition Pointer to the condition expression AST node.
- * @param then_body Pointer to the AST node list executed when the condition is true.
- * @param else_body Pointer to the AST node list executed when the condition is false.
+ * @param then_body Pointer to the AST node list executed when the condition is
+ * true.
+ * @param else_body Pointer to the AST node list executed when the condition is
+ * false.
  * @param line Source code line number.
  * @return Pointer to the newly created AST_NODE_IF node.
  */
-ASTNode *if_node(ASTNode *condition, ASTNode *then_body,
-                        ASTNode *else_body, int line);
+ASTNode *if_node(ASTNode *condition, ASTNode *then_body, ASTNode *else_body,
+                 int line);
 
 /**
  * @brief Creates a while loop statement AST node.
@@ -182,21 +192,24 @@ ASTNode *while_node(ASTNode *condition, ASTNode *body, int line);
  * @param name Function name.
  * @param parameters Pointer to the head of the parameter AST node list.
  * @param body Pointer to the head of the function body statement AST node list.
- * @param is_main Flag indicating whether this function is the @main entry point.
+ * @param is_main Flag indicating whether this function is the @main entry
+ * point.
  * @param line Source code line number.
  * @return Pointer to the newly created AST_NODE_FUNCTION node.
  */
-ASTNode *function(char *name, ASTNode *parameters,
-                         ASTNode *body, bool is_main, int line);
+ASTNode *function(char *name, ASTNode *parameters, ASTNode *body, bool is_main,
+                  int line);
 
 /**
- * @brief Constructs a complete mock AST for a program computing factorials iteratively and recursively.
+ * @brief Constructs a complete mock AST for a program computing factorials
+ * iteratively and recursively.
  * @return Pointer to the root AST_NODE_PROGRAM node of the constructed tree.
  */
 ASTNode *create_factorial_tree(void);
 
 /**
- * @brief Entry point that constructs the factorial AST and runs code generation on it.
+ * @brief Entry point that constructs the factorial AST and runs code generation
+ * on it.
  * @return 0 upon successful execution.
  */
 int main();
