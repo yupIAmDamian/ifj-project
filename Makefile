@@ -117,3 +117,6 @@ ICINT ?= ./ic26int-linux-x86_64
 
 translator-batch: $(TRANSLATOR_T)
 	INTERPRETER=$(ICINT) bash tests/translator_test/translator_test.sh
+
+format:
+	find . -type f \( -name "*.c" -o -name "*.h" \) -exec clang-format -i {} +

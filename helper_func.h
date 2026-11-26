@@ -4,20 +4,22 @@
 #ifndef HELPER_FUNC_H
 #define HELPER_FUNC_H
 
+#include "./scanner/scanner.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "./scanner/scanner.h"
 
 /**
  * @brief Allocates memory and creates a duplicate of a string
  * @param str Pointer to the source string to duplicate.
- * @return Pointer to the newly allocated copy, or NULL if str is NULL or allocation fails.
+ * @return Pointer to the newly allocated copy, or NULL if str is NULL or
+ * allocation fails.
  */
-char* str_duplicate(char *str);
+char *str_duplicate(char *str);
 
 /**
- * @brief Opens a file with the specified mode and terminates the program on failure.
+ * @brief Opens a file with the specified mode and terminates the program on
+ * failure.
  * @param filename File path.
  * @param mode File access mode.
  * @return Pointer to the opened FILE stream.
