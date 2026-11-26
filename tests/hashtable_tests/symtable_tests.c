@@ -16,7 +16,7 @@ void symbol_test(char *name, SymbolType s_type, DataType d_type, bool is_init, b
         return;
     }
 
-    if (matching_string(sym->name, name) != 0 || sym->s_type != s_type || sym->d_type != d_type || sym->is_initialized != is_init || sym->is_const != is_const) {
+    if (!matching_string(sym->name, name) || sym->s_type != s_type || sym->d_type != d_type || sym->is_initialized != is_init || sym->is_const != is_const) {
         printf("[FAIL] Symbol properties do not match for: %s\n", name);
     } else {
         printf("[OK] Symbol test passed for: %s\n", name);
@@ -65,7 +65,7 @@ void symbol_insertion_test() {
     }
 
     Symbol *found_sym = symtable_search_current_scope(st, "myVar");
-    if (!found_sym || matching_string(found_sym->name, "myVar") != 0 || found_sym->d_type != TYPE_INT) {
+    if (!found_sym || !matching_string(found_sym->name, "myVar") || found_sym->d_type != TYPE_INT) {
         printf("[FAIL] Failed to find inserted variable symbol in current scope: myVar\n");
     } else {
         printf("[OK] Variable symbol search test passed for: myVar\n");
@@ -84,7 +84,7 @@ void search_current_scope_test() {
     symtable_insert_var(st, "myVar", TYPE_INT, true, false);
 
     Symbol *found_sym = symtable_search_current_scope(st, "myVar");
-    if (!found_sym || matching_string(found_sym->name, "myVar") != 0 || found_sym->d_type != TYPE_INT) {
+    if (!found_sym || !matching_string(found_sym->name, "myVar") || found_sym->d_type != TYPE_INT) {
         printf("[FAIL] Failed to find variable symbol in current scope: myVar\n");
     } else {
         printf("[OK] Variable symbol search in current scope test passed for: myVar\n");
@@ -105,14 +105,14 @@ void search_in_all_scopes_test() {
     symtable_insert_var(st, "myVar2", TYPE_INT, true, false);
 
     Symbol *found_sym = symtable_search(st, "myVar");
-    if (!found_sym || matching_string(found_sym->name, "myVar") != 0 || found_sym->d_type != TYPE_INT) {
+    if (!found_sym || !matching_string(found_sym->name, "myVar") || found_sym->d_type != TYPE_INT) {
         printf("[FAIL] Failed to find variable symbol in all scopes: myVar\n");
     } else {
         printf("[OK] Variable symbol search in all scopes test passed for: myVar from scope: %d\n", st->top);
     }
 
     found_sym = symtable_search(st, "myVar2");
-    if (!found_sym || matching_string(found_sym->name, "myVar2") != 0 || found_sym->d_type != TYPE_INT) {
+    if (!found_sym || !matching_string(found_sym->name, "myVar2") || found_sym->d_type != TYPE_INT) {
         printf("[FAIL] Failed to find variable symbol in all scopes: myVar2\n");
     } else {
         printf("[OK] Variable symbol search in all scopes test passed for: myVar2 from scope: %d\n", st->top);
@@ -158,7 +158,7 @@ void function_insertion_and_search_test() {
     }
 
     Symbol *found_sym = symtable_search(st, "myFunction");
-    if (!found_sym || matching_string(found_sym->name, "myFunction") != 0 || found_sym->d_type != TYPE_VOID || found_sym->params_amount != 2) {
+    if (!found_sym || !matching_string(found_sym->name, "myFunction") || found_sym->d_type != TYPE_VOID || found_sym->params_amount != 2) {
         printf("[FAIL] Failed to find inserted function symbol: myFunction\n");
     } else {
         printf("[OK] Function symbol search test passed for: myFunction\n");
@@ -206,7 +206,7 @@ void capacity_and_rehashing_test() {
         char var_name[20];
         snprintf(var_name, sizeof(var_name), "v%d", i);
         Symbol *found_sym = symtable_search(st, var_name);
-        if (!found_sym || matching_string(found_sym->name, var_name) != 0) {
+        if (!found_sym || !matching_string(found_sym->name, var_name)) {
             printf("[FAIL] Failed to find variable symbol: %s\n", var_name);
             symtable_dispose(st);
             return;

@@ -8,11 +8,11 @@ int failures = 0;
 
 Token current_token;
 
-static const Token *input_tokens = NULL;
+static Token *input_tokens = NULL;
 static size_t input_count = 0;
 static size_t input_position = 0;
 
-void CHECK(bool condition, const char *mesage) {
+void CHECK(bool condition, char *mesage) {
     if (!condition) {
         printf("[CHYBA] %s\n", mesage);
         failures++;
@@ -25,7 +25,7 @@ Token create_test_token(TokenType type) {
     return token;
 }
 
-void set_token_stream(const Token *tokens, size_t count) {
+void set_token_stream(Token *tokens, size_t count) {
     input_tokens = tokens;
     input_count = count;
     input_position = 0;
@@ -447,8 +447,7 @@ void test_get_prec_index() {
     }
 }
 
-void test_parse_single_operand(TokenType operand_type,
-                               const char *operand_name) {
+void test_parse_single_operand(TokenType operand_type, char *operand_name) {
 
     printf("\nTest 8: parse_expression() - %s\n", operand_name);
 
@@ -689,8 +688,8 @@ void test_parse_incomplete_expression() {
 
 
 void test_expression_case(
-    const char *name,
-    const TokenType token_types[],
+    char *name,
+    TokenType token_types[],
     size_t count,
     bool should_succeed
 ) {

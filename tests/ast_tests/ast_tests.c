@@ -5,7 +5,7 @@
 
 int failures = 0;
 
-void CHECK(bool condition, const char *message) {
+void CHECK(bool condition, char *message) {
         if (!condition) {
             printf("[CHYBA] %s\n", message);
             failures++;

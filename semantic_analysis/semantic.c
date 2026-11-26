@@ -254,12 +254,12 @@ static bool is_in_func_list(ASTNode **list, int count, ASTNode *target) {
  * @param name Null-terminated identifier name of the function.
  * @return Pointer to the matching AST_NODE_FUNCTION node, or NULL if not found.
  */
-static ASTNode* find_func_node(const char *name) {
+static ASTNode* find_func_node(char *name) {
     if (program_root == NULL || program_root->type != AST_NODE_PROGRAM) return NULL;
     ASTNode *curr = program_root->left;
     while (curr != NULL) {
         if (curr->type == AST_NODE_FUNCTION &&
-            matching_string(curr->val.attribute.string_value, name) == 0) {
+            matching_string(curr->val.attribute.string_value, name)) {
             return curr;
         }
         curr = curr->next;
@@ -291,7 +291,7 @@ static void check_function(ASTNode *node, Symtable *st) {
     bool prev_in_main = st->in_main;
     st->in_main = node->is_main;
 
-    const char *prev_func = st->current_func;
+    char *prev_func = st->current_func;
     st->current_func = node->val.attribute.string_value;
 
     scope_push(st);
@@ -489,7 +489,7 @@ static DataType check_func_call(ASTNode *node, Symtable *st) {
     char *func_name = node->val.attribute.string_value;
 
     // Special handling for built-in 'print' and 'toStr' accepting a single argument of type Any
-    if (matching_string(func_name, "print") == 0 || matching_string(func_name, "toStr") == 0) {
+    if (matching_string(func_name, "print") || matching_string(func_name, "toStr")) {
         ASTNode *arg_node = node->right;
         if (arg_node == NULL || arg_node->next != NULL) {
             error_exit(ERR_ARGS, 0, "Built-in function requires exactly one argument");
@@ -498,7 +498,7 @@ static DataType check_func_call(ASTNode *node, Symtable *st) {
         if (arg_type == TYPE_UNKNOWN) {
             error_exit(ERR_ARGS, 0, "Invalid argument type for built-in function");
         }
-        DataType ret = (matching_string(func_name, "print") == 0) ? TYPE_VOID : TYPE_STRING;
+        DataType ret = (matching_string(func_name, "print")) ? TYPE_VOID : TYPE_STRING;
         node->inferred_type = ret;
         return ret;
     }

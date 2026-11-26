@@ -328,7 +328,7 @@ void equation_traversal(ASTNode *node, char *result_var) {
 void gen_fun_call(ASTNode *node) {
     char *label = gen_string_from_node(node);
 
-    if (matching_string(label, "print") == 0) {
+    if (matching_string(label, "print")) {
         gen_push_value(node->right);
         printf("POPS %s\n", scratch());
         printf("WRITE %s\n", scratch());

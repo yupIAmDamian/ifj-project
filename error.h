@@ -27,7 +27,7 @@ typedef enum {
     ERR_INTERNAL = 99
 } ErrorCode;
 
-NORETURN void error_exit(ErrorCode code, int line, const char *detail);
+NORETURN void error_exit(ErrorCode code, int line, char *detail);
 
 void error_register_cleanup(void (*fn)(void));
 

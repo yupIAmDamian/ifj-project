@@ -23,7 +23,7 @@ int probing(hashtable_t* hashtable, char* key, int attempt){
     if(hashtable->items[index].state == EMPTY){
         return index;
     }
-    if(hashtable->items[index].state == OCCUPIED && matching_string(hashtable->items[index].key, key) == 0){
+    if(hashtable->items[index].state == OCCUPIED && matching_string(hashtable->items[index].key, key)){
         return index;
     }
     if(attempt < hashtable->size-1){
@@ -34,7 +34,7 @@ int probing(hashtable_t* hashtable, char* key, int attempt){
 
 ht_item_t* ht_search(hashtable_t* hashtable, char* key){
     int index = probing(hashtable, key, 0);
-    if(index != -1 && hashtable->items[index].state == OCCUPIED && matching_string(hashtable->items[index].key, key) == 0){
+    if(index != -1 && hashtable->items[index].state == OCCUPIED && matching_string(hashtable->items[index].key, key)){
         return &hashtable->items[index];
     }
     return NULL;
@@ -46,7 +46,7 @@ ht_item_t* ht_insert(hashtable_t* hashtable, char* key, void* data){
         return NULL;
     }
 
-    if(hashtable->items[index].state == OCCUPIED && matching_string(hashtable->items[index].key, key) == 0){
+    if(hashtable->items[index].state == OCCUPIED && matching_string(hashtable->items[index].key, key)){
         return NULL;
     }
 

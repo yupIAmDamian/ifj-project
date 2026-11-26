@@ -106,7 +106,7 @@ bool symtable_insert_var(Symtable *st, char *name, DataType type, bool is_init, 
     if (!sym) return false;
 
     char mangled_buf[512];
-    const char *fn = (st->current_func != NULL) ? st->current_func : "global";
+    char *fn = (st->current_func != NULL) ? st->current_func : "global";
 
     if (st->in_main) {
         snprintf(mangled_buf, sizeof(mangled_buf), "GF@%s$%s$%d", fn, name, st->block_counter);
