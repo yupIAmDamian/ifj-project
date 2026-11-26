@@ -46,10 +46,10 @@ mkdir -p "$OUT_DIR"
 tmp_err="$(mktemp)"
 tmp_out="$(mktemp)"
 tmp_in="$(mktemp)"
+tmp_diff=$(mktemp)
 trap 'rm -f "$tmp_err" "$tmp_out" "$tmp_in"' EXIT
 printf '%s' "$DEFAULT_INPUT" > "$tmp_in"
 
-# add_error <stage> <file label> <exit code> <file with message>
 add_error() {
     {
         echo "$SEP"
@@ -112,31 +112,45 @@ for src in "$SRC_DIR"/*.ifj26; do
     fi
 done
 
-# ---------------------------------------------------------------- phase 2: interpret
+# ---------------------------------------------------------------- phase 2: run
 echo
 echo "== Running ic26int on translated programs =="
 for name in ${translated[@]+"${translated[@]}"}; do
     code="$OUT_DIR/${name}_output.ifjcode"
 
-    in_file="$SRC_DIR/$name.in"
+    in_file="$SRC_DIR/input/$name.in"
     [[ -f "$in_file" ]] || in_file="$tmp_in"
 
-    echo
-    echo "--- $name"
-    # Program output goes to the terminal and to tmp_out (for errors.txt).
-    "$INTERPRETER" "$code" < "$in_file" 2>&1 | tee "$tmp_out"
-    rc=${PIPESTATUS[0]}
+    out_file="$OUT_DIR/output/${name}.out"
 
-    echo "Exit code: $rc  -----------"
+    # Capture output silently to tmp_out first
+    "$INTERPRETER" "$code" < "$in_file" > "$tmp_out" 2>&1
+    rc=$?
 
     if [[ $rc -ne 0 ]]; then
         if [[ $rc -eq 40 && $name == *substr* ]]; then
-                echo "[expected] $name: runtime error 40 is the intended behavior"
-                continue
+            echo "[expected]   $name (exit 40)"
+            continue
         fi
         n_run_fail=$((n_run_fail + 1))
         add_error "INTERPRETER" "${name}_output.ifjcode" "$rc" "$tmp_out"
-        echo "[run FAIL] $name (exit $rc)"
+        echo "[run FAIL]   $name (exit $rc)"
+        cat "$tmp_out"
+        continue
+    fi
+
+    if [[ -f "$out_file" ]]; then
+        if diff -u --strip-trailing-cr "$out_file" "$tmp_out" > "$tmp_diff"; then
+            echo "[run OK]     $name"
+        else
+            n_run_fail=$((n_run_fail + 1))
+            add_error "OUTPUT" "${name}_output.ifjcode" "diff" "$tmp_diff"
+            echo "[output FAIL] $name (wrong output)"
+            cat "$tmp_diff"
+        fi
+    else
+        echo "[run OK]     $name (no .out reference)"
+        cat "$tmp_out"
     fi
 done
 

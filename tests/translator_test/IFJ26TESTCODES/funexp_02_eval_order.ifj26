@@ -1,9 +1,3 @@
-// Test: FUNEXP - left-to-right evaluation of arguments and operands
-// Expected stdout:
-// 1 2 3 
-// 7
-// 4 5 |
-// 45
 import ifj26.*
 
 def trace(x: Int): Int =

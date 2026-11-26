@@ -1,4 +1,3 @@
-// Zakladni zadani: retezce, vestavene funkce, return, implicitni konverze Int->Double
 import ifj26.*
 
 def withoutLineFeed(text: String): String =

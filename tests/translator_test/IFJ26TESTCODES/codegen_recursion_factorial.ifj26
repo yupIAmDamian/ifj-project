@@ -1,0 +1,14 @@
+import ifj26.*
+
+def factorial(n: Int): Int =
+  if n <= 1 then
+    return 1
+  else
+    val m = n - 1
+    val f = factorial(m)
+    return n * f
+
+@main def main(): Unit =
+  val r = factorial(5)
+  print(toStr(r))
+  print("\n")

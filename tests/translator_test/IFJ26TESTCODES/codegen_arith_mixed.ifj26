@@ -1,0 +1,15 @@
+import ifj26.*
+
+@main def main(): Unit =
+  val a = 2
+  val b = 3
+  val c = 4
+  val r = a + b * c - 1
+  print(toStr(r))
+  print("\n")
+  val f = 7.0 / 2
+  print(toStr(f))
+  print("\n")
+  val q = -7 / 2
+  print(toStr(q))
+  print("\n")
