@@ -1,0 +1,23 @@
+import ifj26.*
+
+def fib(n: Int): Int =
+  if n < 2 then
+    return n
+  else
+    return fib(n - 1) + fib(n - 2)
+
+def gcd(a: Int, b: Int): Int =
+  if b == 0 then
+    return a
+  else
+    return gcd(b, a - a / b * b)
+
+@main def main(): Unit =
+  print(toStr(fib(10)))
+  print("\n")
+  print(toStr(2 * fib(5) - fib(3)))
+  print("\n")
+  print(toStr(gcd(48, 18)))
+  print("\n")
+  print(toStr(fib(gcd(12, 8) + 3)))
+  print("\n")

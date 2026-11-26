@@ -1,0 +1,9 @@
+// EXPECT: compile exit code 6
+import ifj26.*
+
+def name(): Int =
+  return "abc"
+
+@main def main(): Unit =
+  print("x")
+  print("\n")

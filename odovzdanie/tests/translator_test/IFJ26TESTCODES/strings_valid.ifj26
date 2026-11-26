@@ -1,0 +1,19 @@
+import ifj26.*
+
+@main def run(): Unit =
+    val text: String = "abcdef"
+    val first: String = subStr(text, 0, 1)
+    val middle: String = subStr(text, 1, 5)
+    val whole: String = subStr(text, 0, 6)
+    val code: Int = ord(text, 2)
+    val letter: String = chr(65)
+    print(first)
+    print("\n")
+    print(middle)
+    print("\n")
+    print(whole)
+    print("\n")
+    print(code)
+    print("\n")
+    print(letter)
+    print("\n")

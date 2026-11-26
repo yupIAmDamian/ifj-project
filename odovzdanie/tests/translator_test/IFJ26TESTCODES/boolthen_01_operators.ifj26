@@ -1,0 +1,27 @@
+import ifj26.*
+
+def inRange(x: Int, lo: Int, hi: Int): Boolean =
+  return x >= lo && x <= hi
+
+def xor(a: Boolean, b: Boolean): Boolean = (a || b) && !(a && b)
+
+@main def main(): Unit =
+  val t: Boolean = true
+  var f: Boolean = false
+  print(toStr(!f && t))
+  print("\n")
+  print(toStr(f || t && f))
+  print("\n")
+  print(toStr(!t || f))
+  print("\n")
+  print(toStr(t == true))
+  print("\n")
+  print(toStr(t != f))
+  print("\n")
+  print(toStr(inRange(5, 1, 10)))
+  print("\n")
+  print(toStr(xor(t, t)))
+  print("\n")
+  f = !f
+  print(toStr(f))
+  print("\n")

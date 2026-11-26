@@ -1,0 +1,16 @@
+import ifj26.*
+
+def square(x: Int): Int = x * x
+
+def add(a: Int, b: Int): Int = a + b
+
+@main def main(): Unit =
+  val r = 2 * square(3 + 1)
+  print(toStr(r))
+  print("\n")
+  print(add(square(2), square(3)) + 1)
+  print("\n")
+  print(toStr(strLength(subStr("abcd", 1, 3))))
+  print("\n")
+  print(toStr(square(add(1, 2)) + 1))
+  print("\n")

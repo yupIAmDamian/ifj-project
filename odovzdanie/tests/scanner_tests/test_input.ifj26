@@ -1,0 +1,41 @@
+var num = 5 // if while call def
+print("\ncycle", 
+            "wait")
+while num >= 1 do
+  num = num-2
+     import ifj26.*
+noindentshere
+/* block comment lvl 1
+    /* nested lvl 2
+    lvl 2 /* lvl 3
+            nested lvl 3
+            lvl 3 */
+    */
+block comment lvl 1 */
+
+def abcd(n: Int): /* it can be 
+/* hefug */ 
+here */
+Double
+   n = n*n  // hocicopjf coidfh
+
+Boolean boolext = true
+Boolean boolfalse = false
+if a && b || !c
+   return result
+
+if abcd(5) == 25 then
+ """this string
+ is a ""multi\line" string"""
+ else
+1.564D
+-9.42e-1d
+val 88
+   """inde
+nt"""
+          //ignored indent
+       // ingored indenfgofdhkdjfn
+      /* dlfjh /*
+      kfbh 
+      */ *****/
+   "indent should be the same"

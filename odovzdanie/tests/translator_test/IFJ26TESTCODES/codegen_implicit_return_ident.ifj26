@@ -1,0 +1,10 @@
+import ifj26.*
+
+def ident(x: Int): Int =
+  val y = x
+  y
+
+@main def main(): Unit =
+  val r = ident(7)
+  print(toStr(r))
+  print("\n")

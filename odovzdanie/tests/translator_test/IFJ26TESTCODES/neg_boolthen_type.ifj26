@@ -1,0 +1,8 @@
+// Expected: compiler error, exit code 6 
+import ifj26.*
+
+@main def main(): Unit =
+  val n = 3
+  val bad = n && true
+  print(toStr(bad))
+  print("\n")

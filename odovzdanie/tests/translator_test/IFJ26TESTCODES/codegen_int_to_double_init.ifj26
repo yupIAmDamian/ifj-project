@@ -1,0 +1,7 @@
+import ifj26.*
+
+@main def main(): Unit =
+  var d: Double = 2
+  d = d + 1.5
+  print(toStr(d))
+  print("\n")

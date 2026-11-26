@@ -1,0 +1,16 @@
+import ifj26.*
+
+@main def main(): Unit =
+  val s = "hello"
+  val n = strLength(s)
+  print(toStr(n))
+  print("\n")
+  val sub = subStr(s, 1, 3)
+  print(sub)
+  print("\n")
+  val code = ord("A", 0)
+  print(toStr(code))
+  print("\n")
+  val ch = chr(66)
+  print(ch)
+  print("\n")

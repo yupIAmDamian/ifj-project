@@ -1,0 +1,7 @@
+// EXPECT: exit code 40
+import ifj26.*
+
+@main def run(): Unit =
+    val text: String = "abc"
+    val invalidOrder: String = subStr(text, 2, 1)
+    print(invalidOrder)
