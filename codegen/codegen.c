@@ -259,7 +259,7 @@ void equation_traversal(ASTNode *node, char *result_var) {
 
     if (node->type == AST_NODE_INT2FLOAT) {
         equation_traversal(node->left, result_var);
-        printf("INT2FLOATS\n");
+        gen_int2floats();
         return;
     }
     bool concat = false;
