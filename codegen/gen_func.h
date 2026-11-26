@@ -38,14 +38,21 @@ void gen_EQs();
 void gen_ANDs();
 void gen_ORs();
 void gen_NOTs();
+void gen_short_circuit(ASTNode *node, bool is_and);
+
+
 void gen_int2floats();
 void gen_float2ints();
 void gen_int2chars();
 void gen_stri2ints();
 void gen_float2strs();
 void gen_int2strs();
+void gen_tostr(ASTNode *arg);
+
 void gen_types();
 void gen_isints();
+
+void gen_read_builtin(char *type, char *default_value);
 
 void gen_jumpifeqs(char *label);
 void gen_jumpifneqs(char *label);
@@ -66,6 +73,8 @@ void gen_data_type(ASTNode *node);
 void gen_label(char *label);
 void gen_jump(char *label);
 void gen_exit();
+void gen_call(ASTNode *node);
+
 
 void gen_builtin_ord();
 void gen_builtin_substr();

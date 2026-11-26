@@ -32,12 +32,11 @@ FILE *open_file(char *filename, char *mode);
 char *token_type_name(TokenType type);
 
 /**
- * @brief Checks whether a given string is absent from an array of strings.
- * @param str String to search for.
- * @param array Array of string pointers.
- * @param array_size Number of elements in the array.
- * @return True if the string is not found in the array, false otherwise.
+ * @brief Compares two strings for equality.
+ * @param label First string to compare.
+ * @param string Second string to compare.
+ * @return true if the strings are equal, false otherwise.
  */
-bool check_if_string_is_not_in_array(char *str, char **array, size_t array_size);
+bool matching_string(char *label, char *string);
 
 #endif

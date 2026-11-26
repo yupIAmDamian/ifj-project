@@ -2,8 +2,6 @@
 // Author: Damian Frantisek Girasek (xgirasd00)
 #include "codegen_helper.h"
 
-extern char *current_func_name; 
-
 Token* get_token_from_node(ASTNode *node) {
     return &(node->val);
 }
@@ -38,4 +36,39 @@ char *create_label(int number, char* label_name, char* label_type) {
     snprintf(label, (size_t)len, "$%s$%s$%d$%s", current_func_name, label_name, number, label_type);
 
     return label; 
+}
+
+
+bool in_main() {
+    return strcmp(current_func_name, "main") == 0;
+}
+
+int fresh_id() {
+    return label_counter++;
+}
+
+char *scratch() {
+    return in_main() ? "GF@$tmp" : "LF@$tmp";
+}
+
+bool always_returns(ASTNode *node) {
+    if (node == NULL) {
+        return false;
+    }
+
+    while (node->next != NULL) {
+        node = node->next;
+    }
+
+    if (node->type == AST_NODE_RETURN) {
+        return true;
+    }
+
+    if (node->type == AST_NODE_IF) {
+        return node->extra != NULL &&
+               always_returns(node->right) &&
+               always_returns(node->extra);
+    }
+
+    return false;
 }

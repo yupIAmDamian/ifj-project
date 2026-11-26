@@ -2,6 +2,7 @@
 JUMP main
 
 LABEL main
+DEFVAR GF@$tmp
 DEFVAR GF@run$i$2
 DEFVAR GF@run$total$2
 PUSHS int@0
@@ -30,10 +31,14 @@ PUSHS int@8
 EQS
 PUSHS bool@false
 JUMPIFEQS $main$if$1$else
-WRITE string@conversion\032in\032loop\032works\010
+PUSHS string@conversion\032in\032loop\032works\010
+POPS GF@$tmp
+WRITE GF@$tmp
 JUMP $main$if$1$end
 LABEL $main$if$1$else
-WRITE string@conversion\032in\032loop\032failed\010
+PUSHS string@conversion\032in\032loop\032failed\010
+POPS GF@$tmp
+WRITE GF@$tmp
 LABEL $main$if$1$end
 EXIT int@0
 

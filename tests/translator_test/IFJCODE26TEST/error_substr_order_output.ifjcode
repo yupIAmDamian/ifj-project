@@ -47,6 +47,7 @@ LABEL $substr$error
 EXIT int@40
 
 LABEL main
+DEFVAR GF@$tmp
 DEFVAR GF@run$text$2
 DEFVAR GF@run$invalidOrder$2
 PUSHS string@abc
@@ -56,6 +57,8 @@ PUSHS int@2
 PUSHS GF@run$text$2
 CALL subStr
 POPS GF@run$invalidOrder$2
-WRITE GF@run$invalidOrder$2
+PUSHS GF@run$invalidOrder$2
+POPS GF@$tmp
+WRITE GF@$tmp
 EXIT int@0
 

@@ -2,24 +2,39 @@
 JUMP main
 
 LABEL main
+DEFVAR GF@$tmp
 DEFVAR GF@run$line$2
 DEFVAR GF@run$number$2
 DEFVAR GF@run$real$2
-READ GF@run$line$2 string
-JUMPIFNEQ $read$ok$0 GF@run$line$2 nil@nil
-MOVE GF@run$line$2 string@
+READ GF@$tmp string
+JUMPIFNEQ $read$ok$0 GF@$tmp nil@nil
+MOVE GF@$tmp string@
 LABEL $read$ok$0
-READ GF@run$number$2 int
-JUMPIFNEQ $read$ok$1 GF@run$number$2 nil@nil
-MOVE GF@run$number$2 int@0
+PUSHS GF@$tmp
+POPS GF@run$line$2
+READ GF@$tmp int
+JUMPIFNEQ $read$ok$1 GF@$tmp nil@nil
+MOVE GF@$tmp int@0
 LABEL $read$ok$1
-READ GF@run$real$2 float
-JUMPIFNEQ $read$ok$2 GF@run$real$2 nil@nil
-MOVE GF@run$real$2 float@0x0p+0
+PUSHS GF@$tmp
+POPS GF@run$number$2
+READ GF@$tmp float
+JUMPIFNEQ $read$ok$2 GF@$tmp nil@nil
+MOVE GF@$tmp float@0x0p+0
 LABEL $read$ok$2
-WRITE GF@run$line$2
-WRITE GF@run$number$2
-WRITE GF@run$real$2
-WRITE string@\010
+PUSHS GF@$tmp
+POPS GF@run$real$2
+PUSHS GF@run$line$2
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS GF@run$number$2
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS GF@run$real$2
+POPS GF@$tmp
+WRITE GF@$tmp
+PUSHS string@\010
+POPS GF@$tmp
+WRITE GF@$tmp
 EXIT int@0
 
