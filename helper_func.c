@@ -79,5 +79,5 @@ char *token_type_name(TokenType type) {
 }
 
 bool matching_string(char *label, char *string) {
-    return strcmp(label, string) == 0;
+    return matching_string(label, string) == 0;
 }

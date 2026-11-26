@@ -259,7 +259,7 @@ static ASTNode* find_func_node(const char *name) {
     ASTNode *curr = program_root->left;
     while (curr != NULL) {
         if (curr->type == AST_NODE_FUNCTION &&
-            strcmp(curr->val.attribute.string_value, name) == 0) {
+            matching_string(curr->val.attribute.string_value, name) == 0) {
             return curr;
         }
         curr = curr->next;
@@ -489,7 +489,7 @@ static DataType check_func_call(ASTNode *node, Symtable *st) {
     char *func_name = node->val.attribute.string_value;
 
     // Special handling for built-in 'print' and 'toStr' accepting a single argument of type Any
-    if (strcmp(func_name, "print") == 0 || strcmp(func_name, "toStr") == 0) {
+    if (matching_string(func_name, "print") == 0 || matching_string(func_name, "toStr") == 0) {
         ASTNode *arg_node = node->right;
         if (arg_node == NULL || arg_node->next != NULL) {
             error_exit(ERR_ARGS, 0, "Built-in function requires exactly one argument");
@@ -498,7 +498,7 @@ static DataType check_func_call(ASTNode *node, Symtable *st) {
         if (arg_type == TYPE_UNKNOWN) {
             error_exit(ERR_ARGS, 0, "Invalid argument type for built-in function");
         }
-        DataType ret = (strcmp(func_name, "print") == 0) ? TYPE_VOID : TYPE_STRING;
+        DataType ret = (matching_string(func_name, "print") == 0) ? TYPE_VOID : TYPE_STRING;
         node->inferred_type = ret;
         return ret;
     }
