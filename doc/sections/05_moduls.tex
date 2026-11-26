@@ -1,36 +1,60 @@
 stručný popis každého modulu (informačně obohacující věta na dvojici .c/.h)
 
-%DAmian%
-\subsection{hashtable.c/.h}
-Modul pre prácu s hash tabuľkou, ktorá slúži na ukladanie a vyhľadávanie dát.
+\subsection{Damian}
 
-\subsection{codegen.c/.h}
-Modul pre generovanie finálneho kódu z syntaktického stromu.
+\paragraph{\texttt{hashtable.c/.h}}
+\begin{itemize}
+    \item Modul pre prácu s hash tabuľkou, ktorá slúži na ukladanie a vyhľadávanie dát.
+\end{itemize}
 
-\subsection{gen\_func.c/.h}
-Modul pre generovanie jednotlivých častí kódu vo finálnom prekladači.
+\paragraph{\texttt{codegen.c/.h}}
+\begin{itemize}
+    \item Modul pre generovanie finálneho kódu zo syntaktického stromu.
+\end{itemize}
 
-\subsection{codegen\_helper.c/.h}
-Modul s pomocnými funkciami pre generovanie kódu.
+\paragraph{\texttt{gen\_func.c/.h}}
+\begin{itemize}
+    \item Modul pre generovanie jednotlivých častí kódu vo finálnom prekladači.
+\end{itemize}
 
-\subsection{helper\_func.c/.h}
-Modul s pomocnými funkciami, ktoré sa používajú v rôznych častiach projektu.
+\paragraph{\texttt{codegen\_helper.c/.h}}
+\begin{itemize}
+    \item Modul s pomocnými funkciami pre generovanie kódu.
+\end{itemize}
 
-%Daniel%
-\subsection{symtable.c/ .h}
-Tabuľka symbolov ako zásobník hashovacích tabuliek, ktorý ukladá informácie o deklarovaných premenných a funkciách, spravuje rozsahy ich platnosti. Pri ukladaní premenných vytvára ich unikátne manglované názvy (GF, LF).
+\paragraph{\texttt{helper\_func.c/.h}}
+\begin{itemize}
+    \item Modul s pomocnými funkciami, ktoré sa používajú v rôznych častiach projektu.
+\end{itemize}
 
-\subsection{semantic.c/ .h}
-Rekurzívne prechádza strom AST, pomocou tabuľky symbolov overuje deklarácie, kompatibilitu operácií, pravidlá volaní... Dopĺňa do stromu uzly pre implicitné konverzie a dopĺňa odvodené dátové typy.
+\subsection{Daniel}
 
-%Michal%
-\subsection{parser.c/ .h}
-Implementuje syntaktickú analýzu zhora nadol metódou rekurzívneho zostupu s vyrovnávacou pamäťou pre jeden dopredný token (lookahead). Kontroluje syntaktickú štruktúru programu podľa LL gramatiky, riadi prechod do precedenčnej analýzy pri spracovaní výrazov a postupne vytvára abstraktný syntaktický strom (AST).
+\paragraph{\texttt{symtable.c/.h}}
+\begin{itemize}
+    \item Tabuľka symbolov implementovaná ako zásobník hashovacích tabuliek. Ukladá informácie o deklarovaných premenných a funkciách a spravuje rozsahy ich platnosti. Pri ukladaní premenných vytvára ich unikátne manglované názvy (GF, LF).
+\end{itemize}
 
-\subsection{expression.c/ .h}
-Zabezpečuje syntaktickú analýzu výrazov zdola nahor pomocou precedenčnej syntaktickej analýzy riadenej vlastným zásobníkom (PrecStack) a precedenčnou tabuľkou operátorov (precedence\_table). Spracúva unárne aj binárne operátory, uzátvorkované podvýrazy a vnorené volania funkcií, pričom pri redukciách vytvára príslušné podstromy AST.
+\paragraph{\texttt{semantic.c/.h}}
+\begin{itemize}
+    \item Rekurzívne prechádza strom AST a pomocou tabuľky symbolov overuje deklarácie, kompatibilitu operácií a pravidlá volaní. Dopĺňa do stromu uzly pre implicitné konverzie a odvodené dátové typy.
+\end{itemize}
 
-\subsection{ast.c/ .h}
-Definuje dátové štruktúry (ASTNode, ASTNodeType) a rozhranie na vytváranie uzlov AST reprezentujúceho prekladaný program. Súrodenecké uzly (príkazy v bloku, parametre, argumenty a definície funkcií) prepája do obojsmerne viazaného zoznamu (next, prev), zatiaľ čo všetky alokované uzly zároveň eviduje v intruzívnom jednosmerne viazanom zozname (alloc\_next) na ich centralizované uvoľnenie vrátane alokovaných reťazcov pri ukončení prekladu alebo pri chybe.
+
+\subsection{Michal}
+
+\paragraph{\texttt{parser.c/.h}}
+\begin{itemize}
+    \item Implementuje syntaktickú analýzu zhora nadol metódou rekurzívneho zostupu s vyrovnávacou pamäťou pre jeden dopredný token (lookahead). Kontroluje syntaktickú štruktúru programu podľa LL gramatiky, riadi prechod do precedenčnej analýzy pri spracovaní výrazov a postupne vytvára abstraktný syntaktický strom (AST).
+\end{itemize}
+
+\paragraph{\texttt{expression.c/.h}}
+\begin{itemize}
+    \item Zabezpečuje syntaktickú analýzu výrazov zdola nahor pomocou precedenčnej syntaktickej analýzy riadenej vlastným zásobníkom (PrecStack) a precedenčnou tabuľkou operátorov (precedence\_table). Spracúva unárne aj binárne operátory, uzátvorkované podvýrazy a vnorené volania funkcií, pričom pri redukciách vytvára príslušné podstromy AST.
+\end{itemize}
+
+\paragraph{\texttt{ast.c/.h}}
+\begin{itemize}
+    \item Definuje dátové štruktúry (ASTNode, ASTNodeType) a rozhranie na vytváranie uzlov AST reprezentujúceho prekladaný program. Súrodenecké uzly (príkazy v bloku, parametre, argumenty a definície funkcií) prepája do obojsmerne viazaného zoznamu (next, prev), zatiaľ čo všetky alokované uzly zároveň eviduje v intruzívnom jednosmerne viazanom zozname (alloc\_next) na ich centralizované uvoľnenie vrátane alokovaných reťazcov pri ukončení prekladu alebo pri chybe.
+\end{itemize}
 
 \newpage
