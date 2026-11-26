@@ -1,5 +1,4 @@
-// Test (NEGATIVE): FUNEXP - wrong number of arguments in a call inside an expression
-// Expected: compiler error, exit code 5 (wrong argument count)
+// Expected: compiler error, exit code 5 
 import ifj26.*
 
 def add(a: Int, b: Int): Int = a + b

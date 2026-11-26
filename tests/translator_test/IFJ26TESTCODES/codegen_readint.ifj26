@@ -1,0 +1,7 @@
+import ifj26.*
+
+@main def main(): Unit =
+  val n = readInt()
+  val m = n * 2
+  print(toStr(m))
+  print("\n")

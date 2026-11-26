@@ -1,0 +1,11 @@
+import ifj26.*
+
+def sub(a: Int, b: Int): Int =
+  return a - b
+
+@main def main(): Unit =
+  val x = 10
+  val y = 3
+  val r = sub(x, y)
+  print(toStr(r))
+  print("\n")

@@ -11,14 +11,16 @@ static Symtable *g_st = NULL;
 static ASTNode *g_root = NULL;
 
 // Helper function for creating a Token with the specified values.
-static Token make_tok(TokenType type, const char *str_val, int int_val, double dbl_val) {
-    (void)int_val;
-    (void)dbl_val;
+static Token make_tok(TokenType type, char *str_val, int int_val, double dbl_val) {
     Token t;
     memset(&t, 0, sizeof(Token));
     t.type = type;
     if (str_val) {
-        t.attribute.string_value = strdup(str_val);
+        t.attribute.string_value = str_duplicate(str_val);
+    } else if (type == TOKEN_INTEGER) {
+        t.attribute.integer_value = int_val;
+    } else if (type == TOKEN_DOUBLE) {
+        t.attribute.double_value = dbl_val;
     }
     return t;
 }
@@ -138,8 +140,26 @@ ASTNode* build_test_ast(void) {
     return program;
 }
 
+// freeing AST nodes recursively
+void free_ast(ASTNode *node) {
+    if (node == NULL) {
+        return;
+    }
+
+    free_ast(node->left);
+    free_ast(node->right);
+    free_ast(node->extra);
+    free_ast(node->next);
+
+    if (node->val.type == TOKEN_IDENTIFIER || node->val.type == TOKEN_STRING) {
+        free(node->val.attribute.string_value);
+    }
+
+    free(node);
+}
+
 // Custom error handler for reporting semantic analysis errors and freeing resources.
-void dominik_error(int code, const char *msg) {
+void dominik_error(int code, char *msg) {
     fprintf(stderr, "Semantic Error %d: %s\n", code, msg);
 
     if (g_st != NULL) {

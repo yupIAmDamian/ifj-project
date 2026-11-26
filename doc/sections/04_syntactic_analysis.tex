@@ -1,0 +1,163 @@
+\subsection{Syntaktická analýza}
+
+Syntaktická analýza je realizovaná ako hybridný analyzátor kombinujúci dva prístupy:
+\begin{itemize}
+    \item \textbf{Analýza zhora nadol} (\texttt{parser.c}) 
+    \item \textbf{Analýza zdola nahor} (\texttt{expression.c}) 
+\end{itemize}
+
+\subsubsection{LL gramatika a LL tabuľka}
+
+\begin{enumerate}
+    \item $\langle\text{program}\rangle \to \langle\text{prolog}\rangle\ \langle\text{functions}\rangle\ \texttt{EOF}$
+    \item $\langle\text{prolog}\rangle \to \texttt{import}\ \texttt{id}\ \texttt{.}\ \texttt{*}\ \texttt{EOL}$
+    \item $\langle\text{functions}\rangle \to \langle\text{function}\rangle\ \langle\text{functions}\rangle$
+    \item $\langle\text{functions}\rangle \to \varepsilon$
+    \item $\langle\text{function}\rangle \to \langle\text{main\_annot}\rangle\ \texttt{def}\ \texttt{id}\ \texttt{(}\ \langle\text{params\_opt}\rangle\ \texttt{)}\ \langle\text{ret\_type\_opt}\rangle\ \texttt{=}\ \langle\text{func\_body}\rangle$
+    \item $\langle\text{main\_annot}\rangle \to \texttt{@}\ \texttt{id}\ \langle\text{opt\_eol}\rangle$
+    \item $\langle\text{main\_annot}\rangle \to \varepsilon$
+    \item $\langle\text{opt\_eol}\rangle \to \texttt{EOL}$
+    \item $\langle\text{opt\_eol}\rangle \to \varepsilon$
+    \item $\langle\text{params\_opt}\rangle \to \langle\text{param}\rangle\ \langle\text{param\_list}\rangle$
+    \item $\langle\text{params\_opt}\rangle \to \varepsilon$
+    \item $\langle\text{param\_list}\rangle \to \texttt{,}\ \langle\text{param\_tail}\rangle$
+    \item $\langle\text{param\_list}\rangle \to \varepsilon$
+    \item $\langle\text{param\_tail}\rangle \to \langle\text{param}\rangle\ \langle\text{param\_list}\rangle$
+    \item $\langle\text{param\_tail}\rangle \to \varepsilon$
+    \item $\langle\text{param}\rangle \to \texttt{id}\ \texttt{:}\ \langle\text{type}\rangle$
+    \item $\langle\text{ret\_type\_opt}\rangle \to \texttt{:}\ \langle\text{type}\rangle$
+    \item $\langle\text{ret\_type\_opt}\rangle \to \varepsilon$
+    \item $\langle\text{type\_opt}\rangle \to \texttt{:}\ \langle\text{type}\rangle$
+    \item $\langle\text{type\_opt}\rangle \to \varepsilon$
+    \item $\langle\text{type}\rangle \to \texttt{Int} \mid \texttt{Double}\ (22) \mid \texttt{String}\ (23) \mid \texttt{Unit}\ (24) \mid \texttt{Boolean}\ (25)$
+    \setcounter{enumi}{25}
+    \item $\langle\text{func\_body}\rangle \to \texttt{EOL}\ \texttt{INDENT}\ \langle\text{statements}\rangle\ \texttt{DEDENT}$
+    \item $\langle\text{func\_body}\rangle \to \langle\text{statement}\rangle\ \langle\text{stmt\_end}\rangle$
+    \item $\langle\text{statements}\rangle \to \langle\text{stmt\_item}\rangle\ \langle\text{statements}\rangle$
+    \item $\langle\text{statements}\rangle \to \varepsilon$
+    \item $\langle\text{stmt\_item}\rangle \to \langle\text{block\_stmt}\rangle$
+    \item $\langle\text{stmt\_item}\rangle \to \langle\text{simple\_stmt}\rangle\ \langle\text{stmt\_end}\rangle$
+    \item $\langle\text{stmt\_end}\rangle \to \texttt{EOL}$
+    \item $\langle\text{stmt\_end}\rangle \to \varepsilon$
+    \item $\langle\text{block\_stmt}\rangle \to \langle\text{if\_stmt}\rangle$
+    \item $\langle\text{block\_stmt}\rangle \to \texttt{while}\ \langle\text{expr}\rangle\ \texttt{do}\ \texttt{EOL}\ \texttt{INDENT}\ \langle\text{statements}\rangle\ \texttt{DEDENT}$
+    \item $\langle\text{if\_stmt}\rangle \to \texttt{if}\ \langle\text{expr}\rangle\ \texttt{then}\ \texttt{EOL}\ \texttt{INDENT}\ \langle\text{statements}\rangle\ \texttt{DEDENT}\ \langle\text{else\_opt}\rangle$
+    \item $\langle\text{else\_opt}\rangle \to \texttt{else}\ \langle\text{else\_body}\rangle$
+    \item $\langle\text{else\_opt}\rangle \to \varepsilon$
+    \item $\langle\text{else\_body}\rangle \to \langle\text{if\_stmt}\rangle$
+    \item $\langle\text{else\_body}\rangle \to \texttt{EOL}\ \texttt{INDENT}\ \langle\text{statements}\rangle\ \texttt{DEDENT}$
+    \item $\langle\text{statement}\rangle \to \langle\text{block\_stmt}\rangle$
+    \item $\langle\text{statement}\rangle \to \langle\text{simple\_stmt}\rangle$
+    \item $\langle\text{simple\_stmt}\rangle \to \texttt{val}\ \texttt{id}\ \langle\text{type\_opt}\rangle\ \texttt{=}\ \langle\text{expr}\rangle$
+    \item $\langle\text{simple\_stmt}\rangle \to \texttt{var}\ \texttt{id}\ \langle\text{type\_opt}\rangle\ \texttt{=}\ \langle\text{expr}\rangle$
+    \item $\langle\text{simple\_stmt}\rangle \to \texttt{return}\ \langle\text{expr\_opt}\rangle$
+    \item $\langle\text{simple\_stmt}\rangle \to \texttt{id}\ \texttt{=}\ \langle\text{expr}\rangle$
+    \item $\langle\text{simple\_stmt}\rangle \to \langle\text{expr}\rangle$
+    \item $\langle\text{expr\_opt}\rangle \to \langle\text{expr}\rangle$
+    \item $\langle\text{expr\_opt}\rangle \to \varepsilon$
+    \item $\langle\text{args\_opt}\rangle \to \langle\text{expr}\rangle\ \langle\text{arg\_list}\rangle$
+    \item $\langle\text{args\_opt}\rangle \to \varepsilon$
+    \item $\langle\text{arg\_list}\rangle \to \texttt{,}\ \langle\text{arg\_tail}\rangle$
+    \item $\langle\text{arg\_list}\rangle \to \varepsilon$
+    \item $\langle\text{arg\_tail}\rangle \to \langle\text{expr}\rangle\ \langle\text{arg\_list}\rangle$
+    \item $\langle\text{arg\_tail}\rangle \to \varepsilon$
+\end{enumerate}
+
+Čísla v LL tabuľke (Tabuľka~\ref{tab:ll_table}) označujú \textbf{poradové číslo prepisovacieho pravidla} z vyššie uvedenej gramatiky, ktoré syntaktický analyzátor použije pri rozvinutí daného neterminálu (riadok) pre aktuálny vstupný token (stĺpec). Prázdne políčko predstavuje syntaktickú chybu (návratový kód {2}).
+\bigskip
+\\
+Kvôli lepšej čitateľnosti LL tabuľky sú terminály, ktoré sa správajú rovnako, zlúčené do troch skratiek:
+\begin{itemize}
+    \item \texttt{typ} [dátové typy]: \texttt{Int} (21), \texttt{Double} (22), \texttt{String} (23), \texttt{Unit} (24) a \texttt{Boolean} (25),
+    \item \texttt{lit} [literály]: \texttt{integer}, \texttt{double}, \texttt{string}, \texttt{true} a \texttt{false},
+    \item \texttt{un\_op} [unárne operátory]: \texttt{+}, \texttt{-} a \texttt{!}.
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\caption{LL tabuľka pre syntaktický analyzátor zhora nadol}
+\label{tab:ll_table}
+\setlength{\tabcolsep}{2.5pt}
+\renewcommand{\arraystretch}{1.25}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+\textbf{Neterminál} &
+\rotatebox{90}{\,\texttt{import}\,} &
+\rotatebox{90}{\,\texttt{@}\,} &
+\rotatebox{90}{\,\texttt{def}\,} &
+\rotatebox{90}{\,\texttt{id}\,} &
+\rotatebox{90}{\,\texttt{lit}\,} &
+\rotatebox{90}{\,\texttt{(}\,} &
+\rotatebox{90}{\,\texttt{)}\,} &
+\rotatebox{90}{\,\texttt{,}\,} &
+\rotatebox{90}{\,\texttt{:}\,} &
+\rotatebox{90}{\,\texttt{=}\,} &
+\rotatebox{90}{\,\texttt{typ}\,} &
+\rotatebox{90}{\,\texttt{val}\,} &
+\rotatebox{90}{\,\texttt{var}\,} &
+\rotatebox{90}{\,\texttt{return}\,} &
+\rotatebox{90}{\,\texttt{if}\,} &
+\rotatebox{90}{\,\texttt{else}\,} &
+\rotatebox{90}{\,\texttt{while}\,} &
+\rotatebox{90}{\,\texttt{un\_op}\,} &
+\rotatebox{90}{\,\texttt{EOL}\,} &
+\rotatebox{90}{\,\texttt{DEDENT}\,} &
+\rotatebox{90}{\,\texttt{EOF}\,} \\ \hline
+$\langle\text{program}\rangle$ & 1 & & & & & & & & & & & & & & & & & & & & \\ \hline
+$\langle\text{prolog}\rangle$ & 2 & & & & & & & & & & & & & & & & & & & & \\ \hline
+$\langle\text{functions}\rangle$ & & 3 & 3 & & & & & & & & & & & & & & & & & & 4 \\ \hline
+$\langle\text{function}\rangle$ & & 5 & 5 & & & & & & & & & & & & & & & & & & \\ \hline
+$\langle\text{main\_annot}\rangle$ & & 6 & 7 & & & & & & & & & & & & & & & & & & \\ \hline
+$\langle\text{opt\_eol}\rangle$ & & & 9 & & & & & & & & & & & & & & & & 8 & & \\ \hline
+$\langle\text{params\_opt}\rangle$ & & & & 10 & & & 11 & & & & & & & & & & & & & & \\ \hline
+$\langle\text{param\_list}\rangle$ & & & & & & & 13 & 12 & & & & & & & & & & & & & \\ \hline
+$\langle\text{param\_tail}\rangle$ & & & & 14 & & & 15 & & & & & & & & & & & & & & \\ \hline
+$\langle\text{param}\rangle$ & & & & 16 & & & & & & & & & & & & & & & & & \\ \hline
+$\langle\text{ret\_type\_opt}\rangle$ & & & & & & & & & 17 & 18 & & & & & & & & & & & \\ \hline
+$\langle\text{type\_opt}\rangle$ & & & & & & & & & 19 & 20 & & & & & & & & & & & \\ \hline
+$\langle\text{type}\rangle$ & & & & & & & & & & & 21--25 & & & & & & & & & & \\ \hline
+$\langle\text{func\_body}\rangle$ & & & & 27 & 27 & 27 & & & & & & 27 & 27 & 27 & 27 & & 27 & 27 & 26 & & \\ \hline
+$\langle\text{statements}\rangle$ & & & & 28 & 28 & 28 & & & & & & 28 & 28 & 28 & 28 & & 28 & 28 & & 29 & 29 \\ \hline
+$\langle\text{stmt\_item}\rangle$ & & & & 31 & 31 & 31 & & & & & & 31 & 31 & 31 & 30 & & 30 & 31 & & & \\ \hline
+$\langle\text{stmt\_end}\rangle$ & & & & 33 & 33 & 33 & & & & & & 33 & 33 & 33 & 33 & & 33 & 33 & 32 & 33 & 33 \\ \hline
+$\langle\text{block\_stmt}\rangle$ & & & & & & & & & & & & & & & 34 & & 35 & & & & \\ \hline
+$\langle\text{if\_stmt}\rangle$ & & & & & & & & & & & & & & & 36 & & & & & & \\ \hline
+$\langle\text{else\_opt}\rangle$ & & & & 38 & 38 & 38 & & & & & & 38 & 38 & 38 & 38 & 37 & 38 & 38 & & 38 & 38 \\ \hline
+$\langle\text{else\_body}\rangle$ & & & & & & & & & & & & & & & 39 & & & & 40 & & \\ \hline
+$\langle\text{statement}\rangle$ & & & & 42 & 42 & 42 & & & & & & 42 & 42 & 42 & 41 & & 41 & 42 & & & \\ \hline
+$\langle\text{simple\_stmt}\rangle$ & & & & 46/47 & 47 & 47 & & & & & & 43 & 44 & 45 & & & & 47 & & & \\ \hline
+$\langle\text{expr\_opt}\rangle$ & & & & 48 & 48 & 48 & & & & & & & & & & & & 48 & 49 & 49 & 49 \\ \hline
+$\langle\text{args\_opt}\rangle$ & & & & 50 & 50 & 50 & 51 & & & & & & & & & & & 50 & & & \\ \hline
+$\langle\text{arg\_list}\rangle$ & & & & & & & 53 & 52 & & & & & & & & & & & & & \\ \hline
+$\langle\text{arg\_tail}\rangle$ & & & & 54 & 54 & 54 & 55 & & & & & & & & & & & 54 & & & \\ \hline
+\end{tabular}%
+}
+\end{table}
+
+\subsubsection{Precedenčná analýza výrazov}
+
+\begin{table}[H]
+\centering
+\caption{Precedenčná tabuľka operátorov (prázdne pole značí syntaktickú chybu)}
+\label{tab:prec_table}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.25}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+\textbf{Zásobník / Vstup} & \texttt{+ - !} (un.) & \texttt{* /} & \texttt{+ -} (bin.) & \texttt{< <= > >=} & \texttt{== !=} & \texttt{\&\&} & \texttt{||} & \texttt{(} & \texttt{)} & \texttt{id / lit} & \texttt{\$} \\ \hline
+\texttt{+ - !} (un.) & $<$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $<$ & $>$ & $<$ & $>$ \\ \hline
+\texttt{* /}         & $<$ & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ & $<$ & $>$ & $<$ & $>$ \\ \hline
+\texttt{+ -} (bin.)  & $<$ & $<$ & $>$ & $>$ & $>$ & $>$ & $>$ & $<$ & $>$ & $<$ & $>$ \\ \hline
+\texttt{< <= > >=}   & $<$ & $<$ & $<$ &     & $>$ & $>$ & $>$ & $<$ & $>$ & $<$ & $>$ \\ \hline
+\texttt{== !=}       & $<$ & $<$ & $<$ & $<$ &     & $>$ & $>$ & $<$ & $>$ & $<$ & $>$ \\ \hline
+\texttt{\&\&}        & $<$ & $<$ & $<$ & $<$ & $<$ & $>$ & $>$ & $<$ & $>$ & $<$ & $>$ \\ \hline
+\texttt{||}          & $<$ & $<$ & $<$ & $<$ & $<$ & $<$ & $>$ & $<$ & $>$ & $<$ & $>$ \\ \hline
+\texttt{(}           & $<$ & $<$ & $<$ & $<$ & $<$ & $<$ & $<$ & $<$ & $=$ & $<$ &     \\ \hline
+\texttt{)}           &     & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ &     & $>$ &     & $>$ \\ \hline
+\texttt{id / lit}    &     & $>$ & $>$ & $>$ & $>$ & $>$ & $>$ &     & $>$ &     & $>$ \\ \hline
+\texttt{\$}          & $<$ & $<$ & $<$ & $<$ & $<$ & $<$ & $<$ & $<$ &     & $<$ &     \\ \hline
+\end{tabular}%
+}
+\end{table}

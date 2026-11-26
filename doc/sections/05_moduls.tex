@@ -1,28 +1,36 @@
 stručný popis každého modulu (informačně obohacující věta na dvojici .c/.h)
 
 %DAmian%
-\section{hashtable.c/.h}
+\subsection{hashtable.c/.h}
 Modul pre prácu s hash tabuľkou, ktorá slúži na ukladanie a vyhľadávanie dát.
 
-\section{codegen.c/.h}
+\subsection{codegen.c/.h}
 Modul pre generovanie finálneho kódu z syntaktického stromu.
 
-\section{gen_func.c/.h}
+\subsection{gen\_func.c/.h}
 Modul pre generovanie jednotlivých častí kódu vo finálnom prekladači.
 
-\section{codegen_helper.c/.h}
+\subsection{codegen\_helper.c/.h}
 Modul s pomocnými funkciami pre generovanie kódu.
 
-\section{helper_func.c/.h}
+\subsection{helper\_func.c/.h}
 Modul s pomocnými funkciami, ktoré sa používajú v rôznych častiach projektu.
 
 %Daniel%
-\section{symtable.c/ .h}
+\subsection{symtable.c/ .h}
 Tabuľka symbolov ako zásobník hashovacích tabuliek, ktorý ukladá informácie o deklarovaných premenných a funkciách, spravuje rozsahy ich platnosti. Pri ukladaní premenných vytvára ich unikátne manglované názvy (GF, LF).
 
-\section{semantic.c/ .h}
+\subsection{semantic.c/ .h}
 Rekurzívne prechádza strom AST, pomocou tabuľky symbolov overuje deklarácie, kompatibilitu operácií, pravidlá volaní... Dopĺňa do stromu uzly pre implicitné konverzie a dopĺňa odvodené dátové typy.
 
+%Michal%
+\subsection{parser.c/ .h}
+Implementuje syntaktickú analýzu zhora nadol metódou rekurzívneho zostupu s vyrovnávacou pamäťou pre jeden dopredný token (lookahead). Kontroluje syntaktickú štruktúru programu podľa LL gramatiky, riadi prechod do precedenčnej analýzy pri spracovaní výrazov a postupne vytvára abstraktný syntaktický strom (AST).
 
+\subsection{expression.c/ .h}
+Zabezpečuje syntaktickú analýzu výrazov zdola nahor pomocou precedenčnej syntaktickej analýzy riadenej vlastným zásobníkom (PrecStack) a precedenčnou tabuľkou operátorov (precedence\_table). Spracúva unárne aj binárne operátory, uzátvorkované podvýrazy a vnorené volania funkcií, pričom pri redukciách vytvára príslušné podstromy AST.
+
+\subsection{ast.c/ .h}
+Definuje dátové štruktúry (ASTNode, ASTNodeType) a rozhranie na vytváranie uzlov AST reprezentujúceho prekladaný program. Súrodenecké uzly (príkazy v bloku, parametre, argumenty a definície funkcií) prepája do obojsmerne viazaného zoznamu (next, prev), zatiaľ čo všetky alokované uzly zároveň eviduje v intruzívnom jednosmerne viazanom zozname (alloc\_next) na ich centralizované uvoľnenie vrátane alokovaných reťazcov pri ukončení prekladu alebo pri chybe.
 
 \newpage

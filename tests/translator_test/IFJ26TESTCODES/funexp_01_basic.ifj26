@@ -1,9 +1,3 @@
-// Test: FUNEXP - function calls inside expressions (basic)
-// Expected stdout:
-// 32
-// 14
-// 2
-// 10
 import ifj26.*
 
 def square(x: Int): Int = x * x

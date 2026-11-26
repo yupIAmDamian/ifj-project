@@ -68,6 +68,15 @@ void gen_fun_def_body(ASTNode *root);
  */
 void gen_fun_def_end();
 
+
+
+/**
+- @brief Generates comparison instructions for an operand, converting it to a float if necessary.
+- @param node Pointer to the AST node representing the operand.
+- @param want_float True if the operand should be converted to a float, false otherwise.
+ */
+void gen_compare_operand(ASTNode *node, bool want_float);
+
 /**
 - @brief Evaluates a boolean condition AST subtree and leaves the boolean result on top of the data stack.
 - @param condition_node Pointer to the root AST node of the condition expression.

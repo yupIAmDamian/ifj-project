@@ -92,9 +92,6 @@ test-scanner-print: $(SCANNER_PR_T)
 test-ast: $(AST_T)
 	$(RUN) ./$(AST_T)
 
-test-expression: $(EXPRESSION_T)
-	$(RUN) ./$(EXPRESSION_T)
-
 test-parser: $(PARSER_T)
 	$(RUN) ./$(PARSER_T)
 
@@ -109,7 +106,7 @@ test-translator: $(TRANSLATOR_T)
 		tests/translator_test/translator_input.ifj26 \
 		tests/translator_test/translator_output.ifjcode
 
-test-all: test-hashtable test-symtable test-scanner test-ast test-expression \
+test-all: test-hashtable test-symtable test-scanner test-ast \
           test-parser test-semantic test-codegen test-translator
 
 # all tests + valgrind

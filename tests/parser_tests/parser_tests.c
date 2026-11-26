@@ -6,15 +6,16 @@
 
 extern ASTNode *global_ast_root;
 
-#define CHECK(condition, message)              \
-    do {                                       \
-        if (!(condition)) {                    \
-            printf("[CHYBA] %s\n", message);   \
-            failures++;                        \
-        }                                      \
-    } while (0)
+int failures = 0;
 
-static const char *node_name(ASTNodeType t) {
+void CHECK(bool condition, char *mesage) {
+    if (!condition) {
+        printf("[CHYBA] %s\n", mesage);
+        failures++;
+    }
+}
+
+static char *node_name(ASTNodeType t) {
     switch (t) {
         case AST_NODE_PROGRAM:   return "PROGRAM";
         case AST_NODE_FUNCTION:  return "FUNCTION";
@@ -33,7 +34,7 @@ static const char *node_name(ASTNodeType t) {
     }
 }
 
-static void print_token(const Token *t) {
+static void print_token(Token *t) {
     switch (t->type) {
         case TOKEN_PLUS:       printf("+");  break;
         case TOKEN_MINUS:      printf("-");  break;
@@ -57,7 +58,7 @@ static void print_token(const Token *t) {
     }
 }
 
-static void dump_list(const ASTNode *n, int depth, const char *role) {
+static void dump_list(ASTNode *n, int depth, char *role) {
     bool first = true;
     for (; n != NULL; n = n->next) {
         for (int i = 0; i < depth; i++) printf("  ");
@@ -74,12 +75,10 @@ static void dump_list(const ASTNode *n, int depth, const char *role) {
 
 int main(int argc, char *argv[]) {
 
-    int failures = 0;
-
     printf("--- Spustam testy pre parser.c ---\n");
 
     if (argc < 3 || argc > 5) {
-        printf("Pouzitie: ./test_parser <subor.ifj> <ocakavany_vysledok> [is_main] [is_const]\n");
+        printf("Pouzitie: ./test_parser <subor.txt> <ocakavany_vysledok> [is_main] [is_const]\n");
         printf("Ocakavany vysledok: 0 = uspech, 2 = syntax error\n");
         printf("Vypis stromu: DUMP_AST=1 ./test_parser ...\n");
         return 1;
@@ -100,7 +99,6 @@ int main(int argc, char *argv[]) {
 
     int expected_main = -1;
 
-    /* was `argc == 4`, which skipped is_main whenever is_const was given too */
     if (argc >= 4) {
         expected_main = (int)strtol(argv[3], &endptr, 10);
 
@@ -231,3 +229,12 @@ int main(int argc, char *argv[]) {
 
     return failures == 0 ? 0 : 1;
 }
+
+// ./parser_tests tests/parser_tests/valid_val.txt 0 1 1
+// ./parser_tests tests/parser_tests/valid_var.txt 0 1 0
+// ./parser_tests tests/parser_tests/invalid_function.txt 2
+// ./parser_tests tests/parser_tests/invalid_parenthesis.txt 2
+// ./parser_tests tests/parser_tests/invalid_import.txt 2
+// ./parser_tests tests/parser_tests/valid_functions.txt 0 0
+// ./parser_tests tests/parser_tests/valid_main.txt 0 1
+// DUMP_AST=1 ./parser_tests tests/parser_tests/funexp.txt 0 1

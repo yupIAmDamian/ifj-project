@@ -40,7 +40,7 @@ int main() {
     // registers all cleanup functions
     error_register_cleanup(symtable_cleanup); // danko
     error_register_cleanup(ast_cleanup); // misko
-    // error_register_cleanup(expr_stack_cleanup); // miskov stack free wrapnuty, odkomentuj ked bude
+    error_register_cleanup(expr_stack_cleanup); // miskov stack free wrapnuty, odkomentuj ked bude
     error_register_cleanup(scanner_free); // dominik
 
     scanner_init();
@@ -74,7 +74,6 @@ int main() {
     }
 
     gen_code(global_ast_root);
-
     symtable_dispose(symtable);
 
     return 0;

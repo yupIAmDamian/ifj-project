@@ -3,17 +3,17 @@
 #include <stdbool.h>
 #include "../../syntactic_analysis/ast.h"
 
-#define CHECK(condition, message)              \
-    do {                                       \
-        if (!(condition)) {                    \
-            printf("[CHYBA] %s\n", message);   \
-            failures++;                        \
-        }                                      \
-    } while (0)
+int failures = 0;
+
+void CHECK(bool condition, char *message) {
+        if (!condition) {
+            printf("[CHYBA] %s\n", message);
+            failures++;
+        }
+}
 
 int main() {
 
-    int failures = 0;
     int failures_before = 0;
 
     printf("--- Spustam testy pre ast.c ---\n");

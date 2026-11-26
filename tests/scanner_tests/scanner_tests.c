@@ -6,16 +6,16 @@
 // structure for expected tokens
 typedef struct {
     TokenType type;
-    const char* expected_str;
+    char* expected_str;
     int expected_int;
     double expected_double;
 } ExpectedToken;
 
 bool check_token_attribute(Token token, ExpectedToken exp) {
     char act_buf[64], exp_buf[64];
-    const char *act_str = act_buf;
-    const char *exp_str = exp_buf;
-    const char *label = "";
+    char *act_str = act_buf;
+    char *exp_str = exp_buf;
+    char *label = "";
     bool match = true;
 
     switch (token.type) {
@@ -24,7 +24,7 @@ bool check_token_attribute(Token token, ExpectedToken exp) {
             label = "STR";
             act_str = token.attribute.string_value;
             exp_str = exp.expected_str;
-            match = (matching_string(act_str, exp_str) == 0);
+            match = (matching_string(act_str, exp_str));
             break;
 
         case TOKEN_INTEGER:
@@ -71,7 +71,7 @@ int main(void) {
     }
     
 
-    if (matching_string(buffer.str, "ifj-ifj-ifj-ifj-") == 0) {
+    if (matching_string(buffer.str, "ifj-ifj-ifj-ifj-")) {
         printf("found expected buffer string: %s\n", buffer.str);
     } else {
         printf("buffer test failed, got '%s'\n", buffer.str);

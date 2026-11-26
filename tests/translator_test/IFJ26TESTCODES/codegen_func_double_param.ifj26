@@ -1,0 +1,9 @@
+import ifj26.*
+
+def half(x: Double): Double =
+  return x / 2.0
+
+@main def main(): Unit =
+  val h = half(5.0)
+  print(toStr(h))
+  print("\n")
