@@ -95,7 +95,6 @@ void scope_push(Symtable *st) {
     st->scopes[st->top] = ht_create(100);
 }
 
-//One false for 3 different situations. symtable_insert_var returns false for redefinition, for a full table (100 items per scope), and for allocation failure. The semantic analyzer needs to distinguish redefinition, which is a program error, from an internal error.
 bool symtable_insert_var(Symtable *st, char *name, DataType type, bool is_init, bool is_const) {
     if (st->top < 0 || !name) return false;
 
