@@ -1,4 +1,4 @@
-\section{Syntaktická analýza}
+\subsection{Syntaktická analýza}
 
 Syntaktická analýza je realizovaná ako hybridný analyzátor kombinujúci dva prístupy:
 \begin{itemize}
@@ -6,7 +6,7 @@ Syntaktická analýza je realizovaná ako hybridný analyzátor kombinujúci dva
     \item \textbf{Analýza zdola nahor} (\texttt{expression.c}) 
 \end{itemize}
 
-\subsection{LL gramatika a LL tabuľka}
+\subsubsection{LL gramatika a LL tabuľka}
 
 \begin{enumerate}
     \item $\langle\text{program}\rangle \to \langle\text{prolog}\rangle\ \langle\text{functions}\rangle\ \texttt{EOF}$
@@ -63,15 +63,15 @@ Syntaktická analýza je realizovaná ako hybridný analyzátor kombinujúci dva
     \item $\langle\text{arg\_tail}\rangle \to \varepsilon$
 \end{enumerate}
 
-Čísla v bunkách LL tabuľky (Tabuľka~\ref{tab:ll_table}) označujú \textbf{poradové číslo prepisovacieho pravidla} z vyššie uvedenej gramatiky, ktoré syntaktický analyzátor aplikuje pri expanzii daného neterminálu (riadok) pre aktuálny vstupný token (stĺpec). Prázdne políčko predstavuje nepovolenú kombináciu a vedie na syntaktickú chybu (návratový kód \texttt{2}).
-
-Pre prehľadnosť sú terminály s rovnakým syntaktickým správaním zoskupené do disjunktných tried:
+Čísla v LL tabuľke (Tabuľka~\ref{tab:ll_table}) označujú \textbf{poradové číslo prepisovacieho pravidla} z vyššie uvedenej gramatiky, ktoré syntaktický analyzátor použije pri rozvinutí daného neterminálu (riadok) pre aktuálny vstupný token (stĺpec). Prázdne políčko predstavuje syntaktickú chybu (návratový kód {2}).
+\bigskip
+\\
+Kvôli lepšej čitateľnosti LL tabuľky sú terminály, ktoré sa správajú rovnako, zlúčené do troch skratiek:
 \begin{itemize}
-    \item $\texttt{typ} \in \{\texttt{Int}\text{ (21)},\ \texttt{Double}\text{ (22)},\ \texttt{String}\text{ (23)},\ \texttt{Unit}\text{ (24)},\ \texttt{Boolean}\text{ (25)}\}$,
-    \item $\texttt{lit} \in \{\texttt{integer},\ \texttt{double},\ \texttt{string},\ \texttt{true},\ \texttt{false}\}$,
-    \item $\texttt{un\_op} \in \{\texttt{+},\ \texttt{-},\ \texttt{!}\}$.
+    \item \texttt{typ} [dátové typy]: \texttt{Int} (21), \texttt{Double} (22), \texttt{String} (23), \texttt{Unit} (24) a \texttt{Boolean} (25),
+    \item \texttt{lit} [literály]: \texttt{integer}, \texttt{double}, \texttt{string}, \texttt{true} a \texttt{false},
+    \item \texttt{un\_op} [unárne operátory]: \texttt{+}, \texttt{-} a \texttt{!}.
 \end{itemize}
-Zápis $46/47$ v riadku $\langle\text{simple\_stmt}\rangle$ pre token $\texttt{id}$ označuje rozhodnutie na základe jedného dopredného tokenu (pravidlo 46 sa zvolí, ak bezprostredne nasleduje $\texttt{=}$, inak pravidlo 47).
 
 \begin{table}[H]
 \centering
@@ -135,7 +135,7 @@ $\langle\text{arg\_tail}\rangle$ & & & & 54 & 54 & 54 & 55 & & & & & & & & & & &
 }
 \end{table}
 
-\subsection{Precedenčná analýza výrazov}
+\subsubsection{Precedenčná analýza výrazov}
 
 \begin{table}[H]
 \centering

@@ -1,4 +1,4 @@
-\section{Rozdelenie úloh členov tímu.}
+\subsection{Rozdelenie úloh členov tímu.}
 
 Každý člen tímu si zobral na starosti jednu ucelenú časť projektu: 
 \begin{table}[h]
@@ -19,9 +19,9 @@ Každý člen tímu si zobral na starosti jednu ucelenú časť projektu:
 Okrem vyššie spomínaných komplexných častí, do ktorých iní členovia viac-menej nezasahovali. Členovia pracovali na moduloch, ktoré umožňovali lepšiu kvalitu kódu nasledovne:
 - Dominik Madaj - error
 - Daniel Jurkovič - symtable 
-- Damián František Girašek  - hashtable, helper_func, translator_test
+- Damián František Girašek  - hashtable, helper\_func, translator\_test
 
-\section{Organizácia práce v tíme a vývojový process}
+\subsection{Organizácia práce v tíme a vývojový process}
 Na komunikáciu sme prevažne využívali Discord server, na ktorom sme mali raz týždenne 30 minútové meetingy, kde sme zistili aktuálny stav projektu a naplánovali sme si ciele na ďalší týždeň. 
 Ako platformu na verziovanie sme využili Github, kde sme každý pracovali vo svojej vlastnej vetve, ktorú sme neskôr mergli. Pri Pull requestoch sme mali kruh kontroly t.j.:
 
@@ -36,7 +36,7 @@ Pri code review sme mali 2 hlavné ciele. Kontrolovať logickosť kódu a dodrž
 
 Akonáhle prešiel hodnotiaci kód, tak poslal časti, ktoré si má opraviť ten čo požiadal o Pull request. A až po opravení bol kód mergnutý do main vetvy.
 
-\section{Testovanie}
+\subsection{Testovanie}
 Za náš hlabný prostriedok testovania sme zvolili unit testy, na každú jednu vztvorenú časť okrem helper modulov. Kedže jednotlivé časti na seba nadväzuju, tak sme testovali aj integráciu jednotlivých modulov. Konkrétne v codegen sme využili iba lexer, ktorý vrátil tokeny a z nich sme následne gnerovali kód, z toho dôvodu, že sme sa snažili o paralelný vývoj, aj keď syntaktická časť nebola ešte dokončená, no boli sme dohodnutí na výstupe z tejto časti. Nakoniec sme zvolili systémové testy, ktoré otestovali celý prekladač so vstupmi aj očakávanými výstupmi. 
 
 --- formatovanie kodu --------- doplnit
