@@ -6,6 +6,10 @@
 #include "../../semantic_analysis/semantic.h"
 #include "../../syntactic_analysis/ast.h"
 
+// Global pointers within the test so the error handler can clean them up on exit
+static Symtable *g_st = NULL;
+static ASTNode *g_root = NULL;
+
 // Helper function for creating a Token with the specified values.
 static Token make_tok(TokenType type, const char *str_val, int int_val, double dbl_val) {
     (void)int_val;
@@ -29,8 +33,7 @@ static ASTNode* make_node(ASTNodeType type, ASTNode *l, ASTNode *r, ASTNode *ex,
 
 ASTNode* build_test_ast(void) {
 
-    // --- FUNCTION 2: def vypocitaj(a: Int, b: Double): Double ---
-
+    // FUNCTION 2: def vypocitaj(a: Int, b: Double): Double
     // Create function parameters: a (Int) and b (Double).
     ASTNode *p_a = make_node(AST_NODE_PARAM, NULL, NULL, NULL, make_tok(TOKEN_IDENTIFIER, "a", 0, 0), TYPE_INT, true);
     ASTNode *p_b = make_node(AST_NODE_PARAM, NULL, NULL, NULL, make_tok(TOKEN_IDENTIFIER, "b", 0, 0), TYPE_FLOAT, true);
@@ -58,7 +61,7 @@ ASTNode* build_test_ast(void) {
     func_vypocitaj->is_main = false;
 
 
-    // --- FUNCTION 1: @main def main(): Unit ---
+    // FUNCTION 1: @main def main(): Unit
 
     // 1. Declare an immutable variable 'zaklad' of type Int and initialize it using readInt().
     ASTNode *id_zaklad = make_node(AST_NODE_TERM, NULL, NULL, NULL, make_tok(TOKEN_IDENTIFIER, "zaklad", 0, 0), TYPE_INT, true);
@@ -135,21 +138,31 @@ ASTNode* build_test_ast(void) {
     return program;
 }
 
-// Custom error handler for reporting semantic analysis errors.
+// Custom error handler for reporting semantic analysis errors and freeing resources.
 void dominik_error(int code, const char *msg) {
     fprintf(stderr, "Semantic Error %d: %s\n", code, msg);
+
+    if (g_st != NULL) {
+        symtable_dispose(g_st);
+        g_st = NULL;
+    }
+    if (g_root != NULL) {
+        free_ast(g_root);
+        g_root = NULL;
+    }
+
     exit(code);
 }
 
 int main(void) {
     // Initialize the symbol table used during semantic analysis.
-    Symtable *st = symtable_init();
+    g_st = symtable_init();
 
     // Build a manually constructed AST for testing purposes.
-    ASTNode *root = build_test_ast();
+    g_root = build_test_ast();
 
-    // Set a breakpoint here to inspect the AST before semantic analysis.
-    bool ok = check_semantics(root, st);
+    // Run semantic analysis.
+    bool ok = check_semantics(g_root, g_st);
 
     // Report the result if semantic analysis completes successfully.
     if (ok) {
@@ -157,6 +170,12 @@ int main(void) {
     }
 
     // Release the allocated symbol table resources.
-    symtable_dispose(st);
+    symtable_dispose(g_st);
+    g_st = NULL;
+
+    // Release the entire AST (including mangled strings and inserted INT2FLOAT nodes).
+    free_ast(g_root);
+    g_root = NULL;
+
     return 0;
 }
