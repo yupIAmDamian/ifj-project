@@ -14,10 +14,10 @@ static bool uses_substr = false;
 
 static void note_builtin_use(char *name) {
     if (name == NULL) return;
-    if (strcmp(name, "ord") == 0) {
+    if (matching_string(name, "ord") == 0) {
         uses_ord = true;
     }
-    else if (strcmp(name, "subStr") == 0) {
+    else if (matching_string(name, "subStr") == 0) {
         uses_substr = true;
     }    
 }
@@ -83,7 +83,7 @@ bool parse_prolog() {
     if (!match(TOKEN_IMPORT)) return false;
     
     if (current_token.type != TOKEN_IDENTIFIER) return false;
-    if (strcmp(current_token.attribute.string_value, "ifj26") != 0) {
+    if (matching_string(current_token.attribute.string_value, "ifj26") != 0) {
         free(current_token.attribute.string_value);
         return false;
     }
@@ -154,7 +154,7 @@ bool parse_main_annotation(bool *is_main) {
     *is_main = false;
     if (match(TOKEN_AT)) {
         if (current_token.type != TOKEN_IDENTIFIER) return false;
-        if (strcmp(current_token.attribute.string_value, "main") != 0) {
+        if (matching_string(current_token.attribute.string_value, "main") != 0) {
             free(current_token.attribute.string_value);
             return false;
         }
@@ -181,7 +181,7 @@ ASTNode* parse_params_opt() {
     ASTNode *last_param = first_param;
 
     while (match(TOKEN_COMMA)) {
-        if (current_token.type == TOKEN_RPAREN) break;
+        if (current_token.type == TOKEN_RPAREN && current_token.newline_before) break;
         ASTNode *next_param = parse_param();
         if (next_param == NULL) {
             return NULL; // syntax error
@@ -451,7 +451,7 @@ ASTNode* parse_args_opt() {
 
     ASTNode *last_arg = first_arg;
     while (match(TOKEN_COMMA)) {
-        if (current_token.type == TOKEN_RPAREN) break;
+        if (current_token.type == TOKEN_RPAREN && current_token.newline_before) break;
         ASTNode *next_arg = parse_expression();
         if (next_arg == NULL) return NULL;
 

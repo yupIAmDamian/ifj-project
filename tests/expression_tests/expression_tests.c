@@ -12,6 +12,13 @@ static const Token *input_tokens = NULL;
 static size_t input_count = 0;
 static size_t input_position = 0;
 
+void CHECK(bool condition, const char *mesage) {
+    if (!condition) {
+        printf("[CHYBA] %s\n", mesage);
+        failures++;
+    }
+}
+
 Token create_test_token(TokenType type) {
     Token token = {0};
     token.type = type;
@@ -34,14 +41,6 @@ Token get_token_buffered(void) {
 
     return create_test_token(TOKEN_EOF);
 }
-
-#define CHECK(condition, message)                 \
-    do {                                          \
-        if (!(condition)) {                       \
-            printf("[CHYBA] %s\n", message);      \
-            failures++;                           \
-        }                                         \
-    } while (0)
 
 // freeing AST nodes recursively
 void free_ast(ASTNode *node) {
@@ -650,7 +649,7 @@ void test_parse_lexical_error() {
         create_test_token(TOKEN_EOF)
     };
 
-    set_token_stream(tokens, 3);
+    set_token_stream(tokens, 2);
 
     ASTNode *result = parse_expression();
 
