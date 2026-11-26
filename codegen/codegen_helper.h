@@ -73,4 +73,21 @@ char *scratch();
 */
 bool always_returns(ASTNode *node);
 
+
+/*
+* @brief Returns the name of a temporary variable based on the current function and index.
+* @param i Index to determine which temporary variable to return (0 or 1).
+* @return A string representing the temporary variable.
+*/
+char *concat_tmp(int i);
+
+
+/*
+ * @brief Checks if an AST node represents a float operand.
+ * @param node The AST node to check.
+ * @return True if the node is a float operand, false otherwise.
+ */
+bool is_float_operand(ASTNode *node);
+
+
 #endif

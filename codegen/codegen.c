@@ -4,8 +4,6 @@
 
 char* current_func_name = NULL;
 int label_counter = 0;
-static bool locked_poping = false;
-
 
 void gen_short_circuit(ASTNode *node, bool is_and) {
     int id = fresh_id();
@@ -24,11 +22,17 @@ void gen_short_circuit(ASTNode *node, bool is_and) {
 }
 
 void gen_operand(ASTNode *node) {
-    if (node == NULL) return ;
-    if (node->type == AST_NODE_VAR || node->type == AST_NODE_TERM)
+    if (node == NULL) return;
+    if (node->type == AST_NODE_INT2FLOAT) {
+        equation_traversal(node, NULL);
+        return;
+    }
+    if (node->type == AST_NODE_VAR || node->type == AST_NODE_TERM){
         gen_pushs(node);
-    else
+    }else{
         decide_condition(node);
+    }
+
 }
 
 void gen_push_value(ASTNode *node) {
@@ -96,7 +100,9 @@ void gen_node(ASTNode *node){
             gen_pops(gen_string_from_node(node->left));
             break;
         case AST_NODE_RETURN:
-            gen_push_value(node->left);
+            if (node->left != NULL) {
+                gen_push_value(node->left);
+            }
             gen_popframe();
             gen_return();
             gen_new_line();
@@ -107,6 +113,13 @@ void gen_node(ASTNode *node){
 }
 
 
+void gen_compare_operand(ASTNode *node, bool want_float) {
+    gen_operand(node);
+
+    if (want_float && node->type != AST_NODE_INT2FLOAT && node->inferred_type == TYPE_INT){
+        gen_int2floats();
+    }
+}
 //Bool operations
 void decide_condition(ASTNode *condition_node){
     if (condition_node == NULL)
@@ -124,6 +137,11 @@ void decide_condition(ASTNode *condition_node){
 
     Token *condition = get_token_from_node(condition_node);
     if (condition == NULL) return;
+
+    if (condition->type == TOKEN_AND || condition->type == TOKEN_OR) {
+        gen_short_circuit(condition_node, condition->type == TOKEN_AND);
+        return;
+    }
 
     switch (condition->type) {
         case TOKEN_PLUS:
@@ -149,8 +167,11 @@ void decide_condition(ASTNode *condition_node){
     ASTNode *op1 = condition_node->left;
     ASTNode *op2 = condition_node->right;
 
-    if (op1 != NULL) gen_operand(op1);
-    if (op2 != NULL) gen_operand(op2);
+    bool want_float = (op1 != NULL && is_float_operand(op1)) ||
+                    (op2 != NULL && is_float_operand(op2));
+
+    if (op1 != NULL) gen_compare_operand(op1, want_float);
+    if (op2 != NULL) gen_compare_operand(op2, want_float);
 
     switch (condition->type) {
         case TOKEN_LESS_EQ:
@@ -174,14 +195,6 @@ void decide_condition(ASTNode *condition_node){
             gen_EQs(); 
             gen_NOTs(); 
             break;
-        case TOKEN_AND: {
-            gen_short_circuit(condition_node, condition->type == TOKEN_AND);
-            break;
-        }      
-        case TOKEN_OR: {
-            gen_short_circuit(condition_node, condition->type == TOKEN_OR);
-            break;
-        }      
         case TOKEN_NOT:      
             gen_NOTs(); 
             break;
@@ -247,7 +260,6 @@ void gen_while(ASTNode *node){
 }
 
 void equation_traversal(ASTNode *node, char *result_var) {
-    locked_poping = false;
     if (node == NULL) {
         return;
     }
@@ -279,25 +291,23 @@ void equation_traversal(ASTNode *node, char *result_var) {
 
     switch (node->val.type) {
         case TOKEN_PLUS:
-            if(concat) {
-                printf("CONCAT ");
-                gen_argument(node->left);
-                printf(" ");
-                gen_argument(node->left);
-                printf(" ");
-                gen_argument(node->right);
-                gen_new_line();
-                locked_poping = true;
+            if (concat) {
+                printf("POPS %s\n", concat_tmp(1));                       
+                printf("POPS %s\n", concat_tmp(0)); 
+                printf("CONCAT %s %s %s\n", concat_tmp(0), concat_tmp(0), concat_tmp(1));
+                printf("PUSHS %s\n", concat_tmp(0));
             } else {
                 gen_adds();
             }
-
             break;
         case TOKEN_MINUS:
             if (node->right != NULL) {
                 gen_subs();
             } else {
-                printf("PUSHS int@-1\n");
+                if (node->inferred_type == TYPE_FLOAT)
+                    printf("PUSHS float@-0x1p+0\n");
+                else
+                    printf("PUSHS int@-1\n");
                 gen_muls();
             }
             break;
@@ -341,12 +351,16 @@ void gen_fun_def_start() {
 
     if (in_main()) {
         printf("DEFVAR GF@$tmp\n");
+        printf("DEFVAR GF@$tmp1\n");
+        printf("DEFVAR GF@$tmp2\n");
         return;
     }
 
     gen_createframe();
     gen_pushframe();
     printf("DEFVAR LF@$tmp\n");
+    printf("DEFVAR LF@$tmp1\n");
+    printf("DEFVAR LF@$tmp2\n");
 }
 
 void gen_fun_def_args(ASTNode *node){

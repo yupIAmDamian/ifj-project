@@ -72,3 +72,14 @@ bool always_returns(ASTNode *node) {
 
     return false;
 }
+
+char *concat_tmp(int i) {
+    if (in_main()){
+        return i == 0 ? "GF@$tmp1" : "GF@$tmp2";
+    }
+    return i == 0 ? "LF@$tmp1" : "LF@$tmp2";
+}
+
+bool is_float_operand(ASTNode *node) {
+    return node->type == AST_NODE_INT2FLOAT || node->inferred_type == TYPE_FLOAT;
+}
