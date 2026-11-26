@@ -24,7 +24,7 @@ bool check_token_attribute(Token token, ExpectedToken exp) {
             label = "STR";
             act_str = token.attribute.string_value;
             exp_str = exp.expected_str;
-            match = (strcmp(act_str, exp_str) == 0);
+            match = (matching_string(act_str, exp_str) == 0);
             break;
 
         case TOKEN_INTEGER:
@@ -71,7 +71,7 @@ int main(void) {
     }
     
 
-    if (strcmp(buffer.str, "ifj-ifj-ifj-ifj-") == 0) {
+    if (matching_string(buffer.str, "ifj-ifj-ifj-ifj-") == 0) {
         printf("found expected buffer string: %s\n", buffer.str);
     } else {
         printf("buffer test failed, got '%s'\n", buffer.str);

@@ -111,6 +111,7 @@ void buffer_add_char(StringKeywordID *buffer, char character) {
 static Token get_next_token_fsm(void)
 {
     Token token;
+    token.newline_before = false;
     State state = STATE_START; // initial state of the FSM
 
     if (pending_dedents > 0) { // processing of pending dedents
@@ -202,6 +203,7 @@ static Token get_next_token_fsm(void)
                 } else if (character == '\n') { // end of line
                     current_line++;
                     if (paren_count > 0) { // EOL isnt returned inside parentheses
+                        token.newline_before = true;
                         break;
                     } else {
                         token.type = TOKEN_EOL;
@@ -283,42 +285,42 @@ static Token get_next_token_fsm(void)
                 } else {
                     ungetc(character, stdin); // returns the character back into stdin
                     // compares the buffer to all keywords
-                    if (strcmp(buffer.str, "def") == 0) {
+                    if (matching_string(buffer.str, "def") == 0) {
                         token.type = TOKEN_DEF;
-                    } else if (strcmp(buffer.str, "do") == 0) {
+                    } else if (matching_string(buffer.str, "do") == 0) {
                         token.type = TOKEN_DO;
-                    } else if (strcmp(buffer.str, "Double") == 0) {
+                    } else if (matching_string(buffer.str, "Double") == 0) {
                         token.type = TOKEN_TYPE_DOUBLE;
-                    } else if (strcmp(buffer.str, "else") == 0) {
+                    } else if (matching_string(buffer.str, "else") == 0) {
                         token.type = TOKEN_ELSE;
-                    } else if (strcmp(buffer.str, "if") == 0) {
+                    } else if (matching_string(buffer.str, "if") == 0) {
                         token.type = TOKEN_IF;
-                    } else if (strcmp(buffer.str, "import") == 0) {
+                    } else if (matching_string(buffer.str, "import") == 0) {
                         token.type = TOKEN_IMPORT;
-                    } else if (strcmp(buffer.str, "Int") == 0) {
+                    } else if (matching_string(buffer.str, "Int") == 0) {
                         token.type = TOKEN_TYPE_INT;
-                    } else if (strcmp(buffer.str, "return") == 0) {
+                    } else if (matching_string(buffer.str, "return") == 0) {
                         token.type = TOKEN_RETURN;
-                    } else if (strcmp(buffer.str, "String") == 0) {
+                    } else if (matching_string(buffer.str, "String") == 0) {
                         token.type = TOKEN_TYPE_STRING;
-                    } else if (strcmp(buffer.str, "then") == 0) {
+                    } else if (matching_string(buffer.str, "then") == 0) {
                         token.type = TOKEN_THEN;
-                    } else if (strcmp(buffer.str, "Unit") == 0) {
+                    } else if (matching_string(buffer.str, "Unit") == 0) {
                         token.type = TOKEN_TYPE_UNIT;
-                    } else if (strcmp(buffer.str, "val") == 0) {
+                    } else if (matching_string(buffer.str, "val") == 0) {
                         token.type = TOKEN_VAL;
-                    } else if (strcmp(buffer.str, "var") == 0) {
+                    } else if (matching_string(buffer.str, "var") == 0) {
                         token.type = TOKEN_VAR;
-                    } else if (strcmp(buffer.str, "while") == 0) {
+                    } else if (matching_string(buffer.str, "while") == 0) {
                         token.type = TOKEN_WHILE;
-                    } else if (strcmp(buffer.str, "_") == 0) {
+                    } else if (matching_string(buffer.str, "_") == 0) {
                         token.type = TOKEN_UNDERSCORE;
                     // boolthen extension
-                    } else if (strcmp(buffer.str, "Boolean") == 0) {
+                    } else if (matching_string(buffer.str, "Boolean") == 0) {
                         token.type = TOKEN_TYPE_BOOLEAN;
-                    } else if (strcmp(buffer.str, "true") == 0) {
+                    } else if (matching_string(buffer.str, "true") == 0) {
                         token.type = TOKEN_TRUE;
-                    } else if (strcmp(buffer.str, "false") == 0) {
+                    } else if (matching_string(buffer.str, "false") == 0) {
                         token.type = TOKEN_FALSE;
                     } else { // no keyword matched, its an ID
                         token.type = TOKEN_IDENTIFIER;
@@ -343,9 +345,6 @@ static Token get_next_token_fsm(void)
                     state = STATE_DOUBLE_EXP;
                 } else if (character == 'd' || character == 'D') {
                     state = STATE_DOUBLE_SUFFIX;
-                } else if (isalpha(character)) { // no other alphabetical characters are valid here
-                    buffer_free(&buffer);
-                    error_exit(ERR_LEX, current_line, "invalid character in an integer");
                 } else {
                     ungetc(character, stdin);
                     token.type = TOKEN_INTEGER;
@@ -422,9 +421,6 @@ static Token get_next_token_fsm(void)
                     state = STATE_DOUBLE_EXP;
                 } else if (character == 'd' || character == 'D') {
                     state = STATE_DOUBLE_SUFFIX;
-                } else if (isalpha(character)) { // no other alphabetical characters are valid here
-                    buffer_free(&buffer);
-                    error_exit(ERR_LEX, current_line, "invalid character in a double");
                 } else {
                     ungetc(character, stdin);
                     token.type = TOKEN_DOUBLE;
@@ -476,9 +472,6 @@ static Token get_next_token_fsm(void)
                     state = STATE_DOUBLE_EXP_DIGITS_UNDERSCORE;
                 } else if (character == 'd' || character == 'D') {
                     state = STATE_DOUBLE_SUFFIX;
-                } else if (isalpha(character)) { // no other suffixes supported
-                    buffer_free(&buffer);
-                    error_exit(ERR_LEX, current_line, "invalid exponent in double");
                 } else {
                     ungetc(character, stdin);
                     token.type = TOKEN_DOUBLE;

@@ -86,6 +86,7 @@ typedef struct {
         char *string_value;
     } attribute;
     int line; // line where the token is located (used for error messages)
+    bool newline_before; // newline detection inside parentheses
 } Token;
 
 /**
