@@ -11,7 +11,7 @@ static Symtable *g_st = NULL;
 static ASTNode *g_root = NULL;
 
 // Helper function for creating a Token with the specified values.
-static Token make_tok(TokenType type, const char *str_val, int int_val, double dbl_val) {
+static Token make_tok(TokenType type, char *str_val, int int_val, double dbl_val) {
     (void)int_val;
     (void)dbl_val;
     Token t;
@@ -139,7 +139,7 @@ ASTNode* build_test_ast(void) {
 }
 
 // Custom error handler for reporting semantic analysis errors and freeing resources.
-void dominik_error(int code, const char *msg) {
+void dominik_error(int code, char *msg) {
     fprintf(stderr, "Semantic Error %d: %s\n", code, msg);
 
     if (g_st != NULL) {

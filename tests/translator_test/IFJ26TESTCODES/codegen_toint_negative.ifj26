@@ -1,0 +1,7 @@
+import ifj26.*
+
+@main def main(): Unit =
+  val d = -3.9
+  val i = toInt(d)
+  print(toStr(i))
+  print("\n")

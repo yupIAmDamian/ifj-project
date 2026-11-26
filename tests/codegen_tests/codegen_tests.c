@@ -10,7 +10,7 @@ Token make_token(TokenType type, int line) {
     return result;
 }
 
-Token identifier_token(const char *name, int line) {
+Token identifier_token(char *name, int line) {
     Token result = make_token(TOKEN_IDENTIFIER, line);
     result.attribute.string_value = (char *)name;
     return result;
@@ -22,7 +22,7 @@ Token integer_token(int value, int line) {
     return result;
 }
 
-Token string_token(const char *value, int line) {
+Token string_token(char *value, int line) {
     Token result = make_token(TOKEN_STRING, line);
     result.attribute.string_value = (char *)value;
     return result;
@@ -32,7 +32,7 @@ ASTNode *expression_value(Token token) {
     return create_ast_node(AST_NODE_EXPR, NULL, NULL, NULL, token);
 }
 
-ASTNode *identifier_expression(const char *name, int line) {
+ASTNode *identifier_expression(char *name, int line) {
     return expression_value(identifier_token(name, line));
 }
 
@@ -44,11 +44,11 @@ ASTNode *term(Token token) {
     return create_ast_node(AST_NODE_TERM, NULL, NULL, NULL, token);
 }
 
-ASTNode *term_identifier(const char *name, int line) {
+ASTNode *term_identifier(char *name, int line) {
     return term(identifier_token(name, line));
 }
 
-ASTNode *term_string(const char *value, int line) {
+ASTNode *term_string(char *value, int line) {
     return term(string_token(value, line));
 }
 
@@ -58,17 +58,17 @@ ASTNode *binary_expression(TokenType operator_type,
                            make_token(operator_type, line));
 }
 
-ASTNode *call(const char *name, ASTNode *arguments, int line) {
+ASTNode *call(char *name, ASTNode *arguments, int line) {
     return create_ast_node(AST_NODE_CALL, NULL, arguments, NULL,
                            identifier_token(name, line));
 }
 
-ASTNode *variable(const char *name, int line) {
+ASTNode *variable(char *name, int line) {
     return create_ast_node(AST_NODE_VAR, NULL, NULL, NULL,
                            identifier_token(name, line));
 }
 
-ASTNode *declaration(const char *name, ASTNode *initializer,
+ASTNode *declaration(char *name, ASTNode *initializer,
                             bool is_const, int line) {
     ASTNode *var_node = variable(name, line);
     ASTNode *node = create_ast_node(AST_NODE_VAR_DECL, var_node, initializer,
@@ -78,7 +78,7 @@ ASTNode *declaration(const char *name, ASTNode *initializer,
     return node;
 }
 
-ASTNode *assignment(const char *name, ASTNode *value, int line) {
+ASTNode *assignment(char *name, ASTNode *value, int line) {
     return create_ast_node(AST_NODE_ASSIGN, variable(name, line), value,
                            NULL, identifier_token(name, line));
 }
@@ -98,7 +98,7 @@ void append_node(ASTNode **first, ASTNode **last, ASTNode *node) {
     *last = node;
 }
 
-ASTNode *parameter(const char *name, int line) {
+ASTNode *parameter(char *name, int line) {
     return create_ast_node(AST_NODE_PARAM, NULL, NULL, NULL,
                            identifier_token(name, line));
 }
@@ -114,7 +114,7 @@ ASTNode *while_node(ASTNode *condition, ASTNode *body, int line) {
                            make_token(TOKEN_WHILE, line));
 }
 
-ASTNode *function(const char *name, ASTNode *parameters,
+ASTNode *function(char *name, ASTNode *parameters,
                          ASTNode *body, bool is_main, int line) {
     ASTNode *node = create_ast_node(AST_NODE_FUNCTION, parameters, body, NULL,
                                     identifier_token(name, line));

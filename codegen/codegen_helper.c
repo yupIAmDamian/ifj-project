@@ -13,7 +13,7 @@ char* gen_string_from_node(ASTNode *node) {
 
 
 void gen_escaped_string(char *value) {
-    for (const unsigned char *p = (const unsigned char *)value;
+    for (unsigned char *p = (unsigned char *)value;
          *p != '\0'; p++) {
         unsigned char c = *p;
 
@@ -40,7 +40,7 @@ char *create_label(int number, char* label_name, char* label_type) {
 
 
 bool in_main() {
-    return matching_string(current_func_name, "main") == 0;
+    return matching_string(current_func_name, "main");
 }
 
 int fresh_id() {
@@ -71,4 +71,15 @@ bool always_returns(ASTNode *node) {
     }
 
     return false;
+}
+
+char *concat_tmp(int i) {
+    if (in_main()){
+        return i == 0 ? "GF@$tmp1" : "GF@$tmp2";
+    }
+    return i == 0 ? "LF@$tmp1" : "LF@$tmp2";
+}
+
+bool is_float_operand(ASTNode *node) {
+    return node->type == AST_NODE_INT2FLOAT || node->inferred_type == TYPE_FLOAT;
 }

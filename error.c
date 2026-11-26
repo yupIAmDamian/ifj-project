@@ -10,7 +10,7 @@ static int cleanup_count = 0;
 static bool atexit_registered = false;
 
 // function for printing the corresponding error message
-static const char *error_message(ErrorCode code) {
+static char *error_message(ErrorCode code) {
     switch (code) {
         case ERR_LEX: return "lexical error";
         case ERR_SYNTAX: return "syntax error";
@@ -47,7 +47,7 @@ void error_register_cleanup(void (*fn)(void)) {
 }
 
 // function for exiting the program in case of an error
-void error_exit(ErrorCode code, int line, const char *detail) {
+void error_exit(ErrorCode code, int line, char *detail) {
     // prints all details on stderr
     fprintf(stderr, "Error %d", code);
     if (line > 0) {

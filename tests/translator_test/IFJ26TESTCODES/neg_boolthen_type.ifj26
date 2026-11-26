@@ -1,5 +1,4 @@
-// Test (NEGATIVE): BOOLTHEN - && applied to a non-Boolean operand
-// Expected: compiler error, exit code 6 (type error)
+// Expected: compiler error, exit code 6 
 import ifj26.*
 
 @main def main(): Unit =

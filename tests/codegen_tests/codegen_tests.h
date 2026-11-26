@@ -21,7 +21,7 @@ Token make_token(TokenType type, int line);
  * @param line Source code line number associated with the token.
  * @return Initialized identifier Token structure.
  */
-Token identifier_token(const char *name, int line);
+Token identifier_token(char *name, int line);
 
 /**
  * @brief Creates an integer Token with the specified value and line number.
@@ -37,7 +37,7 @@ Token integer_token(int value, int line);
  * @param line Source code line number associated with the token.
  * @return Initialized string Token structure.
  */
-Token string_token(const char *value, int line);
+Token string_token(char *value, int line);
 
 /**
  * @brief Wraps a Token into a leaf expression AST node.
@@ -52,7 +52,7 @@ ASTNode *expression_value(Token token);
  * @param line Source code line number.
  * @return Pointer to the newly created AST_NODE_EXPR node.
  */
-ASTNode *identifier_expression(const char *name, int line);
+ASTNode *identifier_expression(char *name, int line);
 
 /**
  * @brief Creates an expression AST node representing an integer constant.
@@ -75,7 +75,7 @@ ASTNode *term(Token token);
  * @param line Source code line number.
  * @return Pointer to the newly created AST_NODE_TERM node.
  */
-ASTNode *term_identifier(const char *name, int line);
+ASTNode *term_identifier(char *name, int line);
 
 /**
  * @brief Creates a term AST node representing a string.
@@ -83,7 +83,7 @@ ASTNode *term_identifier(const char *name, int line);
  * @param line Source code line number.
  * @return Pointer to the newly created AST_NODE_TERM node.
  */
-ASTNode *term_string(const char *value, int line);
+ASTNode *term_string(char *value, int line);
 
 /**
  * @brief Creates a binary operation expression AST node with left and right operand subtrees.
@@ -103,7 +103,7 @@ ASTNode *binary_expression(TokenType operator_type,
  * @param line Source code line number.
  * @return Pointer to the newly created AST_NODE_CALL node.
  */
-ASTNode *call(const char *name, ASTNode *arguments, int line);
+ASTNode *call(char *name, ASTNode *arguments, int line);
 
 /**
  * @brief Creates a variable reference AST node.
@@ -111,7 +111,7 @@ ASTNode *call(const char *name, ASTNode *arguments, int line);
  * @param line Source code line number.
  * @return Pointer to the newly created AST_NODE_VAR node.
  */
-ASTNode *variable(const char *name, int line);
+ASTNode *variable(char *name, int line);
 
 /**
  * @brief Creates a variable or constant declaration AST node with an initializer expression.
@@ -121,7 +121,7 @@ ASTNode *variable(const char *name, int line);
  * @param line Source code line number.
  * @return Pointer to the newly created AST_NODE_VAR_DECL node.
  */
-ASTNode *declaration(const char *name, ASTNode *initializer,
+ASTNode *declaration(char *name, ASTNode *initializer,
                             bool is_const, int line);
 
 /**
@@ -131,7 +131,7 @@ ASTNode *declaration(const char *name, ASTNode *initializer,
  * @param line Source code line number.
  * @return Pointer to the newly created AST_NODE_ASSIGN node.
  */
-ASTNode *assignment(const char *name, ASTNode *value, int line);
+ASTNode *assignment(char *name, ASTNode *value, int line);
 
 /**
  * @brief Creates a return statement AST node.
@@ -155,7 +155,7 @@ void append_node(ASTNode **first, ASTNode **last, ASTNode *node);
  * @param line Source code line number.
  * @return Pointer to the newly created AST_NODE_PARAM node.
  */
-ASTNode *parameter(const char *name, int line);
+ASTNode *parameter(char *name, int line);
 
 /**
  * @brief Creates a conditional if-else statement AST node.
@@ -186,7 +186,7 @@ ASTNode *while_node(ASTNode *condition, ASTNode *body, int line);
  * @param line Source code line number.
  * @return Pointer to the newly created AST_NODE_FUNCTION node.
  */
-ASTNode *function(const char *name, ASTNode *parameters,
+ASTNode *function(char *name, ASTNode *parameters,
                          ASTNode *body, bool is_main, int line);
 
 /**

@@ -1,0 +1,14 @@
+import ifj26.*
+
+def show(n: Int): Unit =
+  if n < 0 then
+    return
+  else
+    print(toStr(n))
+
+@main def main(): Unit =
+  val m = -1
+  show(m)
+  val k = 5
+  show(k)
+  print("\n")

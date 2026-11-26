@@ -27,10 +27,6 @@ void gen_defvar(){
     printf("DEFVAR ");
 }
 
-void gen_move(char* var_name){
-    printf("MOVE %s ", var_name);
-}
-
 void gen_createframe(){
     printf("CREATEFRAME\n");
 }
@@ -53,10 +49,6 @@ void gen_pops(char *var){
         printf("%s", var);
     }
     gen_new_line();
-}
-
-void gen_clears(){
-    printf("CLEARS\n");
 }
 
 void gen_break(){
@@ -95,13 +87,6 @@ void gen_EQs(){
     printf("EQS\n");
 }
 
-void gen_ANDs(){
-    printf("ANDS\n");
-}
-
-void gen_ORs(){
-    printf("ORS\n");
-}
 
 void gen_NOTs(){
     printf("NOTS\n");
@@ -109,26 +94,6 @@ void gen_NOTs(){
 
 void gen_int2floats(){
     printf("INT2FLOATS\n");
-}
-
-void gen_float2ints(){
-    printf("FLOAT2INTS\n");
-}
-
-void gen_int2chars(){
-    printf("INT2CHARS\n");
-}
-
-void gen_stri2ints(){
-    printf("STRI2INTS\n");
-}
-
-void gen_float2strs(){
-    printf("FLOAT2STRS\n");
-}
-
-void gen_int2strs(){
-    printf("INT2STRS\n");
 }
 
 void gen_tostr(ASTNode *arg) {
@@ -155,16 +120,6 @@ void gen_tostr(ASTNode *arg) {
     }
 }
 
-
-void gen_types(){
-    printf("TYPES\n");
-}
-
-void gen_isints(){
-    printf("ISINTS\n");
-}
-
-
 /* Reads a value into the scratch variable. EOF or bad input gives nil, which becomes the default. */
 void gen_read_builtin(char *type, char *default_value) {
     int id = fresh_id();
@@ -181,17 +136,6 @@ Functions where something needs to be passed as an argument, like a label or a v
 //label
 void gen_jumpifeqs(char *label){
     printf("JUMPIFEQS %s\n", label);
-}
-
-//label
-//TODO maybbe this is not because i can do it with condition checking and jumpifeqs
-void gen_jumpifneqs(char *label){
-    printf("JUMPIFNEQS %s\n", label);
-}
-
-//what to print
-void gen_dprint(char *symb){
-    printf("DPRINT %s\n", symb);
 }
 
 void gen_pushs(ASTNode *node){
@@ -217,7 +161,6 @@ void gen_data_type(ASTNode *node){
         case TOKEN_INTEGER:
             printf("int@%d", token->attribute.integer_value);
             break;
-        //TODO chceck if float is correct as a
         case TOKEN_DOUBLE:
             printf("float@%a", token->attribute.double_value);
             break;
@@ -234,28 +177,6 @@ void gen_data_type(ASTNode *node){
         default:
             break;
     }
-}
-
-void gen_write(ASTNode *node){
-    printf("WRITE ");
-    gen_argument(node);
-    gen_new_line();
-}
-
-void gen_concat(char *var, char *symb1, char *symb2){
-    printf("CONCAT %s %s %s\n", var, symb1, symb2);
-}
-
-void gen_strlen(){
-    printf("STRLEN ");
-}
-
-void gen_getchar(char *var, char *symb1, char *symb2){
-    printf("GETCHAR %s %s %s\n", var, symb1, symb2);
-}
-
-void gen_setchar(char *var, char *symb1, char *symb2){
-    printf("SETCHAR %s %s %s\n", var, symb1, symb2);
 }
 
 void gen_newarray(char *var, char *symbs){

@@ -62,7 +62,7 @@ typedef struct {
     int top;                            // Index of the current innermost scope (-1 if empty)
     int block_counter;                  // Monotonic counter for unique variable name mangling
     bool in_main;                       // True when analyzing the '@main' entry function (uses GF@ frame)
-    const char *current_func;           // Name of analysed func
+    char *current_func;           // Name of analysed func
 } Symtable;
 
 /**

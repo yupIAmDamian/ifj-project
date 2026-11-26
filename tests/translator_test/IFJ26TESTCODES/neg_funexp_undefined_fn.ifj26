@@ -1,5 +1,4 @@
-// Test (NEGATIVE): FUNEXP - call to an undefined function inside an expression
-// Expected: compiler error, exit code 3 (undefined function)
+// Expected: compiler error, exit code 3
 import ifj26.*
 
 @main def main(): Unit =

@@ -1,0 +1,10 @@
+// Expected: compiler error, exit code 5
+import ifj26.*
+
+def double_it(x: Int): Int =
+  return x * 2
+
+@main def main(): Unit =
+  val r = double_it(2.5)
+  print(toStr(r))
+  print("\n")

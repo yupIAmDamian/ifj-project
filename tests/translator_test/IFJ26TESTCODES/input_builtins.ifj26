@@ -6,5 +6,6 @@ import ifj26.*
     val real: Double = readDouble()
     print(line)
     print(number)
+    print("\n")
     print(real)
     print("\n")

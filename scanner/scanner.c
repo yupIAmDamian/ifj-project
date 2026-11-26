@@ -1,8 +1,7 @@
 // Compiler of IFJ26 imperative language
 // Author: Dominik Madaj (xmadajd00)
-
-
 #include "scanner.h"
+#include "helper_func.h"
 
 static int current_line;
 static bool line_start; // variable for counting indentation level
@@ -285,42 +284,42 @@ static Token get_next_token_fsm(void)
                 } else {
                     ungetc(character, stdin); // returns the character back into stdin
                     // compares the buffer to all keywords
-                    if (matching_string(buffer.str, "def") == 0) {
+                    if (matching_string(buffer.str, "def")) {
                         token.type = TOKEN_DEF;
-                    } else if (matching_string(buffer.str, "do") == 0) {
+                    } else if (matching_string(buffer.str, "do")) {
                         token.type = TOKEN_DO;
-                    } else if (matching_string(buffer.str, "Double") == 0) {
+                    } else if (matching_string(buffer.str, "Double")) {
                         token.type = TOKEN_TYPE_DOUBLE;
-                    } else if (matching_string(buffer.str, "else") == 0) {
+                    } else if (matching_string(buffer.str, "else")) {
                         token.type = TOKEN_ELSE;
-                    } else if (matching_string(buffer.str, "if") == 0) {
+                    } else if (matching_string(buffer.str, "if")) {
                         token.type = TOKEN_IF;
-                    } else if (matching_string(buffer.str, "import") == 0) {
+                    } else if (matching_string(buffer.str, "import")) {
                         token.type = TOKEN_IMPORT;
-                    } else if (matching_string(buffer.str, "Int") == 0) {
+                    } else if (matching_string(buffer.str, "Int")) {
                         token.type = TOKEN_TYPE_INT;
-                    } else if (matching_string(buffer.str, "return") == 0) {
+                    } else if (matching_string(buffer.str, "return")) {
                         token.type = TOKEN_RETURN;
-                    } else if (matching_string(buffer.str, "String") == 0) {
+                    } else if (matching_string(buffer.str, "String")) {
                         token.type = TOKEN_TYPE_STRING;
-                    } else if (matching_string(buffer.str, "then") == 0) {
+                    } else if (matching_string(buffer.str, "then")) {
                         token.type = TOKEN_THEN;
-                    } else if (matching_string(buffer.str, "Unit") == 0) {
+                    } else if (matching_string(buffer.str, "Unit")) {
                         token.type = TOKEN_TYPE_UNIT;
-                    } else if (matching_string(buffer.str, "val") == 0) {
+                    } else if (matching_string(buffer.str, "val")) {
                         token.type = TOKEN_VAL;
-                    } else if (matching_string(buffer.str, "var") == 0) {
+                    } else if (matching_string(buffer.str, "var")) {
                         token.type = TOKEN_VAR;
-                    } else if (matching_string(buffer.str, "while") == 0) {
+                    } else if (matching_string(buffer.str, "while")) {
                         token.type = TOKEN_WHILE;
-                    } else if (matching_string(buffer.str, "_") == 0) {
+                    } else if (matching_string(buffer.str, "_")) {
                         token.type = TOKEN_UNDERSCORE;
                     // boolthen extension
-                    } else if (matching_string(buffer.str, "Boolean") == 0) {
+                    } else if (matching_string(buffer.str, "Boolean")) {
                         token.type = TOKEN_TYPE_BOOLEAN;
-                    } else if (matching_string(buffer.str, "true") == 0) {
+                    } else if (matching_string(buffer.str, "true")) {
                         token.type = TOKEN_TRUE;
-                    } else if (matching_string(buffer.str, "false") == 0) {
+                    } else if (matching_string(buffer.str, "false")) {
                         token.type = TOKEN_FALSE;
                     } else { // no keyword matched, its an ID
                         token.type = TOKEN_IDENTIFIER;
