@@ -3,18 +3,18 @@
 #ifndef CODEGEN_H
 #define CODEGEN_H
 
-#include "scanner.h"
 #include "ast.h"
 #include "parser.h"
+#include "scanner.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include <string.h>
 
-#include "helper_func.h"
 #include "codegen_helper.h"
 #include "gen_func.h"
+#include "helper_func.h"
 
 /**
 - @brief Traverses a linked list of AST nodes and generates target IFJcode26

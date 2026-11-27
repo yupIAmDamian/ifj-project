@@ -4,10 +4,10 @@
 #ifndef SEMANTIC_H
 #define SEMANTIC_H
 
-#include "symtable.h"
-#include "scanner.h"
-#include "error.h"
 #include "ast.h"
+#include "error.h"
+#include "scanner.h"
+#include "symtable.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
