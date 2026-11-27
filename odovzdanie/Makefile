@@ -11,16 +11,16 @@ TARGET = main
 
 # all .c files for the project
 SRCS = \
-	scanner/scanner.c \
-	syntactic_analysis/ast.c \
-	syntactic_analysis/expression.c \
-	syntactic_analysis/parser.c \
-	semantic_analysis/semantic.c \
-	codegen/codegen.c \
-	codegen/gen_func.c \
-	codegen/codegen_helper.c \
-	hashtable/hashtable.c \
-	hashtable/symtable.c \
+	scanner.c \
+	ast.c \
+	expression.c \
+	parser.c \
+	semantic.c \
+	codegen.c \
+	gen_func.c \
+	codegen_helper.c \
+	hashtable.c \
+	symtable.c \
 	helper_func.c \
 	error.c
 
