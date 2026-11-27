@@ -1,11 +1,11 @@
 // Compiler of IFJ26 imperative language
 // Author: Damian Frantisek Girasek (xgirasd00)
 #include "translator_test.h"
-#include "../../codegen/codegen.h"
-#include "../../hashtable/symtable.h"
+#include "../../codegen.h"
+#include "../../symtable.h"
 #include "../../helper_func.h"
-#include "../../semantic_analysis/semantic.h"
-#include "../../syntactic_analysis/parser.h"
+#include "../../semantic.h"
+#include "../../parser.h"
 
 extern ASTNode *global_ast_root;
 extern Token current_token;

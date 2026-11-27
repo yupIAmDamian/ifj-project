@@ -1,27 +1,19 @@
 // Compiler of IFJ26 imperative language
 // Authors: Damian Frantisek Girasek (xgirasd00), Daniel Jurkovič (xjurkod00),
 //          Dominik Madaj (xmadajd00), Michal Kopček (xkopcem00)
-/*
-#include "scanner.h"
-#include "error.h"
-#include "ast.h"
-#include "symtable.h"
-#include "expression.h"
-#include "parser.h"
-#include "codegen.h"
-*/
+
 #include "main.h"
-#include "./error.h"
+#include "error.h"
 
-#include "./scanner/scanner.h"
-#include "./syntactic_analysis/ast.h"
-#include "./syntactic_analysis/expression.h"
+#include "scanner.h"
+#include "ast.h"
+#include "expression.h"
 
-#include "./codegen/codegen.h"
-#include "./hashtable/symtable.h"
-#include "./helper_func.h"
-#include "./semantic_analysis/semantic.h"
-#include "./syntactic_analysis/parser.h"
+#include "codegen.h"
+#include "symtable.h"
+#include "helper_func.h"
+#include "semantic.h"
+#include "parser.h"
 
 extern ASTNode *global_ast_root;
 extern Token current_token;

@@ -3,7 +3,7 @@
 
 #ifndef AST_H
 #define AST_H
-#include "../error.h"
+#include "error.h"
 #include "scanner.h"
 #include "symtable.h"
 #include <stdbool.h>

@@ -2,7 +2,7 @@
 // Author: Damian Frantisek Girasek (xgirasd00)
 
 #include "hashtable.h"
-#include "../helper_func.h"
+#include "helper_func.h"
 #include "stdio.h"
 #include "stdlib.h"
 #include <string.h>
