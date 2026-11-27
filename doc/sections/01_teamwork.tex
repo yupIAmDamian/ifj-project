@@ -42,5 +42,7 @@ Kolega ktorý kód hodnotil, pridal v code review komentáre, podľa ktorých si
 \subsection{Testovanie}
 Za náš hlavný prostriedok testovania sme zvolili unit testy, na každú jednu vytvorenú časť, okrem helper modulov. Kedže jednotlivé časti na seba nadväzuju, testovali sme aj integráciu jednotlivých modulov. Konkrétne v codegen sme využili lexer, ktorý vrátil tokeny a z nich sme následne generovali kód a to aj keď syntaktická časť nebola ešte dokončená, pretože sme boli dohodnutí na výstupe z tejto časti. Nakoniec sme zvolili systémové testy, ktoré otestovali celý prekladač so vstupmi aj očakávanými výstupmi. 
 
---- formatovanie kodu --------- doplnit
+\subsection{Formátovanie kódu}
+Pre zabezpečenie jednotného štýlu zápisu kódu podľa zadania IFJ26, sme do Makefile pridali príkaz make format, ktorý rekurzívne vyhľadá všetky c a. h súbory v projekte a automaticky ich preformátuje priamo na mieste pomocou nástroja clang-format. Zároveň sme pri písaní kódu všetci dodržiavali pravidlá snake\_style.
+
 \newpage
