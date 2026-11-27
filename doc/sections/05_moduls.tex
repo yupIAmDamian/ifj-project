@@ -1,6 +1,6 @@
 stručný popis každého modulu (informačně obohacující věta na dvojici .c/.h)
 
-\subsection{Damian}
+\subsection{Damián}
 
 \paragraph{\texttt{hashtable.c/.h}}
 \begin{itemize}
@@ -55,6 +55,18 @@ stručný popis každého modulu (informačně obohacující věta na dvojici .c
 \paragraph{\texttt{ast.c/.h}}
 \begin{itemize}
     \item Definuje dátové štruktúry (ASTNode, ASTNodeType) a rozhranie na vytváranie uzlov AST reprezentujúceho prekladaný program. Súrodenecké uzly (príkazy v bloku, parametre, argumenty a definície funkcií) prepája do obojsmerne viazaného zoznamu (next, prev), zatiaľ čo všetky alokované uzly zároveň eviduje v intruzívnom jednosmerne viazanom zozname (alloc\_next) na ich centralizované uvoľnenie vrátane alokovaných reťazcov pri ukončení prekladu alebo pri chybe.
+\end{itemize}
+
+\subsection{Dominik}
+
+\paragraph{\texttt{scanner.c/.h}}
+\begin{itemize}
+    \item Lexikálny analyzátor založený na konečnom stavovom automate. Rozdeľuje vstup na jednotlivé tokeny a vracia ich volajúcemu modulu.
+\end{itemize}
+
+\paragraph{\texttt{error.c/.h}}
+\begin{itemize}
+    \item Modul s funkciou na ukončenie programu a vypísanie chybového hlásenia. Zabezpečuje aj registrovanie funkcií na uvoľnenie alokovanej pamäte, ktoré sa volajú pri chybovom i úspešnom ukončení programu.
 \end{itemize}
 
 \newpage

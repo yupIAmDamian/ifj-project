@@ -19,26 +19,32 @@
 \@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Blokové schéma architektúry prekladača IFJ26 a dátových tokov medzi modulmi}}{4}{figure.2}\protected@file@percent }
 \newlabel{fig:architektura}{{2}{4}{Blokové schéma architektúry prekladača IFJ26 a dátových tokov medzi modulmi}{figure.2}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {3}Lexikálna analýza}{5}{section.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {4}Syntaktická analýza}{5}{section.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.0.1}LL gramatika a LL tabuľka}{5}{subsubsection.4.0.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces LL tabuľka pre syntaktický analyzátor zhora nadol}}{7}{table.1}\protected@file@percent }
-\newlabel{tab:ll_table}{{1}{7}{LL tabuľka pre syntaktický analyzátor zhora nadol}{table.1}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.0.2}Precedenčná analýza výrazov}{8}{subsubsection.4.0.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Precedenčná tabuľka operátorov (prázdne pole značí syntaktickú chybu)}}{8}{table.2}\protected@file@percent }
-\newlabel{tab:prec_table}{{2}{8}{Precedenčná tabuľka operátorov (prázdne pole značí syntaktickú chybu)}{table.2}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5}Prehľad implementovaných modulov a ich rozhrania}{9}{section.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Damian}{9}{subsection.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{\texttt  {hashtable.c/.h}}{9}{section*.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{\texttt  {codegen.c/.h}}{9}{section*.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{\texttt  {gen\_func.c/.h}}{9}{section*.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{\texttt  {codegen\_helper.c/.h}}{9}{section*.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{\texttt  {helper\_func.c/.h}}{9}{section*.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Daniel}{9}{subsection.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{\texttt  {symtable.c/.h}}{9}{section*.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{\texttt  {semantic.c/.h}}{9}{section*.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Michal}{9}{subsection.5.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{\texttt  {parser.c/.h}}{9}{section*.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{\texttt  {expression.c/.h}}{9}{section*.10}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{\texttt  {ast.c/.h}}{10}{section*.11}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6}Využitie AI a externých zdrojov}{11}{section.6}\protected@file@percent }
-\gdef \@abspage@last{12}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Konečný stavový automat: stavy pre odsadenie, komentáre, textové reťazce}}{5}{figure.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Konečný stavový automat: stavy pre operátory, oddeľovače, identifikátory a kľúčové slová}}{5}{figure.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Konečný stavový automat: stavy pre číselné literály}}{6}{figure.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Syntaktická analýza}{7}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.0.1}LL gramatika a LL tabuľka}{7}{subsubsection.4.0.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces LL tabuľka pre syntaktický analyzátor zhora nadol}}{9}{table.1}\protected@file@percent }
+\newlabel{tab:ll_table}{{1}{9}{LL tabuľka pre syntaktický analyzátor zhora nadol}{table.1}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.0.2}Precedenčná analýza výrazov}{10}{subsubsection.4.0.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Precedenčná tabuľka operátorov (prázdne pole značí syntaktickú chybu)}}{10}{table.2}\protected@file@percent }
+\newlabel{tab:prec_table}{{2}{10}{Precedenčná tabuľka operátorov (prázdne pole značí syntaktickú chybu)}{table.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Prehľad implementovaných modulov a ich rozhrania}{11}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Damián}{11}{subsection.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\texttt  {hashtable.c/.h}}{11}{section*.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\texttt  {codegen.c/.h}}{11}{section*.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\texttt  {gen\_func.c/.h}}{11}{section*.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\texttt  {codegen\_helper.c/.h}}{11}{section*.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\texttt  {helper\_func.c/.h}}{11}{section*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Daniel}{11}{subsection.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\texttt  {symtable.c/.h}}{11}{section*.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\texttt  {semantic.c/.h}}{11}{section*.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Michal}{11}{subsection.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\texttt  {parser.c/.h}}{11}{section*.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\texttt  {expression.c/.h}}{11}{section*.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\texttt  {ast.c/.h}}{12}{section*.11}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Dominik}{12}{subsection.5.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\texttt  {scanner.c/.h}}{12}{section*.12}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\texttt  {error.c/.h}}{12}{section*.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Využitie AI a externých zdrojov}{13}{section.6}\protected@file@percent }
+\gdef \@abspage@last{14}
