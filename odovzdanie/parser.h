@@ -3,9 +3,9 @@
 
 #ifndef PARSER_H
 #define PARSER_H
-#include "scanner.h"
 #include "ast.h"
 #include "expression.h"
+#include "scanner.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>

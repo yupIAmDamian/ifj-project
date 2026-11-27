@@ -3,10 +3,10 @@
 
 #ifndef EXPRESSION_H
 #define EXPRESSION_H
-#include "error.h"
-#include "scanner.h"
 #include "ast.h"
+#include "error.h"
 #include "parser.h"
+#include "scanner.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>

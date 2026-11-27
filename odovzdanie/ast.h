@@ -3,9 +3,9 @@
 
 #ifndef AST_H
 #define AST_H
-#include "../error.h"
-#include "symtable.h"
+#include "error.h"
 #include "scanner.h"
+#include "symtable.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>

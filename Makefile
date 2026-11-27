@@ -37,11 +37,6 @@ check:
 
 build-check: check build
 
-
-# do wee need this
-# format:
-# 	clang-format -i $$(git ls-files '*.c' '*.h')
-
 clean:
 	rm -f $(TARGET) $(UNIT_TESTS)
 

@@ -2,7 +2,7 @@
 // Author: Daniel Jurkovič (xjurkod00)
 
 #include "symtable.h"
-#include "../helper_func.h"
+#include "helper_func.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

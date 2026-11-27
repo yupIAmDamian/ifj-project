@@ -5,8 +5,8 @@
 #define SYMTABLE_H
 
 #include "error.h"
-#include "helper_func.h"
 #include "hashtable.h"
+#include "helper_func.h"
 #include <stdbool.h>
 #include <stddef.h>
 
