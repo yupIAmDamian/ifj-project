@@ -3,7 +3,7 @@
 
 #ifndef HASH_TABLE_TESTS_H
 #define HASH_TABLE_TESTS_H
-#include "../../hashtable/hashtable.h"
+#include "../../hashtable.h"
 
 /**
  * @brief Tests inserting a key-value pair into the hash table and prints an

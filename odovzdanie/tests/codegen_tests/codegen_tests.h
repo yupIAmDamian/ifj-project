@@ -4,8 +4,8 @@
 #ifndef CODEGEN_TESTS_H
 #define CODEGEN_TESTS_H
 
-#include "../../codegen/codegen.h"
-#include "../../syntactic_analysis/ast.h"
+#include "../../codegen.h"
+#include "../../ast.h"
 
 /**
  * @brief Creates a basic Token initialized with a given type and line number.

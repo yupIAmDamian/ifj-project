@@ -1,4 +1,7 @@
-#include "../../syntactic_analysis/ast.h"
+// Compiler of IFJ26 imperative language
+// Author: Michal Kopček (xkopcem00)
+
+#include "../../ast.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>

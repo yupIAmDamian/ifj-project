@@ -1,6 +1,6 @@
 // Compiler of IFJ26 imperative language
 // Author: Damian Frantisek Girasek (xgirasd00)
-#include "../../hashtable/hashtable.h"
+#include "../../hashtable.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>

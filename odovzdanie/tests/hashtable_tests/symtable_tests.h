@@ -3,7 +3,7 @@
 #ifndef SYMTABLE_TESTS_H
 #define SYMTABLE_TESTS_H
 
-#include "../../hashtable/symtable.h"
+#include "../../symtable.h"
 #include "../../helper_func.h"
 
 /**

@@ -11,16 +11,16 @@ TARGET = main
 
 # all .c files for the project
 SRCS = \
-	scanner.c \
-	ast.c \
-	expression.c \
-	parser.c \
-	semantic.c \
-	codegen.c \
-	gen_func.c \
-	codegen_helper.c \
-	hashtable.c \
-	symtable.c \
+	scanner/scanner.c \
+	syntactic_analysis/ast.c \
+	syntactic_analysis/expression.c \
+	syntactic_analysis/parser.c \
+	semantic_analysis/semantic.c \
+	codegen/codegen.c \
+	codegen/gen_func.c \
+	codegen/codegen_helper.c \
+	hashtable/hashtable.c \
+	hashtable/symtable.c \
 	helper_func.c \
 	error.c
 
@@ -36,11 +36,6 @@ check:
 	cppcheck --enable=warning,style --error-exitcode=1 --quiet $(INCLUDES) main.c $(SRCS)
 
 build-check: check build
-
-
-# do wee need this
-# format:
-# 	clang-format -i $$(git ls-files '*.c' '*.h')
 
 clean:
 	rm -f $(TARGET) $(UNIT_TESTS)
@@ -92,9 +87,6 @@ test-scanner-print: $(SCANNER_PR_T)
 test-ast: $(AST_T)
 	$(RUN) ./$(AST_T)
 
-test-expression: $(EXPRESSION_T)
-	$(RUN) ./$(EXPRESSION_T)
-
 test-parser: $(PARSER_T)
 	$(RUN) ./$(PARSER_T)
 
@@ -109,7 +101,7 @@ test-translator: $(TRANSLATOR_T)
 		tests/translator_test/translator_input.ifj26 \
 		tests/translator_test/translator_output.ifjcode
 
-test-all: test-hashtable test-symtable test-scanner test-ast test-expression \
+test-all: test-hashtable test-symtable test-scanner test-ast \
           test-parser test-semantic test-codegen test-translator
 
 # all tests + valgrind
@@ -120,3 +112,6 @@ ICINT ?= ./ic26int-linux-x86_64
 
 translator-batch: $(TRANSLATOR_T)
 	INTERPRETER=$(ICINT) bash tests/translator_test/translator_test.sh
+
+format:
+	find . -type f \( -name "*.c" -o -name "*.h" \) -exec clang-format -i {} +

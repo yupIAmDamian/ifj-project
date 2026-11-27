@@ -1,10 +1,13 @@
+// Compiler of IFJ 2026 imperative language
+// Author: Daniel Jurkovič (xjurkod00)
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../semantic_analysis/semantic.h"
-#include "../../syntactic_analysis/ast.h"
+#include "../../semantic.h"
+#include "../../ast.h"
 
 // Global pointers within the test so the error handler can clean them up on
 // exit
